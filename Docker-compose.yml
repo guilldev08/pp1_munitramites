@@ -1,0 +1,39 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      firebird:
+        condition: service_healthy
+    # Espera activa a que Firebird acepte conexiones antes de migrar
+    command: >
+      sh -c "for i in $$(seq 1 60); do
+        python -c \"import socket; socket.create_connection(('firebird',3050),2).close()\" && break;
+        sleep 2;
+      done;
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000"
+
+  firebird:
+    # Imagen oficial de Firebird (jacobalberty/firebird quedó archivada)
+    image: firebirdsql/firebird:4.0.7
+    environment:
+      FIREBIRD_ROOT_PASSWORD: masterkey
+      FIREBIRD_DATABASE: munitramites.fdb
+      FIREBIRD_DATABASE_DEFAULT_CHARSET: UTF8
+    ports:
+      - "3050:3050"
+    volumes:
+      - firebird_data:/var/lib/firebird/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':>/dev/tcp/127.0.0.1/3050' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+volumes:
+  firebird_data:

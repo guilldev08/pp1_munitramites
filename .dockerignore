@@ -1,0 +1,13 @@
+# Evita llevar basura al build (más rápido y reproducible)
+__pycache__/
+*.py[cod]
+*.fdb
+.env
+.venv/
+venv/
+*.sqlite3
+.git/
+.dockerignore
+Docker-compose.yml
+Dockerfile
+README.md

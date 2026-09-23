@@ -1,9 +1,12 @@
 """
-Vistas que sirven el frontend (SPA construida con Vite/React).
+Vistas de la SPA.
 
-El frontend es 100% estatico: sus datos van hardcodeados en el bundle, no
-llama a ninguna API. Django unicamente se encarga de entregar el HTML y de
-proteger el panel /admin con los usuarios de Django.
+Django solo entrega el index.html; React Router resuelve las rutas en el
+cliente. El frontend es 100% estatico: sus datos van hardcodeados en el
+bundle y no llama a ninguna API.
+
+Si necesitas una vista que SI haga algo (leer/escribir en Firebird), creala
+aqui y sumala en munitramites/urls.py ANTES del catch-all del final.
 """
 
 from pathlib import Path
@@ -18,7 +21,7 @@ FRONTEND_DIR = Path(settings.FRONTEND_DIR)
 
 
 def _index_response():
-    """Devuelve el index.html de la SPA (el React Router maneja las rutas)."""
+    """Devuelve frontend/index.html."""
     index = FRONTEND_DIR / 'index.html'
     if not index.exists():
         raise Http404('No se encontro frontend/index.html')
@@ -28,7 +31,7 @@ def _index_response():
 @vary_on_headers('Cookie')
 @cache_control(no_store=True)
 def spa(request, subpath=None):
-    """Cualquier ruta publica: /, /tramites, /tramites/3, /chatbot, /login..."""
+    """Rutas publicas: /, /tramites, /tramites/3, /chatbot, /login..."""
     return _index_response()
 
 
@@ -36,9 +39,8 @@ def spa(request, subpath=None):
 @vary_on_headers('Cookie')
 @cache_control(no_store=True)
 def spa_admin(request, subpath=None):
-    """Panel del SPA (/admin, /admin/tramites, ...).
+    """Panel del SPA (/admin, /admin/tramites, /admin/usuarios...).
 
-    Exige iniciar sesion con un usuario de Django. Si no hay sesion,
-    login_required redirige a /admin/login/?next=...
+    Exige sesion de Django. login_required redirige a /admin/login/?next=...
     """
     return _index_response()

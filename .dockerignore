@@ -9,5 +9,6 @@ venv/
 .git/
 .dockerignore
 Docker-compose.yml
+docker-compose.yml
 Dockerfile
 README.md

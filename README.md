@@ -86,25 +86,53 @@ Luego escribí SQL y cerrá con `quit;`.
 
 ## Estructura
 
+Todo lo de Django vive en **una sola carpeta**, `munitramites/`. No hay
+subcarpetas raras: entrás ahí y están todos los archivos.
+
 ```
 munitramites/
 ├── Dockerfile
-├── Docker-compose.yml
+├── docker-compose.yml
 ├── requirements.txt
 ├── manage.py
-├── frontend/                  # SPA compilada con Vite (NO editar a mano)
+├── frontend/                    # SPA compilada con Vite (NO editar a mano)
 │   ├── index.html
 │   ├── assets/
 │   └── locales/
-├── templates/
-│   └── registration/login.html # página de login de Django
-└── munitramites/
-    ├── settings.py
-    ├── urls.py                 # rutas: auth + admin + estáticos + catch-all SPA
-    └── views.py                # vistas que sirven la SPA
+└── munitramites/                # ← TODO lo de Django está acá
+    ├── settings.py              #    configuración (base de datos, apps)
+    ├── urls.py                  #    rutas: acá se agregan las URL
+    ├── views.py                 #    vistas que sirven la SPA
+    ├── models.py                #    acá van las tablas de Firebird
+    ├── admin.py                 #    qué tablas se ven en /django-admin/
+    ├── apps.py                  #    identidad de la app
+    ├── tests.py                 #    tests
+    ├── wsgi.py / asgi.py        #    puntos de entrada del servidor
+    ├── migrations/              #    migraciones generadas
+    └── templates/
+        └── registration/login.html   # página de login
 ```
 
-`frontend/` es el **build** de la SPA. Si cambias el código fuente de la SPA,
+### ¿Dónde toco para...?
+
+| Quiero... | Archivo |
+|---|---|
+| Agregar una ruta / vista | `munitramites/urls.py` + `munitramites/views.py` |
+| Crear una tabla nueva | `munitramites/models.py` → `makemigrations` → `migrate` |
+| Ver una tabla en `/django-admin/` | `munitramites/admin.py` |
+| Cambiar la base de datos | `munitramites/settings.py` → `DATABASES` |
+| Cambiar el login / redirecciones | `munitramites/settings.py` → bloque `LOGIN_*` |
+| Cambiar el admin nativo de ruta | `munitramites/urls.py` → línea `django-admin/` |
+| Agregar una dependencia | `requirements.txt` → `docker compose up -d --build` |
+| Cambiar la SPA | recompilar con Vite y reemplazar `frontend/` |
+
+### Orden de las rutas (importa)
+
+`munitramites/urls.py` se lee de arriba hacia abajo y gana la primera que
+coincida. El catch-all de la SPA va **siempre al final**: si metés una URL
+debajo, la SPA se la traga y nunca vas a llegar a ella.
+
+`frontend/` es el **build** de la SPA. Si cambiás el código fuente de la SPA,
 volvé a compilar con Vite y reemplazá esa carpeta.
 
 ## Stack

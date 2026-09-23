@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión · Munitramites</title>
+    <link href="/favicon.ico" rel="icon shortcut" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: #f4f4f5;
+        color: #18181b;
+        padding: 24px;
+      }
+      .card {
+        width: 100%;
+        max-width: 380px;
+        background: #fff;
+        border: 1px solid #e4e4e7;
+        border-radius: 14px;
+        padding: 32px 28px;
+        box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.15);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+      .brand img { width: 26px; height: 26px; border-radius: 6px; }
+      .brand h1 { font-size: 19px; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
+      .sub { font-size: 13.5px; color: #71717a; margin: 0 0 24px; }
+      label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+      input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14.5px;
+        font-family: inherit;
+        border: 1px solid #d4d4d8;
+        border-radius: 9px;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      input:focus {
+        border-color: #18181b;
+        box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.1);
+      }
+      .field { margin-bottom: 16px; }
+      button {
+        width: 100%;
+        padding: 11px;
+        font-size: 14.5px;
+        font-weight: 600;
+        font-family: inherit;
+        color: #fff;
+        background: #18181b;
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.05s;
+      }
+      button:hover { background: #27272a; }
+      button:active { transform: translateY(1px); }
+      .error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-radius: 9px;
+        margin-bottom: 16px;
+      }
+      .error ul { margin: 0; padding-left: 18px; }
+      .back {
+        display: block;
+        text-align: center;
+        margin-top: 18px;
+        font-size: 13px;
+        color: #71717a;
+        text-decoration: none;
+      }
+      .back:hover { color: #18181b; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="brand">
+        <img src="/favicon.ico" alt="" />
+        <h1>Munitramites</h1>
+      </div>
+      <p class="sub">Iniciá sesión para acceder al panel de administración.</p>
+
+      {% if form.errors %}
+        <div class="error">
+          {% if form.non_field_errors %}
+            <ul>{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% else %}
+            Usuario o contraseña incorrectos. Probá de nuevo.
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <form method="post" action="">
+        {% csrf_token %}
+        <div class="field">
+          <label for="{{ form.username.id_for_label }}">Usuario</label>
+          <input
+            type="text"
+            name="{{ form.username.html_name }}"
+            id="{{ form.username.id_for_label }}"
+            value="{{ form.username.value|default:'' }}"
+            autofocus
+            required
+            autocomplete="username"
+          />
+        </div>
+        <div class="field">
+          <label for="{{ form.password.id_for_label }}">Contraseña</label>
+          <input
+            type="password"
+            name="{{ form.password.html_name }}"
+            id="{{ form.password.id_for_label }}"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}" />
+        {% endif %}
+        <button type="submit">Entrar</button>
+      </form>
+
+      <a class="back" href="/">← Volver al sitio</a>
+    </div>
+  </body>
+</html>

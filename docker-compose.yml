@@ -1,6 +1,8 @@
 services:
   web:
     build: .
+    # Se levanta solo si Docker Desktop se reinicia o se cae la PC
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -20,6 +22,8 @@ services:
   firebird:
     # Imagen oficial de Firebird (jacobalberty/firebird quedó archivada)
     image: firebirdsql/firebird:4.0.7
+    # Se levanta sola si Docker Desktop se reinicia o se cae la PC
+    restart: unless-stopped
     environment:
       FIREBIRD_ROOT_PASSWORD: masterkey
       FIREBIRD_DATABASE: munitramites.fdb

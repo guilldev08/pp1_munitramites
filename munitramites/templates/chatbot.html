@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block titulo %}Chatbot · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor" style="max-width:780px">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Chatbot
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>Asistente de trámites</h2>
+        <p>Busca en la base real de Firebird. No es una IA: responde con lo que hay cargado.</p>
+      </div>
+      {% if historial %}
+        <form method="post" action="{% url 'chatbot_limpiar' %}">
+          {% csrf_token %}
+          <button class="boton boton--secundario boton--chico" type="submit">Vaciar chat</button>
+        </form>
+      {% endif %}
+    </div>
+
+    {# Sugerencias rapidas #}
+    <div class="chips">
+      <form method="post" action="{% url 'chatbot' %}" style="display:contents">
+        {% csrf_token %}
+        <button class="chip" type="submit" name="mensaje" value="renovacion de DNI">Renovación de DNI</button>
+        <button class="chip" type="submit" name="mensaje" value="licencia de conducir">Licencia de conducir</button>
+        <button class="chip" type="submit" name="mensaje" value="habilitacion comercial">Habilitación comercial</button>
+        <button class="chip" type="submit" name="mensaje" value="salud">Salud</button>
+        <button class="chip" type="submit" name="mensaje" value="impuestos">Impuestos</button>
+      </form>
+    </div>
+
+    <div class="chat">
+      <div class="chat__historial" id="historial">
+        {% if not historial %}
+          <div class="centrado texto-suave" style="padding:40px 10px">
+            <div style="font-size:2.2rem; margin-bottom:8px">👋</div>
+            <p class="mb-0">Preguntame por cualquier trámite de Misiones.</p>
+            <p class="texto-chico mb-0">Ejemplo: «¿qué necesito para la partida de nacimiento?»</p>
+          </div>
+        {% endif %}
+
+        {% for msg in historial %}
+          {% if msg.rol == 'usuario' %}
+            <div class="chat__burbuja chat__burbuja--usuario">{{ msg.texto }}</div>
+          {% else %}
+            <div class="chat__burbuja chat__burbuja--bot">
+              {{ msg.texto|linebreaksbr }}
+              {% if msg.tramites %}
+                <ul class="lista-limpia" style="margin-top:10px">
+                  {% for t in msg.tramites %}
+                    <li style="padding:6px 0; border-top:1px dashed var(--gris-200)">
+                      <a href="{% url 'tramite_detalle' t.pk %}">→ {{ t.titulo }}</a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <form class="chat__entrada" method="post" action="{% url 'chatbot' %}" autocomplete="off">
+        {% csrf_token %}
+        <input type="text" name="mensaje" placeholder="Escribí tu consulta…"
+               maxlength="300" required autofocus aria-label="Mensaje">
+        <button class="boton" type="submit">Enviar</button>
+      </form>
+    </div>
+
+    <p class="centrado texto-suave texto-chico mt-2">
+      ¿No resolvió tu duda?
+      <a href="{% url 'consulta_nueva' %}">Enviar una consulta formal →</a>
+    </p>
+  </div>
+</section>
+
+<script>
+  // Siempre arranca abajo, en el ultimo mensaje
+  (function () {
+    var h = document.getElementById('historial');
+    if (h) { h.scrollTop = h.scrollHeight; }
+  })();
+</script>
+{% endblock %}

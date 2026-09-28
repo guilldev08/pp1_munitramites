@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block titulo %}Crear cuenta · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Crear cuenta
+    </div>
+
+    <form class="formulario formulario--angosto" method="post" novalidate>
+      <h2 class="mt-0">Crear cuenta</h2>
+      <p class="texto-suave texto-chico">
+        Registrarte te permite enviar consultas y hacer seguimiento.
+        Con una cuenta también podés cambiar tu contraseña.
+      </p>
+
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alerta alerta--error">
+          {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      {% for campo in form %}
+        <div class="campo">
+          <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {{ campo }}
+          {% if campo.help_text %}
+            <span class="ayuda">{{ campo.help_text|safe }}</span>
+          {% endif %}
+          {% for e in campo.errors %}
+            <ul class="errores"><li>{{ e }}</li></ul>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      <button class="boton boton--ancho" type="submit">Crear cuenta</button>
+
+      <p class="centrado texto-chico mt-2 mb-0">
+        ¿Ya tenés cuenta? <a href="{% url 'login' %}">Ingresá acá</a>
+      </p>
+    </form>
+  </div>
+</section>
+{% endblock %}

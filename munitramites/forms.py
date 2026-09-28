@@ -1,0 +1,121 @@
+"""
+Formularios. >>> ACÁ SE VALIDAN LOS DATOS <<<
+
+Django valida en el servidor. Si el usuario escribe cualquier cosa, el
+formulario vuelve con errores y NO llega a la base.
+"""
+
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.db.models import Q
+
+from .models import Consulta, Municipio, Tramite
+
+
+class RegistroForm(UserCreationForm):
+    """Alta de ciudadano. Hereda toda la validacion de Django."""
+
+    email = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'nombre@correo.com',
+            'autocomplete': 'email',
+        }),
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+        labels = {
+            'username': 'Usuario',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+        }
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'tu_usuario'}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
+            'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Ya existe una cuenta con ese correo.')
+        return email
+
+
+class ConsultaForm(forms.ModelForm):
+    """Consulta o sugerencia que envia un ciudadano."""
+
+    class Meta:
+        model = Consulta
+        fields = ['tipo', 'tramite', 'asunto', 'contenido']
+        widgets = {
+            'tramite': forms.Select(attrs={'class': 'select'}),
+            'asunto': forms.TextInput(attrs={
+                'placeholder': 'Ej: Horarios de atención del Registro Civil',
+                'maxlength': 200,
+            }),
+            'contenido': forms.Textarea(attrs={
+                'rows': 6,
+                'placeholder': 'Escribí tu consulta con el mayor detalle posible…',
+                'minlength': 10,
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # El combo de tramite es opcional y arranca con un placeholder
+        self.fields['tramite'].required = False
+        self.fields['tramite'].empty_label = '— Sin trámite asociado —'
+
+
+class TramiteFiltroForm(forms.Form):
+    """Filtros de la lista de tramites (se leen del querystring)."""
+
+    q = forms.CharField(
+        required=False,
+        label='Buscar',
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Buscar trámite o requisito…',
+            'type': 'search',
+        }),
+    )
+    tema = forms.ChoiceField(
+        required=False, choices=[('', 'Todos los temas')]
+    )
+    municipio = forms.ChoiceField(
+        required=False, choices=[('', 'Todos los municipios')]
+    )
+    modalidad = forms.ChoiceField(
+        required=False, choices=[('', 'Todas las modalidades')]
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tema'].choices += list(Tramite.Tema.choices)
+        self.fields['municipio'].choices += [
+            (m.pk, m.nombre) for m in Municipio.objects.all()
+        ]
+        self.fields['modalidad'].choices += list(Tramite.Modalidad.choices)
+
+    def filtrar(self, queryset):
+        """Aplica los filtros validados al queryset de tramites."""
+        if not self.is_valid():
+            return queryset
+        datos = self.cleaned_data
+
+        if datos['q']:
+            queryset = queryset.filter(
+                Q(titulo__icontains=datos['q'])
+                | Q(descripcion__icontains=datos['q'])
+                | Q(requisitos__descripcion__icontains=datos['q'])
+            ).distinct()
+        if datos['tema']:
+            queryset = queryset.filter(tema=datos['tema'])
+        if datos['municipio']:
+            queryset = queryset.filter(municipio_id=datos['municipio'])
+        if datos['modalidad']:
+            queryset = queryset.filter(modalidad=datos['modalidad'])
+        return queryset

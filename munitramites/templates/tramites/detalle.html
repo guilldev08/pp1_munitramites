@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load hora %}
+
+{% block titulo %}{{ tramite.titulo }} · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>
+      <a href="{% url 'tramites' %}">Trámites</a><span>/</span>
+      {{ tramite.titulo }}
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <div class="etiquetas mb-1">
+          <span class="etiqueta etiqueta--tema">{{ tramite.get_tema_display }}</span>
+          <span class="etiqueta etiqueta--{{ tramite.modalidad }}">{{ tramite.get_modalidad_display }}</span>
+          {% if tramite.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
+        </div>
+        <h2>{{ tramite.titulo }}</h2>
+        <p>{{ tramite.organismo.nombre }} · {{ tramite.municipio.nombre }}</p>
+      </div>
+    </div>
+
+    <div class="ficha">
+      <div>
+        <div class="panel">
+          <h3 class="mt-0">Descripción</h3>
+          <p class="texto-suave">{{ tramite.descripcion }}</p>
+        </div>
+
+        <div class="panel">
+          <h3 class="mt-0">Requisitos ({{ tramite.requisitos.count }})</h3>
+          {% if tramite.requisitos.all %}
+            <ol class="requisitos">
+              {% for r in tramite.requisitos.all %}
+                <li>{{ r.descripcion }}</li>
+              {% endfor %}
+            </ol>
+          {% else %}
+            <p class="texto-suave mb-0">Sin requisitos cargados.</p>
+          {% endif %}
+        </div>
+
+        {% if tramite.enlace_turnos or tramite.enlace_oficial %}
+          <div class="panel">
+            <h3 class="mt-0">Enlaces oficiales</h3>
+            <div class="acciones">
+              {% if tramite.enlace_turnos %}
+                <a class="boton" href="{{ tramite.enlace_turnos }}" target="_blank" rel="noopener">
+                  Pedir turno ↗
+                </a>
+              {% endif %}
+              {% if tramite.enlace_oficial %}
+                <a class="boton boton--secundario" href="{{ tramite.enlace_oficial }}" target="_blank" rel="noopener">
+                  Sitio del organismo ↗
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h3 class="mt-0">Datos del trámite</h3>
+          <dl class="datos">
+            <div><dt>Tema</dt><dd>{{ tramite.get_tema_display }}</dd></div>
+            <div><dt>Modalidad</dt><dd>{{ tramite.get_modalidad_display }}</dd></div>
+            <div><dt>Municipio</dt><dd>{{ tramite.municipio.nombre }}</dd></div>
+            <div><dt>Requisitos</dt><dd>{{ tramite.requisitos.count }}</dd></div>
+            <div><dt>Actualizado</dt><dd>{{ tramite.actualizado|hora_local|date:"d/m/Y" }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="panel">
+          <h3 class="mt-0">Organismo responsable</h3>
+          <p class="mb-1"><strong>{{ tramite.organismo.nombre }}</strong></p>
+          <p class="texto-suave texto-chico mb-2">📍 {{ tramite.organismo.direccion }}</p>
+          <a class="boton boton--secundario boton--ancho" href="{% url 'consulta_nueva' %}?tramite={{ tramite.pk }}">
+            Hacer una consulta sobre este trámite
+          </a>
+        </div>
+      </aside>
+    </div>
+
+    {% if relacionados %}
+      <div class="titulo-seccion mt-3">
+        <div><h2 style="font-size:1.15rem">Trámites relacionados</h2></div>
+      </div>
+      <div class="rejilla">
+        {% for t in relacionados %}
+          <a class="tarjeta" href="{% url 'tramite_detalle' t.pk %}">
+            <div class="etiquetas">
+              <span class="etiqueta etiqueta--tema">{{ t.get_tema_display }}</span>
+              <span class="etiqueta etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
+            </div>
+            <h3>{{ t.titulo }}</h3>
+            <div class="tarjeta__meta">
+              <span>📍 {{ t.municipio.nombre }}</span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

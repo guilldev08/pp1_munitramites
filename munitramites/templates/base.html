@@ -1,0 +1,82 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Trámites de Misiones{% endblock %}</title>
+  <meta name="description" content="Información de trámites públicos de la provincia de Misiones.">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header class="header">
+  <div class="contenedor header__fila">
+    <a class="marca" href="{% url 'inicio' %}">
+      <span class="marca__logo">M</span>
+      <span>Munitramites</span>
+    </a>
+
+    <nav class="nav">
+      <a href="{% url 'inicio' %}"
+         {% if request.resolver_match.url_name == 'inicio' %}class="activo"{% endif %}>Inicio</a>
+      <a href="{% url 'tramites' %}"
+         {% if request.resolver_match.url_name == 'tramites' or request.resolver_match.url_name == 'tramite_detalle' %}class="activo"{% endif %}>Trámites</a>
+      <a href="{% url 'chatbot' %}"
+         {% if request.resolver_match.url_name == 'chatbot' %}class="activo"{% endif %}>Chatbot</a>
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'consultas' %}"
+           {% if request.resolver_match.url_name == 'consultas' or request.resolver_match.url_name == 'consulta_nueva' %}class="activo"{% endif %}>Mis consultas</a>
+
+        <span class="nav__sesion">
+          {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}">Panel</a>
+          {% endif %}
+          <form method="post" action="{% url 'logout' %}" style="display:inline">
+            {% csrf_token %}
+            <button class="boton boton--secundario boton--chico" type="submit">Salir</button>
+          </form>
+        </span>
+      {% else %}
+        <a href="{% url 'login' %}"
+           {% if request.resolver_match.url_name == 'login' %}class="activo"{% endif %}>Ingresar</a>
+        <a class="boton boton--chico" href="{% url 'registro' %}">Crear cuenta</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+{% if messages %}
+  <div class="contenedor" style="margin-top:18px">
+    {% for message in messages %}
+      <div class="alerta alerta--{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}ok{% else %}info{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<main>
+  {% block contenido %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="contenedor footer__fila">
+    <div>
+      <strong>Munitramites</strong> — Información de trámites públicos de Misiones.<br>
+      Desarrollado con Django + Firebird.
+    </div>
+    <div>
+      <a href="{% url 'tramites' %}">Trámites</a> ·
+      <a href="{% url 'chatbot' %}">Chatbot</a> ·
+      <a href="{% url 'api_tramites' %}">API</a> ·
+      <a href="/admin/">Administración
+      </a>
+    </div>
+  </div>
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

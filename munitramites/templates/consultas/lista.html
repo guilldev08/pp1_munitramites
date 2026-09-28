@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load hora %}
+
+{% block titulo %}Mis consultas · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Consultas
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>{% if user.is_staff %}Consultas recibidas{% else %}Mis consultas{% endif %}</h2>
+        <p>
+          {% if pagina.paginator.count %}
+            {{ pagina.paginator.count }} consulta{{ pagina.paginator.count|pluralize }}.
+          {% else %}Todavía no enviaste consultas.{% endif %}
+        </p>
+      </div>
+      <a class="boton" href="{% url 'consulta_nueva' %}">Nueva consulta</a>
+    </div>
+
+    {% if pagina.object_list %}
+      <div class="tabla-wrap">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tipo</th>
+              <th>Asunto</th>
+              <th>Trámite</th>
+              {% if user.is_staff %}<th>Usuario</th>{% endif %}
+              <th>Estado</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in pagina %}
+              <tr>
+                <td>{{ c.pk }}</td>
+                <td>{{ c.get_tipo_display }}</td>
+                <td>
+                  <strong>{{ c.asunto }}</strong>
+                  <div class="texto-suave texto-chico">{{ c.contenido|truncatewords:16 }}</div>
+                  {% if c.respuesta %}
+                    <div class="alerta alerta--ok" style="margin-top:8px; margin-bottom:0">
+                      <strong>Respuesta:</strong> {{ c.respuesta }}
+                    </div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if c.tramite %}
+                    <a href="{% url 'tramite_detalle' c.tramite.pk %}">{{ c.tramite.titulo }}</a>
+                  {% else %}—{% endif %}
+                </td>
+                {% if user.is_staff %}
+                  <td>{{ c.usuario.username|default:"—" }}</td>
+                {% endif %}
+                <td><span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
+                <td class="texto-chico">{{ c.fecha|hora_local|date:"d/m/Y H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if pagina.paginator.num_pages > 1 %}
+        <nav class="paginacion">
+          {% if pagina.has_previous %}
+            <a href="?pagina={{ pagina.previous_page_number }}">← Anterior</a>
+          {% else %}<span class="inactivo">← Anterior</span>{% endif %}
+
+          {% for n in pagina.paginator.page_range %}
+            {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+            {% else %}<a href="?pagina={{ n }}">{{ n }}</a>{% endif %}
+          {% endfor %}
+
+          {% if pagina.has_next %}
+            <a href="?pagina={{ pagina.next_page_number }}">Siguiente →</a>
+          {% else %}<span class="inactivo">Siguiente →</span>{% endif %}
+        </nav>
+      {% endif %}
+
+    {% else %}
+      <div class="vacio">
+        <div class="vacio__icono">💬</div>
+        <h3>No hay consultas</h3>
+        <p>Si tenés dudas sobre un trámite, enviá una consulta y te respondemos.</p>
+        <a class="boton" href="{% url 'consulta_nueva' %}">Escribir una consulta</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

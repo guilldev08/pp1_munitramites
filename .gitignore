@@ -29,5 +29,3 @@ Thumbs.db
 
 # Docker (se regeneran en cada build)
 *.tar
-4.2
-.4.2

@@ -4,84 +4,66 @@ URLs del proyecto. >>> ACÁ SE AGREGAN LAS URLS <<<
 Orden importa. Django recorre la lista de arriba hacia abajo y se queda con
 la primera que coincida:
 
-  1. Admin nativo de Django (usuarios, permisos, modelos)
-  2. Autenticacion (login, logout, cambio de clave)
-  3. Estaticos del frontend (assets, locales, favicon)
-  4. Panel /admin protegido con sesion
-  5. Catch-all de la SPA, SIEMPRE al final
+  1. Admin nativo de Django (/admin) — CRUD completo de todas las tablas
+  2. Autenticacion de ciudadanos (login, logout, clave, registro)
+  3. Paginas del sitio (portada, tramites, chatbot, consultas)
+  4. API liviana
+  5. Estáticos en desarrollo
 
-Si metes una URL nueva abajo del catch-all, la SPA se la traga y nunca va a
-llegar. Arriba del catch-all, pero abajo del login, o vas a romper el login.
+NO hay catch-all: una URL inexistente devuelve el 404 de Django.
+Si agregas una ruta nueva, ponla antes de la que empiece con <int:...>.
 """
 
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import path, re_path
-from django.views.static import serve
+from django.urls import path
 
 from . import views
 
-
-class LogoutView(auth_views.LogoutView):
-    """Django 5 exige POST para cerrar sesion; aqui aceptamos GET tambien
-    para poder cerrar sesion con un link simple desde la SPA."""
-    http_method_names = ['get', 'post', 'options']
-
-
 urlpatterns = [
     # 1. Admin nativo de Django -------------------------------------------
-    # Cambia 'django-admin/' por la ruta que quieras (ej. 'panel/').
-    path('django-admin/', admin.site.urls),
+    # CRUD de Municipio, Organismo, Tramite, Requisito, Consulta y usuarios.
+    # Login propio en /admin/login/.
+    path('admin/', admin.site.urls),
 
-    # 2. Autenticacion con los usuarios de Django -------------------------
+    # 2. Autenticacion de ciudadanos --------------------------------------
     path(
-        'admin/login/',
+        'login/',
         auth_views.LoginView.as_view(redirect_authenticated_user=True),
         name='login',
     ),
-    path('admin/logout/', LogoutView.as_view(next_page='/'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path(
-        'admin/password/change/',
-        auth_views.PasswordChangeView.as_view(
-            success_url='/admin/password/change/done/',
-        ),
+        'password/change/',
+        auth_views.PasswordChangeView.as_view(success_url='/password/change/done/'),
         name='password_change',
     ),
     path(
-        'admin/password/change/done/',
+        'password/change/done/',
         auth_views.PasswordChangeDoneView.as_view(),
         name='password_change_done',
     ),
+    path('registro/', views.registro, name='registro'),
 
-    # 3. Estaticos del frontend -------------------------------------------
-    re_path(
-        r'^assets/(?P<path>.*)$',
-        serve,
-        {'document_root': settings.FRONTEND_DIR / 'assets'},
-        name='frontend-assets',
-    ),
-    re_path(
-        r'^locales/(?P<path>.*)$',
-        serve,
-        {'document_root': settings.FRONTEND_DIR / 'locales'},
-        name='frontend-locales',
-    ),
-    re_path(
-        r'^favicon\.ico$',
-        serve,
-        {'document_root': settings.FRONTEND_DIR, 'path': 'favicon.ico'},
-        name='favicon',
-    ),
+    # 3. Paginas del sitio --------------------------------------------------
+    path('', views.inicio, name='inicio'),
+    path('tramites/', views.tramites, name='tramites'),
+    path('tramites/<int:pk>/', views.tramite_detalle, name='tramite_detalle'),
+    path('chatbot/', views.chatbot, name='chatbot'),
+    path('chatbot/limpiar/', views.chatbot_limpiar, name='chatbot_limpiar'),
+    path('consultas/', views.consultas, name='consultas'),
+    path('consultas/nueva/', views.consulta_nueva, name='consulta_nueva'),
 
-    # 4. Panel del SPA, protegido con sesion ------------------------------
-    # 'admin' sin barra tambien: si no, /admin se colaria por el catch-all
-    # y el panel se veria sin haber iniciado sesion.
-    path('admin', views.spa_admin, name='spa-admin-raw'),
-    path('admin/', views.spa_admin, name='spa-admin'),
-    path('admin/<path:subpath>', views.spa_admin, name='spa-admin-sub'),
-
-    # 5. SPA publica (catch-all) >>> NUNCA AGREGUES COSAS DEBAJO <<<<<<<<<
-    path('', views.spa, name='spa'),
-    path('<path:subpath>', views.spa, name='spa-sub'),
+    # 4. API ----------------------------------------------------------------
+    path('api/tramites/', views.api_tramites, name='api_tramites'),
 ]
+
+# Estáticos en desarrollo. En producción los sirve el servidor web
+# (gunicorn + whitenoise o nginx), nunca Django.
+if settings.DEBUG:
+    from django.conf.urls.static import static
+
+    urlpatterns += static(
+        settings.STATIC_URL, document_root=settings.BASE_DIR / 'static'
+    )

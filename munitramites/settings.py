@@ -23,9 +23,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Carpeta con el frontend compilado (SPA hecha con Vite/React)
-FRONTEND_DIR = BASE_DIR / 'frontend'
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -124,9 +121,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-ar'
 
-TIME_ZONE = 'UTC'
+# Argentina (Misiones)
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
 
@@ -138,10 +136,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Carpeta de estilos e imagenes del sitio (fuera de las apps)
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
 # --- Autenticacion -------------------------------------------------------
-# El panel /admin de la SPA se protege con los usuarios de Django.
-LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/admin/'
+# El admin nativo de Django usa su propio login (/admin/login/).
+# LOGIN_URL es para las paginas de ciudadanos (/consultas, /chatbot...).
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Default primary key field type

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nueva consulta · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>
+      <a href="{% url 'consultas' %}">Consultas</a><span>/</span>Nueva
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>Nueva consulta</h2>
+        <p>Te respondemos dentro de «Mis consultas». No envíes datos sensibles.</p>
+      </div>
+    </div>
+
+    <form class="formulario formulario--medio" method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alerta alerta--error">
+          {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="campo">
+        <label for="{{ form.tipo.id_for_label }}">Tipo de mensaje</label>
+        {{ form.tipo }}
+        {% for e in form.tipo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.tramite.id_for_label }}">Trámite relacionado <span class="texto-suave">(opcional)</span></label>
+        {{ form.tramite }}
+        {% for e in form.tramite.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.asunto.id_for_label }}">Asunto</label>
+        {{ form.asunto }}
+        {% for e in form.asunto.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.contenido.id_for_label }}">Consulta</label>
+        {{ form.contenido }}
+        <span class="ayuda">Mínimo 10 caracteres. Cuantos más detalles, mejor podremos ayudarte.</span>
+        {% for e in form.contenido.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="acciones">
+        <button class="boton" type="submit">Enviar consulta</button>
+        <a class="boton boton--secundario" href="{% url 'consultas' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

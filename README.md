@@ -1,12 +1,16 @@
 # munitramites
 
-Django + Firebird DB + frontend SPA (React/Vite), todo corriendo con Docker.
+Django full stack + Firebird DB, todo corriendo con Docker.
+
+Sin JavaScript de framework, sin build step, sin API intermedia: **Django renderiza
+HTML en el servidor, habla con Firebird por ORM y maneja login, formularios y
+permisos con sus propios módulos.**
 
 ## Requisitos
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
 
-No necesitas instalar Python, Node ni Firebird: todo va dentro de los contenedores.
+No necesitas instalar Python ni Firebird: todo va dentro de los contenedores.
 
 ## Arrancar
 
@@ -14,36 +18,54 @@ No necesitas instalar Python, Node ni Firebird: todo va dentro de los contenedor
 docker compose up -d --build
 ```
 
-- Sitio (SPA): http://localhost:8000/
-- Panel del sitio: http://localhost:8000/admin/
-- Admin nativo de Django: http://localhost:8000/django-admin/
-- Firebird: puerto 3050
+| URL | Qué es |
+|---|---|
+| http://localhost:8000/ | Sitio público |
+| http://localhost:8000/tramites/ | Buscador de trámites |
+| http://localhost:8000/admin/ | **Panel de administración (Django)** |
+| http://localhost:8000/api/tramites/ | API JSON |
+| Firebird | puerto 3050 |
 
-La primera vez tarda unos minutos (baja imágenes e instala dependencias). Después es inmediato.
+La primera vez tarda unos minutos (baja imágenes e instala dependencias).
+
+### Cargar los datos de ejemplo
+
+```powershell
+docker compose exec web python manage.py cargar_datos
+```
+
+Crea 9 municipios, 7 organismos, 8 trámites, 32 requisitos y 3 consultas.
+Es **idempotente**: se puede correr las veces que haga falta sin duplicar nada.
 
 ## Usuarios
 
 | Sitio | URL | Quién entra |
 |---|---|---|
-| Panel del sitio | `/admin/` | Cualquier usuario activo de Django |
-| Admin nativo | `/django-admin/` | Solo superusuarios (gestionar modelos y usuarios) |
+| Administración | `/admin/` | Solo usuarios con `is_staff` |
+| Consultas | `/login/` | Cualquier usuario registrado |
 
-Crear un usuario:
+**Ya creado:**
+
+| Usuario | Contraseña | Rol |
+|---|---|---|
+| `guilldev08` | `Munitra2026!` | Superusuario (entra a `/admin/`) |
+
+Crear otro superusuario:
 
 ```powershell
 docker compose exec web python manage.py createsuperuser
 ```
 
-O uno normal (sin permisos de superusuario):
+Crear un usuario normal desde la terminal:
 
 ```powershell
 docker compose exec web python manage.py shell -c "from django.contrib.auth import get_user_model as U; U().objects.create_user('nombre', 'mail@x.com', 'clave')"
 ```
 
-Cambiar la contraseña:
+Dar permisos de staff a un usuario existente:
 
 ```powershell
-docker compose exec web python manage.py changepassword nombre
+docker compose exec web python manage.py shell -c "from django.contrib.auth import get_user_model as U; u=U.objects.get(username='nombre'); u.is_staff=True; u.save()"
 ```
 
 > **Nota:** la contraseña de Firebird (`SYSDBA` / `masterkey`) es la de la base de
@@ -51,38 +73,25 @@ docker compose exec web python manage.py changepassword nombre
 
 ## Rutas
 
-Toda la SPA se sirve desde Django. Las rutas `*` las resuelve React Router en el
-cliente, así que cualquier URL desconocida muestra el 404 propio de la SPA.
+| URL | Vista | Acceso |
+|---|---|---|
+| `/` | Portada con destacados y estadísticas | público |
+| `/tramites/` | Listado con filtros y paginación | público |
+| `/tramites/<id>/` | Ficha con requisitos y organismo | público |
+| `/chatbot/` | Asistente que busca en Firebird | público |
+| `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
+| `/consultas/nueva/` | Formulario de consulta | sesión |
+| `/registro/` | Alta de usuario | público |
+| `/login/` · `/logout/` | Sesión de ciudadanos | — |
+| `/password/change/` | Cambio de contraseña | sesión |
+| `/admin/` | Administración de Django | `is_staff` |
+| `/admin/login/` | Login del panel | — |
+| `/api/tramites/` | JSON con los trámites | público |
 
-| URL | Vista |
-|---|---|
-| `/`, `/tramites`, `/tramites/:id`, `/consultas/nueva`, `/chatbot` | Público |
-| `/login`, `/registro` | Público (las del SPA) |
-| `/admin`, `/admin/tramites`, `/admin/consultas`, `/admin/usuarios` | Panel (requiere sesión) |
-| `/admin/login/`, `/admin/logout/` | Login / logout de Django |
-| `/django-admin/` | Admin nativo de Django |
-| `/assets/*`, `/locales/*`, `/favicon.ico` | Estáticos del frontend |
+**No hay catch-all.** Una URL inexistente devuelve el 404 real de Django.
 
-Los datos del frontend (trámites, organismos, municipios) van **hardcodeados** en
-el bundle: la SPA no llama a ninguna API todavía.
-
-## Comandos útiles
-
-```powershell
-docker compose ps                 # estado de los contenedores
-docker compose logs -f web        # ver logs de Django en vivo
-docker compose down               # parar (CONServa la base de datos)
-docker compose down -v            # parar y BORRAR la base de datos
-docker compose build --no-cache   # reconstruir desde cero
-```
-
-## Acceder a la base de datos
-
-```powershell
-docker compose exec firebird isql -user SYSDBA -password masterkey localhost:/var/lib/firebird/data/munitramites.fdb
-```
-
-Luego escribí SQL y cerrá con `quit;`.
+Orden en `urls.py` (importa): admin → auth → páginas → API → estáticos.
+Si agregás una ruta nueva, ponla **antes** de la que empiece con `<int:...>`.
 
 ## Estructura
 
@@ -95,63 +104,153 @@ munitramites/
 ├── docker-compose.yml
 ├── requirements.txt
 ├── manage.py
-├── frontend/                    # SPA compilada con Vite (NO editar a mano)
-│   ├── index.html
-│   ├── assets/
-│   └── locales/
-└── munitramites/                # ← TODO lo de Django está acá
-    ├── settings.py              #    configuración (base de datos, apps)
-    ├── urls.py                  #    rutas: acá se agregan las URL
-    ├── views.py                 #    vistas que sirven la SPA
-    ├── models.py                #    acá van las tablas de Firebird
-    ├── admin.py                 #    qué tablas se ven en /django-admin/
-    ├── apps.py                  #    identidad de la app
-    ├── tests.py                 #    tests
-    ├── wsgi.py / asgi.py        #    puntos de entrada del servidor
-    ├── migrations/              #    migraciones generadas
+├── README.md
+├── static/
+│   └── css/app.css                 # hoja de estilos del sitio
+└── munitramites/                   # ← TODO lo de Django está acá
+    ├── settings.py                 #    configuración (BD, apps, idioma, login)
+    ├── urls.py                     #    rutas: acá se agregan las URL
+    ├── views.py                    #    lógica: consulta y guarda en Firebird
+    ├── forms.py                    #    validación en el servidor
+    ├── models.py                   #    las tablas de Firebird
+    ├── admin.py                    #    qué se ve en /admin/
+    ├── apps.py                     #    identidad de la app
+    ├── tests.py                    #    tests (vacío)
+    ├── wsgi.py / asgi.py           #    puntos de entrada del servidor
+    ├── migrations/                 #    migraciones generadas
+    ├── management/commands/
+    │   └── cargar_datos.py         #    semilla de datos
+    ├── templatetags/
+    │   └── hora.py                 #    filtro |hora_local
     └── templates/
-        └── registration/login.html   # página de login
+        ├── base.html               #    layout común (header, footer, nav)
+        ├── inicio.html             #    portada
+        ├── registro.html           #    alta de cuenta
+        ├── chatbot.html            #    asistente
+        ├── tramites/
+        │   ├── lista.html          #    buscador + filtros
+        │   └── detalle.html        #    ficha con requisitos
+        ├── consultas/
+        │   ├── lista.html          #    mis consultas
+        │   └── nueva.html          #    formulario
+        └── registration/
+            └── login.html          #    página de login
 ```
 
 ### ¿Dónde toco para...?
 
-| Quiero... | Archivo |
-|---|---|
-| Agregar una ruta / vista | `munitramites/urls.py` + `munitramites/views.py` |
-| Crear una tabla nueva | `munitramites/models.py` → `makemigrations` → `migrate` |
-| Ver una tabla en `/django-admin/` | `munitramites/admin.py` |
-| Cambiar la base de datos | `munitramites/settings.py` → `DATABASES` |
-| Cambiar el login / redirecciones | `munitramites/settings.py` → bloque `LOGIN_*` |
-| Cambiar el admin nativo de ruta | `munitramites/urls.py` → línea `django-admin/` |
-| Agregar una dependencia | `requirements.txt` → `docker compose up -d --build` |
-| Cambiar la SPA | recompilar con Vite y reemplazar `frontend/` |
+| Quiero... | Archivo | Después |
+|---|---|---|
+| Agregar una ruta / vista | `urls.py` + `views.py` | — |
+| Crear una tabla nueva | `models.py` | `makemigrations` + `migrate` |
+| Ver una tabla en `/admin/` | `admin.py` | — |
+| Crear una página nueva | `templates/` + `views.py` + `urls.py` | — |
+| Agregar un campo a un formulario | `forms.py` | — |
+| Cambiar el diseño | `static/css/app.css` + `templates/base.html` | — |
+| Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
+| Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
+| Cambiar la base de datos | `settings.py` → `DATABASES` | — |
+| Cambiar idioma / zona horaria | `settings.py` → `LANGUAGE_CODE` / `TIME_ZONE` | — |
+| Cambiar login / redirecciones | `settings.py` → bloque `LOGIN_*` | — |
+| Mover el admin de ruta | `urls.py` → línea `path('admin/', ...)` | — |
+| Agregar una dependencia | `requirements.txt` | `docker compose up -d --build` |
 
-### Orden de las rutas (importa)
+### El ciclo de trabajo
 
-`munitramites/urls.py` se lee de arriba hacia abajo y gana la primera que
-coincida. El catch-all de la SPA va **siempre al final**: si metés una URL
-debajo, la SPA se la traga y nunca vas a llegar a ella.
+```
+1. models.py       crear la tabla
+2. admin.py        registrarla para verla en /admin/
+3. forms.py        validar los datos
+4. views.py        consultar y guardar
+5. templates/      mostrar el resultado
+6. urls.py         exponer la ruta
+```
 
-`frontend/` es el **build** de la SPA. Si cambiás el código fuente de la SPA,
-volvé a compilar con Vite y reemplazá esa carpeta.
+## Comandos útiles
+
+```powershell
+docker compose ps                          # estado de los contenedores
+docker compose logs -f web                 # ver logs de Django en vivo
+docker compose down                        # parar (CONSERVA la base)
+docker compose down -v                     # parar y BORRAR la base
+docker compose build --no-cache            # reconstruir desde cero
+
+docker compose exec web python manage.py check                  # revisar el código
+docker compose exec web python manage.py makemigrations         # generar migración
+docker compose exec web python manage.py migrate                # aplicar
+docker compose exec web python manage.py cargar_datos           # sembrar datos
+docker compose exec web python manage.py shell                  # consola Django
+docker compose exec web python manage.py test                   # correr tests
+```
+
+### Ejecutar código desde el host
+
+PowerShell no soporta `<`, así que se usa pipe:
+
+```powershell
+# Opción A: un archivo
+Get-Content script.py -Raw | docker compose exec -T web python manage.py shell
+
+# Opción B: una línea
+"print(1+1)" | docker compose exec -T web python manage.py shell
+```
+
+## Acceder a la base de datos
+
+```powershell
+docker compose exec firebird isql -user SYSDBA -password masterkey localhost:/var/lib/firebird/data/munitramites.fdb
+```
+
+Luego escribí SQL y cerrá con `quit;`.
+
+### Tablas
+
+| Tabla | Registros | Origen |
+|---|---|---|
+| `MUNICIPIO` | 9 | seed |
+| `ORGANISMO` | 7 | seed |
+| `TRAMITE` | 8 | seed |
+| `REQUISITO` | 32 | seed |
+| `CONSULTA` | 3+ | seed + formularios |
+| `AUTH_USER` | 2 | Django (usuarios) |
+| + 9 tablas de Django | — | auth, sessions, admin, contenttypes |
 
 ## Stack
 
 | Componente | Versión | Imagen |
 |---|---|---|
 | Python | 3.11 | `python:3.11-slim` |
-| Django | 5.2 LTS | (instalado por pip) |
-| Backend Firebird | `django-firebird` 5.0.4 | (instalado por pip) |
-| Driver | `firebird-driver` 2.0.3 | (instalado por pip) |
+| Django | 5.2 LTS | (pip) |
+| Backend Firebird | `django-firebird` 5.0.4 | (pip) |
+| Driver | `firebird-driver` 2.0.3 | (pip) |
 | Firebird Server | 4.0.7 | `firebirdsql/firebird:4.0.7` |
-| Frontend | React + Vite | (archivos estáticos) |
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 
 ## Notas
 
-- `settings.py` apunta a `/var/lib/firebird/data/...`, que es la ruta **vista desde
-  el servidor Firebird**, no desde tu PC.
-- El volumen `firebird_data` guarda la base. Si querés llevar los datos a otra PC,
-  hacé un dump antes de `docker compose down -v`.
-- `munitramites/4.2` es un archivo vacío sobrante; podés borrarlo sin problema.
+- **Idioma `es-ar`, zona horaria `America/Argentina/Buenos_Aires`.**
+- Firebird guarda `TIMESTAMP` sin zona horaria. Con `USE_TZ=True` Django guarda
+  en UTC, así que el filtro `|hora_local` (en `templatetags/hora.py`) convierte
+  a hora local antes de mostrar. Usalo siempre: `{{ fecha|hora_local|date:"d/m/Y H:i" }}`.
+- `settings.py` apunta a `/var/lib/firebird/data/...`, que es la ruta **vista
+  desde el servidor Firebird**, no desde tu PC.
+- El volumen `firebird_data` guarda la base. Para llevarla a otra PC, hacé un
+  dump antes de `docker compose down -v`.
+- Los contenedores tienen `restart: unless-stopped`: se levantan solos si Docker
+  Desktop se reinicia.
+
+### Pendiente para producción
+
+`manage.py check --deploy` reporta 6 avisos, todos esperados en desarrollo:
+
+| Aviso | Cómo resolverlo |
+|---|---|
+| `W018 DEBUG=True` | `DEBUG = False` |
+| `W009 SECRET_KEY` | generar una clave real y sacarla del repositorio |
+| `ALLOWED_HOSTS = ['*']` | listar los dominios reales |
+| `W004/W008` HSTS y SSL | poner el sitio detrás de HTTPS |
+| `W012/W016` cookies secure | `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE` |
+
+Además: `runserver` es el servidor de desarrollo. En producción usar gunicorn
+(ya está en `requirements.txt`) o un servidor WSGI equivalente.

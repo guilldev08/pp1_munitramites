@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static panel_admin %}
+
+{# =============================================================================
+   Índice del panel: copia de django/.../admin/index.html con tres cambios:
+     1. se carga también static/css/admin.css (nuestros estilos del panel);
+     2. se muestra un saludo arriba del listado;
+     3. arriba del listado de modelos aparecen las tarjetas de resumen que
+        arma la etiqueta panel_admin (ver templatetags/panel_admin.py).
+   El resto (listado de modelos, acciones recientes) es el de Django, en
+   español gracias a LANGUAGE_CODE = 'es'.
+   Si Django cambia este archivo, comparar contra la versión instalada.
+   ============================================================================= #}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}"><link rel="stylesheet" href="{% static "css/admin.css" %}">{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}
+<h1>{{ title|default:'Resumen' }}</h1>
+<p class="admin-saludo">
+  Hola, {{ user.get_full_name|default:user.username }}.
+  Esto es lo que hay hoy en Munitramites.
+</p>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  {% if app_list %}
+    {% panel_admin %}
+    {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+  {% else %}
+    <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% translate 'Recent actions' %}</h2>
+        <h3>{% translate 'My actions' %}</h3>
+            {% load log %}
+            {% get_admin_log 10 as admin_log for_user user %}
+            {% if not admin_log %}
+            <p>{% translate 'None available' %}</p>
+            {% else %}
+            <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                <span class="visually-hidden">{% if entry.is_addition %}{% translate 'Added:' %}{% elif entry.is_change %}{% translate 'Changed:' %}{% elif entry.is_deletion %}{% translate 'Deleted:' %}{% endif %}</span>
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                    {{ entry.object_repr }}
+                {% else %}
+                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <br>
+                <span class="mini">{{ entry.content_type.app_label|capfirst }}</span>
+            </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+    </div>
+
+    <div class="module admin-atajos">
+        <h2>Atajos</h2>
+        <ul>
+            {% if perms.munitramites.change_consulta %}
+            <li><a href="{% url 'admin:munitramites_consulta_changelist' %}?estado__exact=pendiente">Consultas sin responder</a></li>
+            {% endif %}
+            {% if perms.munitramites.change_tramite %}
+            <li><a href="{% url 'admin:munitramites_tramite_changelist' %}?activo__exact=1">Trámites publicados</a></li>
+            {% endif %}
+            <li><a href="{% url 'inicio' %}">Ver el sitio público</a></li>
+            <li><a href="{% url 'password_change' %}">Cambiar mi contraseña</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

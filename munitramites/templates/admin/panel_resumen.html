@@ -1,0 +1,53 @@
+{# =============================================================================
+   Tarjetas de resumen del panel. Las arma la etiqueta panel_admin
+   (templatetags/panel_admin.py) y se muestran arriba del listado de modelos.
+
+   Cada tarjeta es un enlace al listado ya filtrado, así con un clic se llega
+   a lo que hay que atender. Las que no le corresponden al rol no se muestran.
+   ============================================================================= #}
+<div class="panel-resumen">
+
+  {% if puede_ver_tramites %}
+  <a class="resumen-tarjeta resumen-tarjeta--azul"
+     href="{% url 'admin:munitramites_tramite_changelist' %}?activo__exact=1">
+    <span class="resumen-tarjeta__numero">{{ tramites_activos }}</span>
+    <span class="resumen-tarjeta__titulo">Trámites activos</span>
+    <span class="resumen-tarjeta__pie">de {{ tramites_total }} cargados</span>
+  </a>
+  {% endif %}
+
+  {% if puede_gestionar_consultas %}
+    <a class="resumen-tarjeta resumen-tarjeta--ambar"
+       href="{% url 'admin:munitramites_consulta_changelist' %}?estado__exact=pendiente">
+      <span class="resumen-tarjeta__numero">{{ pendientes }}</span>
+      <span class="resumen-tarjeta__titulo">Consultas sin responder</span>
+      <span class="resumen-tarjeta__pie">de {{ consultas_total }} recibidas</span>
+    </a>
+
+    <a class="resumen-tarjeta resumen-tarjeta--morado"
+       href="{% url 'admin:munitramites_consulta_changelist' %}?tipo__exact=sugerencia">
+      <span class="resumen-tarjeta__numero">{{ sugerencias }}</span>
+      <span class="resumen-tarjeta__titulo">Sugerencias</span>
+      <span class="resumen-tarjeta__pie">ideas de los ciudadanos</span>
+    </a>
+  {% endif %}
+
+  {% if puede_ver_usuarios %}
+    <a class="resumen-tarjeta resumen-tarjeta--verde"
+       href="{% url 'admin:auth_user_changelist' %}">
+      <span class="resumen-tarjeta__numero">{{ usuarios }}</span>
+      <span class="resumen-tarjeta__titulo">Cuentas activas</span>
+      <span class="resumen-tarjeta__pie">usuarios registrados</span>
+    </a>
+  {% endif %}
+
+  {% if puede_ver_organismos %}
+  <a class="resumen-tarjeta resumen-tarjeta--gris"
+     href="{% url 'admin:munitramites_organismo_changelist' %}">
+    <span class="resumen-tarjeta__numero">{{ organismos }}</span>
+    <span class="resumen-tarjeta__titulo">Organismos</span>
+    <span class="resumen-tarjeta__pie">de {{ municipios }} municipios</span>
+  </a>
+  {% endif %}
+
+</div>

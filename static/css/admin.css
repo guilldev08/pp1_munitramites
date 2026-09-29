@@ -1,0 +1,207 @@
+/* =============================================================================
+   Panel de administración de Munitramites
+   -----------------------------------------------------------------------------
+   Se carga DESPUÉS de las hojas de Django (ver templates/admin/base_site.html),
+   así que acá se pisa lo que haga falta. Usa las variables propias de Django
+   (--body-bg, --body-fg, --border-color, --link-fg, --primary, --darkened-bg...)
+   para que también se vea bien en el tema oscuro: esas variables las define
+   admin/css/base.css y dark_mode.css y cambian según el tema elegido.
+   ============================================================================= */
+
+/* --- Variables de marca (el resto del sitio usa las mismas, ver app.css) ---- */
+:root {
+  --mt-azul: #1d4ed8;
+  --mt-azul-oscuro: #1e3a8a;
+  --mt-azul-claro: #dbeafe;
+  --mt-verde: #16a34a;
+  --mt-verde-claro: #dcfce7;
+  --mt-ambar: #d97706;
+  --mt-ambar-claro: #fef3c7;
+  --mt-rojo: #dc2626;
+  --mt-rojo-claro: #fee2e2;
+  --mt-morado: #7c3aed;
+  --mt-morado-claro: #ede9fe;
+}
+
+/* --- Barra superior: mismo degradado que la cabecera del sitio -------------- */
+#header {
+  background: linear-gradient(135deg, var(--mt-azul-oscuro) 0%, var(--mt-azul) 60%, #2563eb 100%) !important;
+  border-bottom: 0;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, .18);
+}
+#branding #site-name a { color: #fff; font-weight: 800; letter-spacing: .2px; }
+#user-tools a, #user-tools strong, #user-tools .user-links a { color: #dbeafe; }
+#user-tools a:hover { color: #fff; text-decoration: underline; }
+#header .breadcrumbs { background: transparent; color: rgba(255, 255, 255, .85); }
+#header .breadcrumbs a { color: #fff; }
+
+/* --- Saludo del índice ------------------------------------------------------ */
+.admin-saludo {
+  margin: -4px 0 22px;
+  color: var(--body-fg);
+  opacity: .7;
+  font-size: .95rem;
+}
+
+/* --- Tarjetas de resumen (templates/admin/panel_resumen.html) ---------------- */
+.panel-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+  margin: 0 0 26px;
+}
+.resumen-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 16px 18px;
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  border-top: 4px solid var(--mt-azul);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .07);
+  color: var(--body-fg);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.resumen-tarjeta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, .14);
+  text-decoration: none;
+}
+.resumen-tarjeta__numero {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--mt-azul);
+}
+.resumen-tarjeta__titulo { font-weight: 700; font-size: .95rem; }
+.resumen-tarjeta__pie { font-size: .78rem; opacity: .65; }
+
+.resumen-tarjeta--azul    { border-top-color: var(--mt-azul); }
+.resumen-tarjeta--azul    .resumen-tarjeta__numero { color: var(--mt-azul); }
+.resumen-tarjeta--ambar   { border-top-color: var(--mt-ambar); }
+.resumen-tarjeta--ambar   .resumen-tarjeta__numero { color: var(--mt-ambar); }
+.resumen-tarjeta--verde   { border-top-color: var(--mt-verde); }
+.resumen-tarjeta--verde   .resumen-tarjeta__numero { color: var(--mt-verde); }
+.resumen-tarjeta--morado  { border-top-color: var(--mt-morado); }
+.resumen-tarjeta--morado  .resumen-tarjeta__numero { color: var(--mt-morado); }
+.resumen-tarjeta--gris    { border-top-color: var(--darkened-bg); }
+
+/* --- Módulos (listados, formularios, barra lateral) ------------------------- */
+.module {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+.module h2, .module caption {
+  background: var(--darkened-bg) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+.module h2 { letter-spacing: .02em; }
+
+/* --- Tablas de listado ------------------------------------------------------ */
+#result_list { border: 0; }
+#result_list thead th {
+  text-transform: uppercase;
+  font-size: .72rem;
+  letter-spacing: .06em;
+  color: var(--body-fg);
+  opacity: .75;
+  border-bottom: 2px solid var(--border-color);
+}
+#result_list tbody tr:hover { background: var(--selected-row, rgba(29, 78, 216, .06)); }
+#result_list tbody td { border-bottom: 1px solid var(--border-color); }
+#changelist-filter { border-left: 1px solid var(--border-color); }
+
+/* --- Píldoras de estado (admin.py: estado_pildora, activo_si/no, ...) -------- */
+.pildora {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: .74rem;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.pildora--ambar   { background: var(--mt-ambar-claro); color: #92400e; }
+.pildora--verde   { background: var(--mt-verde-claro); color: #166534; }
+.pildora--rojo    { background: var(--mt-rojo-claro); color: #991b1b; }
+.pildora--azul    { background: var(--mt-azul-claro); color: #1e40af; }
+.pildora--gris    { background: var(--darkened-bg); color: var(--body-fg); opacity: .8; }
+.pildora--morado  { background: var(--mt-morado-claro); color: #5b21b6; }
+html[data-theme="dark"] .pildora--ambar  { background: #451a03; color: #fcd34d; }
+html[data-theme="dark"] .pildora--verde  { background: #052e16; color: #86efac; }
+html[data-theme="dark"] .pildora--rojo   { background: #450a0a; color: #fca5a5; }
+html[data-theme="dark"] .pildora--azul   { background: #172554; color: #93c5fd; }
+html[data-theme="dark"] .pildora--morado { background: #2e1065; color: #c4b5fd; }
+
+/* Palomita / tachito para los booleanos */
+.tick { font-weight: 800; font-size: 1rem; }
+.tick--si { color: var(--mt-verde); }
+.tick--no { color: var(--mt-rojo); opacity: .55; }
+
+/* --- Botones y filas de acciones ------------------------------------------- */
+button, input[type="submit"], input[type="button"] { cursor: pointer; }
+button.default, input[type="submit"].default {
+  background: var(--mt-azul);
+  border-color: var(--mt-azul);
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 10px 20px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .2);
+}
+button.default:hover, input[type="submit"].default:hover { background: var(--mt-azul-oscuro); border-color: var(--mt-azul-oscuro); }
+.submit-row { border-top: 1px dashed var(--border-color); }
+.submit-row input { border-radius: 8px; }
+.object-tools a, .object-tools a:link {
+  background: var(--mt-azul);
+  border-radius: 8px;
+  font-weight: 600;
+}
+.object-tools a:hover { background: var(--mt-azul-oscuro); }
+
+/* --- Barra lateral del índice ------------------------------------------------ */
+#content-related .module { margin-bottom: 18px; }
+.admin-atajos ul { list-style: none; margin: 0; padding: 8px 12px; }
+.admin-atajos li { padding: 7px 0; border-bottom: 1px solid var(--border-color); }
+.admin-atajos li:last-child { border-bottom: 0; }
+.admin-atajos a { font-weight: 600; }
+
+/* --- Formularios: campos más holgados y foco visible ------------------------ */
+.form-row input[type="text"], .form-row input[type="email"], .form-row input[type="url"],
+.form-row input[type="password"], .form-row textarea, .form-row select {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 7px 9px;
+}
+.form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+  outline: 2px solid var(--mt-azul-claro);
+  border-color: var(--mt-azul);
+}
+.help { color: var(--body-fg); opacity: .65; }
+
+/* --- Acciones masivas: más aire --------------------------------------------- */
+.actions select, .actions input { border-radius: 8px; }
+
+/* --- Página de ingreso ------------------------------------------------------- */
+body.login #container { max-width: 440px; margin: 48px auto; }
+body.login #content { padding-top: 0; }
+body.login #content-main form,
+body.login .login-form {
+  background: var(--body-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 26px 26px 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, .10);
+}
+body.login .submit-row { border-top: 0; padding-top: 8px; justify-content: stretch; }
+body.login .submit-row input { flex: 1; }
+
+/* --- Aviso de entorno (colored bar que Django agrega) ------------------------ */
+.messagelist { border-radius: 10px; overflow: hidden; }
+
+/* --- Impresión / accesibilidad ---------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .resumen-tarjeta { transition: none; }
+}

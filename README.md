@@ -42,7 +42,7 @@ docker compose up -d --build
 | http://localhost:8000/chatbot/ | Asistente virtual (página completa) |
 | http://localhost:8000/perfil/ | Datos personales (pide iniciar sesión) |
 | http://localhost:8000/soporte/ | Soporte (pide iniciar sesión) |
-| http://localhost:8000/admin/ | **Panel de administración (Django)** |
+| http://localhost:8000/admin/ | **Panel de administración** (marca Munitramites + resumen) |
 | http://localhost:8000/api/tramites/ | API JSON |
 | Firebird | puerto 3050 |
 
@@ -103,6 +103,43 @@ docker compose exec web python manage.py shell -c "from django.contrib.auth impo
 > **Nota:** la contraseña de Firebird (`SYSDBA` / `masterkey`) es la de la base de
 > datos, no tiene nada que ver con los usuarios de Django.
 
+## El panel (`/admin/`)
+
+No es el Django pelado: tiene la marca del sitio, un resumen del día y un
+candado de permisos. Tres piezas lo componen:
+
+| Pieza | Archivo | Qué aporta |
+|---|---|---|
+| Marca, permisos y columnas | `munitramites/admin.py` | título «Munitramites · Panel de administración», píldoras de color, filtros, buscadores, acciones masivas y el candado de roles |
+| Índice con saludo y tarjetas | `munitramites/templates/admin/index.html` + `panel_resumen.html` | saludo con el nombre del que entró y tarjetas de resumen (trámites activos, consultas sin responder, sugerencias, cuentas, organismos), cada una con enlace al listado ya filtrado |
+| Estilos del panel | `static/css/admin.css` | barra con el mismo degradado del sitio, tarjetas, píldoras, botones y página de ingreso. Se carga **después** de las hojas de Django (ver `templates/admin/base_site.html`), así que pisa lo que haga falta |
+
+Detalles pensados para el día a día:
+
+- **Atajos** en la barra lateral: consultas sin responder, trámites publicados,
+  ver el sitio público y cambiar la contraseña.
+- **Píldoras de color** en los listados: tema y modalidad de los trámites, tipo
+  y estado de las consultas, rol de cada cuenta. Las celdas vacías se ven «—».
+- **Acciones masivas**: *Activar / Desactivar trámites*, *Marcar como
+  respondidas* (solo las que ya tienen respuesta cargada) y *Cerrar consultas*.
+- **Casillas en línea** para destacar o publicar un trámite sin abrir la ficha.
+- El tema oscuro de Django sigue funcionando: la hoja usa las variables de
+  Django (`--body-bg`, `--border-color`, …), no colores fijos.
+
+### Quién puede qué dentro del panel
+
+`is_staff` por sí solo no alcanza: hay una escalera de dos peldaños.
+
+| En `/admin/` | Editor (`is_staff`, sin superusuario) | Superusuario |
+|---|---|---|
+| Trámites, Requisitos, Enlaces, Municipios, Organismos, Consultas | alta y edición | **+ borrado** |
+| Usuarios, Grupos (los roles) y Perfiles (DNI) | no aparece en el índice y responde **403** por URL directa | sí |
+| La propia fila de usuario | — | se abre en modo lectura: **nadie se edita ni se borra a sí mismo** |
+| Sacar un requisito o enlace de la ficha de un trámite | sí (es editar el trámite) | sí |
+
+Todo eso vive en `admin.py` (`SoloSuperusuario`, `SinAutogestion`,
+`BaseAdmin`) y está cubierto por `tests/test_admin.py`.
+
 ## Rutas
 
 | URL | Vista | Acceso |
@@ -161,6 +198,7 @@ munitramites/
 ├── README.md                       # ← toda la documentación (estás adentro)
 ├── static/
 │   ├── css/app.css                 # hoja de estilos del sitio
+│   ├── css/admin.css               # hoja de estilos del panel /admin/
 │   └── js/app.js                   # modales + envío del chat (sin frameworks)
 └── munitramites/                   # ← TODO lo de Django está acá
     ├── settings.py                 #    configuración: BD, email, chatbot, idioma
@@ -168,7 +206,7 @@ munitramites/
     ├── wsgi.py / asgi.py           #    puntos de entrada del servidor
     ├── models.py                   #    las tablas de Firebird
     ├── forms.py                    #    validación en el servidor
-    ├── admin.py                    #    qué se ve en /admin/
+    ├── admin.py                    #    marca, permisos y qué se ve en /admin/
     ├── context_processors.py       #    form de registro para el modal
     ├── apps.py                     #    identidad de la app + índice del chat
     ├── views/                      #    vistas: UN ARCHIVO POR MÓDULO
@@ -186,20 +224,26 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (settings)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (68)
+    ├── tests/                      #    tests de aceptación (93)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
     │   ├── test_chatbot.py         #    asistente: precisión y privacidad
     │   ├── test_consultas.py       #    RF-08/09/10
-    │   └── test_roles.py           #    ESP-02 · RF-03/11/13
+    │   ├── test_roles.py           #    ESP-02 · RF-03/11/13
+    │   └── test_admin.py           #    cara del panel + candado de permisos
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
     │   └── cargar_datos.py         #    semilla de datos
     ├── templatetags/
-    │   └── hora.py                 #    filtro |hora_local
+    │   ├── hora.py                 #    filtro |hora_local
+    │   └── panel_admin.py          #    {% panel_admin %}: tarjetas del panel
     └── templates/
         ├── base.html               #    layout: barra + los 2 modales
+        ├── admin/
+        │   ├── base_site.html      #    base de todo el panel: carga admin.css
+        │   ├── index.html          #    saludo + tarjetas + atajos
+        │   └── panel_resumen.html  #    las tarjetas (las arma panel_admin)
         ├── inicio.html             #    portada (chat + lista con filtros)
         ├── registro.html           #    deja el modal de alta abierto
         ├── soporte.html            #    soporte (solo con sesión)
@@ -243,13 +287,15 @@ munitramites/
 | Agregar una ruta / vista | `views/<modulo>.py` + `__init__.py` + `urls.py` | — |
 | Crear una tabla nueva | `models.py` | `makemigrations` + `migrate` |
 | Ver una tabla en `/admin/` | `admin.py` | — |
+| Cambiar la cara del panel (tarjetas, colores, saludo) | `templates/admin/` + `static/css/admin.css` | — |
+| Ajustar quién puede qué en el panel | `admin.py` → `BaseAdmin` / `SoloSuperusuario` / `SinAutogestion` | `test_admin` |
 | Cambiar requisitos o botones de una ficha | `/admin/` → Trámites → **Requisitos** / **Enlaces oficiales** | — |
 | Cambiar datos de una cuenta (DNI, correo) | `/admin/` → Usuarios → fila → **Perfil** | — |
 | Crear una página nueva | `templates/` + `views/<modulo>.py` + `urls.py` | — |
 | Agregar un campo a un formulario | `forms.py` | — |
 | Mejorar lo que sabe el asistente | `services/chatbot/` (ver sección siguiente) | — |
 | Agregar sinónimos al asistente | `services/chatbot/recuperacion.py` → `SINONIMOS` | — |
-| Cambiar el diseño | `static/css/app.css` + `templates/base.html` | — |
+| Cambiar el diseño | `static/css/app.css` + `templates/base.html` (del panel: `static/css/admin.css`) | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
 | Correr los tests | `tests/` | `manage.py test --noinput` |
@@ -286,7 +332,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 68 tests
+docker compose exec web python manage.py test --noinput         # correr los 93 tests
 ```
 
 ### Ejecutar código desde el host
@@ -322,21 +368,21 @@ escrito acá**: es lo que hace verificable el documento.
 | Documento | Dónde está en el código | Test |
 |---|---|---|
 | **ESP-01** Autenticación | `forms.py`, `views/cuenta.py`, `templates/registration/` | `test_auth` |
-| **ESP-02** Roles | `admin.py`, permisos `is_staff` de Django | `test_roles` |
-| **ESP-04** Administración | `/admin/` (`admin.py`) | `test_roles` · `test_tramites` |
+| **ESP-02** Roles | `admin.py`, permisos `is_staff` de Django | `test_roles` · `test_admin` |
+| **ESP-04** Administración | `/admin/` (`admin.py`) | `test_roles` · `test_tramites` · `test_admin` |
 | **ESP-05** Consultas | `views/consultas.py`, `models.Consulta` | `test_consultas` |
 | **ESP-06** Base de datos | Firebird + `models.py` + `migrations/` | todos (corren sobre Firebird) |
-| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` |
+| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_admin` |
 | **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
-| **RF-03** Gestión de roles | `is_staff` / `is_superuser` | `test_roles` |
-| **RF-07** Administrar trámites | `/admin/` → Trámites (con Requisitos y Enlaces) | `test_roles` · `test_tramites` |
+| **RF-03** Gestión de roles | `is_staff` / `is_superuser` | `test_roles` · `test_admin` |
+| **RF-07** Administrar trámites | `/admin/` → Trámites (con Requisitos y Enlaces) | `test_roles` · `test_tramites` · `test_admin` |
 | **RF-08** Enviar consultas | `views/consultas.py::consulta_nueva` | `test_consultas` |
 | **RF-09** Enviar sugerencias | mismo formulario, `tipo = sugerencia` | `test_consultas` |
 | **RF-10** Gestionar consultas | `/consultas/<id>/` (respuesta del staff) | `test_consultas.GestionDelAdminTests` |
-| **RF-11** Gestionar usuarios | `/admin/` → Usuarios + inline de Perfil (DNI) | `test_roles.AdministradorTests` |
+| **RF-11** Gestionar usuarios | `/admin/` → Usuarios + inline de Perfil (DNI) | `test_roles.AdministradorTests` · `test_admin` |
 | **RF-12** Almacenamiento de datos | Firebird vía ORM | todos |
-| **RF-13** Control de acceso | `LoginRequired` en cada vista privada | `test_roles.AnonimoTests` · `test_consultas` |
+| **RF-13** Control de acceso | `LoginRequired` en cada vista privada | `test_roles.AnonimoTests` · `test_consultas` · `test_admin.CandadoDelEditorTests` |
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
 | **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |

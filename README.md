@@ -8,6 +8,21 @@ login, formularios y permisos con sus propios módulos.** El único JS es
 `static/js/app.js` (JavaScript puro, sin dependencias): abre las pestañas
 emergentes de login/registro y de chat, y manda las preguntas al asistente.
 
+Qué hace el sistema, en corto:
+
+- **Registro con DNI**, inicio y cierre de sesión, y **recuperación de
+  contraseña por correo** (RF-15).
+- **Dos roles**: Usuario (ciudadano) y Administrador (panel `/admin/`).
+- **Buscador de trámites** con filtros y fichas que muestran requisitos,
+  organismo responsable y enlaces oficiales.
+- **Consultas, sugerencias y soporte** que el administrador ve, responde y
+  cierra.
+- **Asistente virtual** con RAG: busca en los trámites reales, cita la fuente
+  y, si no sabe, lo dice en lugar de inventar.
+
+Todo lo anterior está documentado acá y tiene sus tests de aceptación: ver
+[Tests y trazabilidad](#tests-y-trazabilidad).
+
 ## Requisitos
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
@@ -24,6 +39,8 @@ docker compose up -d --build
 |---|---|
 | http://localhost:8000/ | Sitio público (portada + buscador de trámites) |
 | http://localhost:8000/tramites/ | Buscador de trámites |
+| http://localhost:8000/chatbot/ | Asistente virtual (página completa) |
+| http://localhost:8000/perfil/ | Datos personales (pide iniciar sesión) |
 | http://localhost:8000/soporte/ | Soporte (pide iniciar sesión) |
 | http://localhost:8000/admin/ | **Panel de administración (Django)** |
 | http://localhost:8000/api/tramites/ | API JSON |
@@ -45,7 +62,19 @@ Es **idempotente**: se puede correr las veces que haga falta sin duplicar nada.
 | Sitio | URL | Quién entra |
 |---|---|---|
 | Administración | `/admin/` | Solo usuarios con `is_staff` |
-| Consultas | `/login/` | Cualquier usuario registrado |
+| Consultas, soporte, perfil | `/login/` | Cualquier usuario registrado |
+
+### Roles
+
+El documento define dos roles y así están modelados:
+
+| Rol | En Django | Qué puede hacer |
+|---|---|---|
+| **Usuario** (ciudadano) | usuario normal | registrarse, ver trámites, preguntarle al asistente, enviar consultas/sugerencias, pedir soporte, ver y editar **sus** datos |
+| **Administrador** | `is_staff` (+ `is_superuser`) | todo lo anterior **más** el panel `/admin/`: trámites, requisitos, enlaces, organismos, municipios, consultas, sugerencias y usuarios |
+
+Cada registro lleva un **perfil** con el DNI (dato personal que pide el
+documento), visible también en `/admin/` → Usuarios.
 
 **Ya creado:**
 
@@ -88,8 +117,11 @@ docker compose exec web python manage.py shell -c "from django.contrib.auth impo
 | `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
 | `/consultas/nueva/` | Formulario de consulta | sesión |
 | `/registro/` · `/login/` | Modal de alta y de sesión (también funciona como página) | público |
-| `/logout/` | Cierra la sesión | sesión |
-| `/password/change/` | Cambio de contraseña | sesión |
+| `/logout/` | Cierra la sesión (RF-14) | sesión |
+| `/perfil/` | Datos personales: nombre, apellido, correo y DNI | sesión |
+| `/password/reset/` · `/done/` · `/<uid>/<token>/` · `/complete/` | Recuperar la contraseña olvidada (RF-15) | público |
+| `/password/change/` · `/done/` | Cambio de contraseña estando adentro | sesión |
+| `/consultas/<id>/` | Detalle de la consulta y respuesta del administrador (RF-10) | sesión |
 | `/admin/` | Administración de Django | `is_staff` |
 | `/admin/login/` | Login del panel | — |
 | `/api/tramites/` | JSON con los trámites | público |
@@ -115,8 +147,10 @@ Si agregás una ruta nueva, ponla **antes** de la que empiece con `<int:...>`.
 
 ## Estructura
 
-Todo lo de Django vive en **una sola carpeta**, `munitramites/`. No hay
-subcarpetas raras: entrás ahí y están todos los archivos.
+Todo lo de Django vive en **una sola carpeta**, `munitramites/`. Es la carpeta
+que se abre una vez y están todos los archivos: configuración, vistas,
+servicios, tests y plantillas. Cada cosa tiene su lugar y está documentada
+en el propio archivo.
 
 ```
 munitramites/
@@ -124,21 +158,41 @@ munitramites/
 ├── docker-compose.yml
 ├── requirements.txt
 ├── manage.py
-├── README.md
+├── README.md                       # ← toda la documentación (estás adentro)
 ├── static/
 │   ├── css/app.css                 # hoja de estilos del sitio
 │   └── js/app.js                   # modales + envío del chat (sin frameworks)
 └── munitramites/                   # ← TODO lo de Django está acá
-    ├── settings.py                 #    configuración (BD, apps, idioma, login)
+    ├── settings.py                 #    configuración: BD, email, chatbot, idioma
     ├── urls.py                     #    rutas: acá se agregan las URL
-    ├── views.py                    #    lógica: consulta y guarda en Firebird
-    ├── forms.py                    #    validación en el servidor
+    ├── wsgi.py / asgi.py           #    puntos de entrada del servidor
     ├── models.py                   #    las tablas de Firebird
+    ├── forms.py                    #    validación en el servidor
     ├── admin.py                    #    qué se ve en /admin/
     ├── context_processors.py       #    form de registro para el modal
-    ├── apps.py                     #    identidad de la app
-    ├── tests.py                    #    tests (vacío)
-    ├── wsgi.py / asgi.py           #    puntos de entrada del servidor
+    ├── apps.py                     #    identidad de la app + índice del chat
+    ├── views/                      #    vistas: UN ARCHIVO POR MÓDULO
+    │   ├── __init__.py             #    reexporta todo → las URL no cambian
+    │   ├── pagina.py               #    portada
+    │   ├── tramites.py             #    listado y ficha
+    │   ├── chatbot.py              #    asistente (la lógica está en services/)
+    │   ├── consultas.py            #    consultas, sugerencias y detalle
+    │   ├── soporte.py              #    soporte
+    │   ├── cuenta.py               #    registro y perfil
+    │   └── api.py                  #    API JSON
+    ├── services/                   #    lógica que no depende del request
+    │   └── chatbot/                #    RAG: indexar → recuperar → generar
+    │       ├── indexar.py          #    1. convierte trámites en fragmentos
+    │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
+    │       ├── generacion.py       #    3. plantilla local o LLM (settings)
+    │       └── pipeline.py         #    orquestador + reglas de la charla
+    ├── tests/                      #    tests de aceptación (68)
+    │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
+    │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
+    │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
+    │   ├── test_chatbot.py         #    asistente: precisión y privacidad
+    │   ├── test_consultas.py       #    RF-08/09/10
+    │   └── test_roles.py           #    ESP-02 · RF-03/11/13
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
     │   └── cargar_datos.py         #    semilla de datos
@@ -158,39 +212,64 @@ munitramites/
         │   └── detalle.html        #    ficha con requisitos
         ├── consultas/
         │   ├── lista.html          #    mis consultas
-        │   └── nueva.html          #    formulario
+        │   ├── nueva.html          #    formulario
+        │   └── detalle.html        #    consulta + respuesta (RF-10)
+        ├── cuenta/
+        │   └── perfil.html         #    nombre, apellido, correo y DNI
         └── registration/
-            └── login.html          #    deja el modal de login abierto
+            ├── login.html          #    deja el modal de login abierto
+            ├── password_reset_form.html     # RF-15: pide el correo
+            ├── password_reset_done.html     # RF-15: avisó que se envió
+            ├── password_reset_confirm.html  # RF-15: clave nueva
+            ├── password_reset_complete.html # RF-15: listo
+            └── password_change_done.html    # aviso de cambio de clave
 ```
+
+### Criterios de diseño (por qué está así)
+
+| Decisión | Motivo |
+|---|---|
+| **Un solo directorio** `munitramites/` | configuración y app juntas: no hay que adivinar dónde vive cada cosa |
+| `views/` por módulo, `services/` aparte | la vista solo coordina request → servicio → plantilla; la lógica reutilizable se prueba sin HTTP |
+| `__init__.py` que re-exporta | las URL siguieron igual (`views.inicio`), así que mover código no rompe nada |
+| `apps.py` con `name = 'munitramites'` | conserva el prefijo de tabla en Firebird (`munitramites_tramite`, …) y las migraciones existentes |
+| `TEMPLATES['DIRS']` apuntando a `templates/` | las plantillas del sitio tienen prioridad sobre las que traen `django.contrib.admin` y `django.contrib.auth` |
+| `tests/` con helpers en `base.py` | los criterios de aceptación del documento se prueban de punta a punta |
 
 ### ¿Dónde toco para...?
 
 | Quiero... | Archivo | Después |
 |---|---|---|
-| Agregar una ruta / vista | `urls.py` + `views.py` | — |
+| Agregar una ruta / vista | `views/<modulo>.py` + `__init__.py` + `urls.py` | — |
 | Crear una tabla nueva | `models.py` | `makemigrations` + `migrate` |
 | Ver una tabla en `/admin/` | `admin.py` | — |
-| Cambiar un botón de enlace de la ficha | `/admin/` → Trámites → **Enlaces oficiales** | — |
-| Crear una página nueva | `templates/` + `views.py` + `urls.py` | — |
+| Cambiar requisitos o botones de una ficha | `/admin/` → Trámites → **Requisitos** / **Enlaces oficiales** | — |
+| Cambiar datos de una cuenta (DNI, correo) | `/admin/` → Usuarios → fila → **Perfil** | — |
+| Crear una página nueva | `templates/` + `views/<modulo>.py` + `urls.py` | — |
 | Agregar un campo a un formulario | `forms.py` | — |
+| Mejorar lo que sabe el asistente | `services/chatbot/` (ver sección siguiente) | — |
+| Agregar sinónimos al asistente | `services/chatbot/recuperacion.py` → `SINONIMOS` | — |
 | Cambiar el diseño | `static/css/app.css` + `templates/base.html` | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
+| Correr los tests | `tests/` | `manage.py test --noinput` |
 | Cambiar la base de datos | `settings.py` → `DATABASES` | — |
 | Cambiar idioma / zona horaria | `settings.py` → `LANGUAGE_CODE` / `TIME_ZONE` | — |
 | Cambiar login / redirecciones | `settings.py` → bloque `LOGIN_*` | — |
+| Conectar el LLM del chatbot | `settings.py` → `CHATBOT_LLM` | — |
 | Mover el admin de ruta | `urls.py` → línea `path('admin/', ...)` | — |
 | Agregar una dependencia | `requirements.txt` | `docker compose up -d --build` |
 
 ### El ciclo de trabajo
 
 ```
-1. models.py       crear la tabla
-2. admin.py        registrarla para verla en /admin/
-3. forms.py        validar los datos
-4. views.py        consultar y guardar
-5. templates/      mostrar el resultado
-6. urls.py         exponer la ruta
+1. models.py            crear la tabla
+2. admin.py             registrarla para verla en /admin/
+3. forms.py             validar los datos
+4. views/<modulo>.py    consultar y guardar (llamando a services/ si hay lógica)
+5. templates/           mostrar el resultado
+6. urls.py              exponer la ruta
+7. tests/               dejar el criterio de aceptación escrito y en verde
 ```
 
 ## Comandos útiles
@@ -207,7 +286,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test                   # correr tests
+docker compose exec web python manage.py test --noinput         # correr los 68 tests
 ```
 
 ### Ejecutar código desde el host
@@ -222,6 +301,133 @@ Get-Content script.py -Raw | docker compose exec -T web python manage.py shell
 "print(1+1)" | docker compose exec -T web python manage.py shell
 ```
 
+## Tests y trazabilidad
+
+```powershell
+docker compose exec web python manage.py test --noinput          # todo
+docker compose exec web python manage.py test munitramites.tests.test_auth --noinput   # un archivo
+docker compose exec web python manage.py test munitramites.tests.test_auth.RecuperarClaveTests --noinput  # una clase
+```
+
+El `--noinput` evita la pregunta interactiva cuando queda una base de test
+puesta. Django crea y destruye sola la base `munitramites_test.fdb` (el nombre
+está fijado en `settings.DATABASES['default']['TEST']`; sin eso, `django-firebird`
+arma un nombre con la ruta completa que Firebird no puede crear).
+
+`munitramites/tests/base.py` trae los helpers (`ciudadano()`, `administrador()`,
+`tramite()`, …) y un `TestCase` propio que limpia el índice del asistente entre
+tests. **Si agregás una funcionalidad nueva, dejá su criterio de aceptación
+escrito acá**: es lo que hace verificable el documento.
+
+| Documento | Dónde está en el código | Test |
+|---|---|---|
+| **ESP-01** Autenticación | `forms.py`, `views/cuenta.py`, `templates/registration/` | `test_auth` |
+| **ESP-02** Roles | `admin.py`, permisos `is_staff` de Django | `test_roles` |
+| **ESP-04** Administración | `/admin/` (`admin.py`) | `test_roles` · `test_tramites` |
+| **ESP-05** Consultas | `views/consultas.py`, `models.Consulta` | `test_consultas` |
+| **ESP-06** Base de datos | Firebird + `models.py` + `migrations/` | todos (corren sobre Firebird) |
+| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` |
+| **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` |
+| **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
+| **RF-03** Gestión de roles | `is_staff` / `is_superuser` | `test_roles` |
+| **RF-07** Administrar trámites | `/admin/` → Trámites (con Requisitos y Enlaces) | `test_roles` · `test_tramites` |
+| **RF-08** Enviar consultas | `views/consultas.py::consulta_nueva` | `test_consultas` |
+| **RF-09** Enviar sugerencias | mismo formulario, `tipo = sugerencia` | `test_consultas` |
+| **RF-10** Gestionar consultas | `/consultas/<id>/` (respuesta del staff) | `test_consultas.GestionDelAdminTests` |
+| **RF-11** Gestionar usuarios | `/admin/` → Usuarios + inline de Perfil (DNI) | `test_roles.AdministradorTests` |
+| **RF-12** Almacenamiento de datos | Firebird vía ORM | todos |
+| **RF-13** Control de acceso | `LoginRequired` en cada vista privada | `test_roles.AnonimoTests` · `test_consultas` |
+| **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
+| **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` |
+| **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
+| **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) | `test_chatbot` |
+| **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
+| **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
+| **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
+| **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
+| **RNF-09** Despliegue (Docker) | `Dockerfile` + `docker-compose.yml` | — |
+| **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |
+| **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, sin JS obligatorio | `test_chatbot` |
+
+## Asistente virtual (RAG)
+
+El chatbot **no adivina**: arma un índice con los trámites, busca los
+fragmentos que responden la pregunta y responde citando de dónde salió.
+Tres etapas, tres archivos, todas en `services/chatbot/`:
+
+| Etapa | Archivo | Qué hace |
+|---|---|---|
+| 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (señales en `apps.py`) |
+| 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados. Por defecto usa `PlantillaLocal` (sin dependencias ni costo); si hay proveedor configurado, usa `LLMHttp` |
+| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, dice explícitamente que no dispone de esa información |
+
+### Conectar un LLM (cuando quieras)
+
+Está todo cableado: falta solamente la clave. En `settings.py`:
+
+```python
+CHATBOT_LLM = {
+    'proveedor': 'openai',        # 'openai' | 'anthropic' | 'gemini' | 'custom'
+    'api_key':   'sk-...',        # ← esto es lo único que hace falta
+    'modelo':    'gpt-4o-mini',
+    'base_url':  '',              # opcional: Ollama/vLLM/proxy compatible
+    'timeout':   20,
+}
+```
+
+Mientras `api_key` esté vacía, el asistente responde con `PlantillaLocal`.
+Si el modelo no responde o falla la red, **cae igual en la plantilla local**:
+la conversación nunca se rompe. El prompt que recibe el modelo (responder solo
+con el contexto, citar el trámite y admitir cuando no sabe) está en
+`generacion.py::INSTRUCCION`.
+
+Otras perillas: `CHATBOT_TOP_K` (fragmentos que se pasan como contexto) y
+`CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse).
+
+Para agregar vocabulario del dominio, sumá entradas a `SINONIMOS` en
+`recuperacion.py`; para indexar otra cosa (por ejemplo las FAQ), ampliá
+`indexar.py`.
+
+## Respaldo de la base (RNF-10)
+
+La base vive en el volumen `firebird_data`. Opciones:
+
+```powershell
+# A) Dump lógico con gbak (portable, se puede restaurar en otra versión)
+docker compose exec firebird gbak -b -user SYSDBA -password masterkey \
+  /var/lib/firebird/data/munitramites.fdb /tmp/munitramites.fbk
+docker compose cp firebird:/tmp/munitramites.fbk .\munitramites.fbk
+
+# B) Copia del archivo completo (parado, o con el sitio en uso a riesgo propio)
+docker compose stop firebird
+docker compose cp firebird:/var/lib/firebird/data/munitramites.fdb .\munitramites.fdb
+docker compose start firebird
+```
+
+Restaurar en otra instancia:
+
+```powershell
+docker compose cp .\munitramites.fbk firebird:/tmp/munitramites.fbk
+docker compose exec firebird gbak -c -user SYSDBA -password masterkey \
+  /tmp/munitramites.fbk /var/lib/firebird/data/munitramites_restaurada.fdb
+```
+
+> **Ojo:** `docker compose down -v` **borra el volumen** y con él la base.
+> Hacé el dump antes.
+
+## Accesibilidad (RNF-11)
+
+- Todos los campos de formulario tienen `<label for>`; los campos del chat, que
+  no tienen texto visible, llevan `aria-label`.
+- Los modales son `role="dialog"` con `aria-modal`, `aria-labelledby` y botón de
+  cierre con nombre accesible; se pueden cerrar con `Esc`.
+- El sitio funciona **sin JavaScript**: los enlaces caen en `/login/` y
+  `/registro/` (que abren el modal del lado del servidor) y la barra del chat
+  manda el POST a `/chatbot/`.
+- El contraste, el orden de tabulación y los tamaños de texto están en
+  `static/css/app.css` (incluye `prefers-reduced-motion`).
+
 ## Acceder a la base de datos
 
 ```powershell
@@ -235,10 +441,12 @@ Luego escribí SQL y cerrá con `quit;`.
 | Tabla | Registros | Origen |
 |---|---|---|
 | `MUNICIPIO` | 9 | seed |
-| `ORGANISMO` | 7 | seed |
+| `ORGANISMO` | 7 | seed (incluye `ocupacion` / área de acción) |
 | `TRAMITE` | 8 | seed |
 | `REQUISITO` | 32 | seed |
-| `CONSULTA` | 3+ | seed + formularios |
+| `ENLACE` | varios | seed + `/admin/` |
+| `CONSULTA` | 3+ | seed + formularios (incluye el prefijo `Soporte: `) |
+| `PERFIL` | 1+ | se crea con el registro (guarda el DNI) |
 | `AUTH_USER` | 2 | Django (usuarios) |
 | + 9 tablas de Django | — | auth, sessions, admin, contenttypes |
 
@@ -262,8 +470,12 @@ Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
   a hora local antes de mostrar. Usalo siempre: `{{ fecha|hora_local|date:"d/m/Y H:i" }}`.
 - `settings.py` apunta a `/var/lib/firebird/data/...`, que es la ruta **vista
   desde el servidor Firebird**, no desde tu PC.
-- El volumen `firebird_data` guarda la base. Para llevarla a otra PC, hacé un
-  dump antes de `docker compose down -v`.
+- El volumen `firebird_data` guarda la base. Para llevarla a otra PC, hacé el
+  dump de [Respaldo de la base (RNF-10)](#respaldo-de-la-base-rnf-10) antes de
+  `docker compose down -v`.
+- **Los correos salen por la consola**: `EMAIL_BACKEND` está en la consola, así
+  que el enlace de recuperación de contraseña (RF-15) se ve con
+  `docker compose logs web`. En producción hay que poner un backend SMTP.
 - Los contenedores tienen `restart: unless-stopped`: se levantan solos si Docker
   Desktop se reinicia.
 

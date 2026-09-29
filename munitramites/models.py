@@ -7,7 +7,7 @@ Estructura del dominio:
                 ├──► Tramite ──► Requisito
     Organismo ──┘        ├──► Enlace  (botones de la ficha, los edita el admin)
                          │
-                         └──► Consulta ──► User
+                         └──► Consulta ──► User ──► Perfil (DNI)
 
 Todas las tablas viven en Firebird. Después de tocar este archivo:
 
@@ -38,6 +38,13 @@ class Organismo(models.Model):
 
     nombre = models.CharField(max_length=200, unique=True)
     direccion = models.CharField(max_length=200)
+    ocupacion = models.CharField(
+        'Área de acción',
+        max_length=200,
+        blank=True,
+        default='',
+        help_text='Rubro o materia que agrupa, ej.: «Registro Civil», «Tránsito».',
+    )
 
     class Meta:
         verbose_name = 'Organismo'
@@ -142,6 +149,39 @@ class Enlace(models.Model):
 
     def __str__(self):
         return f'{self.nombre} → {self.url}'
+
+
+class Perfil(models.Model):
+    """Datos personales de la cuenta que no entran en auth.User.
+
+    El documento pide almacenar nombre, apellido, DNI y email. Nombre,
+    apellido y email ya viven en `User` (se cargan en el registro); el DNI
+    vive aca, en uno a uno con la cuenta.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil'
+    )
+    dni = models.CharField(
+        'DNI',
+        max_length=12,
+        blank=True,
+        default='',
+        help_text='Sin puntos ni espacios, ej.: 12345678.',
+    )
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Perfil'
+        verbose_name_plural = 'Perfiles'
+
+    def __str__(self):
+        return f'{self.user.username} — DNI {self.dni or "sin cargar"}'
+
+    @property
+    def dni_valido(self):
+        return self.dni.isdigit() and 7 <= len(self.dni) <= 8
 
 
 class Consulta(models.Model):

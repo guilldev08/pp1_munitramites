@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block titulo %}Consulta #{{ consulta.pk }} · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>
+      <a href="{% url 'consultas' %}">Mis consultas</a><span>/</span>
+      #{{ consulta.pk }}
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>{{ consulta.asunto }}</h2>
+        <p class="texto-suave">
+          {{ consulta.get_tipo_display }} ·
+          {{ consulta.fecha|date:"d/m/Y H:i" }} ·
+          {% if consulta.tramite %}
+            trámite: <a href="{% url 'tramite_detalle' consulta.tramite.pk %}">
+              {{ consulta.tramite }}
+            </a>
+          {% else %}
+            sin trámite asociado
+          {% endif %}
+        </p>
+      </div>
+      <span class="etiqueta etiqueta--{{ consulta.estado }}">{{ consulta.get_estado_display }}</span>
+    </div>
+
+    <div class="dos-columnas">
+      <div class="panel">
+        <h3 class="mt-0">Consulta enviada</h3>
+        <p class="texto-con">{{ consulta.contenido }}</p>
+
+        {% if consulta.respuesta %}
+          <h3>Respuesta del equipo</h3>
+          <div class="alerta alerta--ok">
+            {{ consulta.respuesta|linebreaksbr }}
+          </div>
+        {% else %}
+          <p class="texto-suave texto-chico mb-0">
+            Todavía no hay respuesta. Te avisamos en «Mis consultas».
+          </p>
+        {% endif %}
+      </div>
+
+      <aside>
+        {% if puede_responder %}
+          <form class="formulario" method="post">
+            <h3 class="mt-0">Responder (administrador)</h3>
+            {% csrf_token %}
+            <div class="campo">
+              <label for="id_respuesta">Respuesta</label>
+              <textarea id="id_respuesta" name="respuesta" rows="5"
+                        placeholder="Escribí la respuesta para el ciudadano…"
+                        minlength="5">{{ consulta.respuesta }}</textarea>
+            </div>
+            <button class="boton boton--ancho" type="submit">
+              {% if consulta.respuesta %}Actualizar respuesta{% else %}Enviar respuesta{% endif %}
+            </button>
+          </form>
+        {% else %}
+          <div class="panel">
+            <h3 class="mt-0">Estado</h3>
+            <p class="texto-suave texto-chico mb-0">
+              Cuando un administrador responda, la respuesta aparece en esta
+              misma página y en «Mis consultas».
+            </p>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

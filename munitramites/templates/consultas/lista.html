@@ -39,7 +39,9 @@
           <tbody>
             {% for c in pagina %}
               <tr>
-                <td>{{ c.pk }}</td>
+                <td>
+                  <a href="{% url 'consulta_detalle' c.pk %}">#{{ c.pk }}</a>
+                </td>
                 <td>{{ c.get_tipo_display }}</td>
                 <td>
                   <strong>{{ c.asunto }}</strong>

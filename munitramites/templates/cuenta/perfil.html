@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mi perfil · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Mi perfil
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>Mi perfil</h2>
+        <p>Datos personales de la cuenta (Ley 25.326: se usan solo para el funcionamiento del sistema).</p>
+      </div>
+      <span class="etiqueta etiqueta--tema">@{{ request.user.username }}</span>
+    </div>
+
+    <div class="dos-columnas">
+      <form class="formulario" method="post" novalidate>
+        <h3 class="mt-0">Datos personales</h3>
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alerta alerta--error">
+            {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        {% for campo in form %}
+          <div class="campo">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            {{ campo }}
+            {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
+            {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+          </div>
+        {% endfor %}
+
+        <button class="boton boton--ancho" type="submit">Guardar cambios</button>
+      </form>
+
+      <aside>
+        <div class="panel">
+          <h3 class="mt-0">Cuenta</h3>
+          <ul class="lista-limpia texto-chico">
+            <li><strong>Usuario:</strong> {{ request.user.username }}</li>
+            <li><strong>DNI:</strong> {{ perfil.dni|default:"sin cargar" }}</li>
+            <li><strong>Alta:</strong> {{ request.user.date_joined|date:"d/m/Y" }}</li>
+          </ul>
+          <p class="texto-suave texto-chico mb-0">
+            <a href="{% url 'password_change' %}">Cambiar mi contraseña →</a>
+          </p>
+        </div>
+
+        <div class="panel">
+          <h3 class="mt-0">Tus consultas</h3>
+          <p class="texto-suave texto-chico mb-0">
+            Seguí el estado de lo que enviaste en
+            <a href="{% url 'consultas' %}">«Mis consultas»</a>.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

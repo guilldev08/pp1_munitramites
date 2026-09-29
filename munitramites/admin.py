@@ -6,8 +6,40 @@ CRUD completo: alta, baja, edicion, busqueda, filtros y exportacion.
 """
 
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
 
-from .models import Consulta, Enlace, Municipio, Organismo, Requisito, Tramite
+from .models import (
+    Consulta, Enlace, Municipio, Organismo, Perfil, Requisito, Tramite,
+)
+
+
+@admin.register(Perfil)
+class PerfilAdmin(admin.ModelAdmin):
+    """Perfil (DNI) de cada ciudadano: se ve y se filtra por DNI."""
+
+    list_display = ['id', 'user', 'dni', 'actualizado']
+    search_fields = ['dni', 'user__username', 'user__email']
+    list_select_related = ['user']
+
+
+# --- Usuarios (RF-11) -------------------------------------------------------
+class PerfilInline(admin.StackedInline):
+    """DNI del ciudadano, junto a sus datos de cuenta."""
+
+    model = Perfil
+    extra = 0
+    fields = ['dni']
+
+
+class UserAdmin(BaseUserAdmin):
+    """El UserAdmin de Django + el perfil. Para ver/editar usuarios."""
+    inlines = [PerfilInline]
+
+
+# Django ya registró User con su admin por defecto: hay que reemplazarlo.
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
 
 
 @admin.register(Municipio)
@@ -18,8 +50,9 @@ class MunicipioAdmin(admin.ModelAdmin):
 
 @admin.register(Organismo)
 class OrganismoAdmin(admin.ModelAdmin):
-    list_display = ['id', 'nombre', 'direccion']
-    search_fields = ['nombre', 'direccion']
+    list_display = ['id', 'nombre', 'ocupacion', 'direccion']
+    list_filter = ['ocupacion']
+    search_fields = ['nombre', 'direccion', 'ocupacion']
 
 
 class RequisitoInline(admin.TabularInline):

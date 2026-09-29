@@ -10,11 +10,15 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from .models import Consulta, Municipio, Tramite
+from .models import Consulta, Municipio, Perfil, Tramite
 
 
 class RegistroForm(UserCreationForm):
-    """Alta de ciudadano. Hereda toda la validacion de Django."""
+    """Alta de ciudadano. Hereda toda la validacion de Django.
+
+    Además de los campos de `User` pide el DNI (dato personal que exige el
+    documento) y lo guarda en `Perfil` al crear la cuenta.
+    """
 
     email = forms.EmailField(
         label='Correo electrónico',
@@ -22,6 +26,16 @@ class RegistroForm(UserCreationForm):
             'placeholder': 'nombre@correo.com',
             'autocomplete': 'email',
         }),
+    )
+    dni = forms.CharField(
+        label='DNI',
+        max_length=12,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Sin puntos, ej.: 12345678',
+            'inputmode': 'numeric',
+            'autocomplete': 'off',
+        }),
+        help_text='Entre 7 y 8 dígitos, sin puntos.',
     )
 
     class Meta:
@@ -38,9 +52,70 @@ class RegistroForm(UserCreationForm):
             'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
         }
 
+    def clean_dni(self):
+        return validar_dni(self.cleaned_data['dni'])
+
     def clean_email(self):
         email = self.cleaned_data['email'].lower()
         if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Ya existe una cuenta con ese correo.')
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit)
+        if commit:
+            # La cuenta y su perfil se crean juntas
+            Perfil.objects.create(user=user, dni=self.cleaned_data['dni'])
+        return user
+
+
+def validar_dni(valor):
+    """7 u 8 dígitos, sin puntos, y que no esté ya registrado."""
+    dni = valor.replace('.', '').replace(' ', '').strip()
+    if not dni.isdigit() or not 7 <= len(dni) <= 8:
+        raise forms.ValidationError('El DNI debe tener 7 u 8 dígitos, sin puntos.')
+    if Perfil.objects.filter(dni=dni).exists():
+        raise forms.ValidationError('Ya existe una cuenta con ese DNI.')
+    return dni
+
+
+class PerfilForm(forms.ModelForm):
+    """Edición de los datos personales: nombre, apellido, correo y DNI."""
+
+    dni = forms.CharField(
+        label='DNI',
+        max_length=12,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Sin puntos, ej.: 12345678',
+            'inputmode': 'numeric',
+        }),
+        help_text='Entre 7 y 8 dígitos, sin puntos.',
+    )
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        labels = {
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'email': 'Correo electrónico',
+        }
+
+    def clean_dni(self):
+        dni = validar_dni(self.cleaned_data['dni'])
+        # El DNI propio no cuenta como repetido
+        if self.instance and self.instance.pk:
+            if Perfil.objects.filter(dni=dni).exclude(
+                user__pk=self.instance.pk
+            ).exists():
+                raise forms.ValidationError('Ya existe una cuenta con ese DNI.')
+        return dni
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email__iexact=email).exclude(
+            pk=self.instance.pk
+        ).exists():
             raise forms.ValidationError('Ya existe una cuenta con ese correo.')
         return email
 

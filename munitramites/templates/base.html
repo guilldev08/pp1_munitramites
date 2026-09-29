@@ -28,12 +28,14 @@
 
       {% if user.is_authenticated %}
         <a href="{% url 'consultas' %}"
-           {% if request.resolver_match.url_name == 'consultas' or request.resolver_match.url_name == 'consulta_nueva' %}class="activo"{% endif %}>Mis consultas</a>
+           {% if request.resolver_match.url_name == 'consultas' or request.resolver_match.url_name == 'consulta_nueva' or request.resolver_match.url_name == 'consulta_detalle' %}class="activo"{% endif %}>Mis consultas</a>
 
         <span class="nav__sesion">
           {% if user.is_staff %}
             <a href="{% url 'admin:index' %}">Panel</a>
           {% endif %}
+          <a href="{% url 'perfil' %}"
+             {% if request.resolver_match.url_name == 'perfil' %}class="activo"{% endif %}>Mi perfil</a>
           <span class="nav__usuario">👤 {{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" style="display:inline">
             {% csrf_token %}
@@ -137,6 +139,10 @@
                  autocomplete="current-password" required>
           {% for e in form.password.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
         </div>
+
+        <p class="texto-chico mt-0 mb-2">
+          <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+        </p>
 
         <input type="hidden" name="next" id="id_modal_next" value="{{ next|default:'' }}">
 

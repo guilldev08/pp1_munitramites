@@ -3,16 +3,28 @@
 {% block titulo %}Inicio · Trámites de Misiones{% endblock %}
 
 {% block contenido %}
+{# --- Hero: presentación + barra de ingreso de texto del chatbot --------- #}
 <section class="hero">
   <div class="contenedor">
     <h1>Todos los trámites públicos de Misiones, en un solo lugar.</h1>
     <p>
       Requisitos, organismos responsables, modalidades y enlaces oficiales.
-      Buscá por tema o municipio y consultá sin registrar datos personales.
+      Preguntale al asistente o filtrá la lista de acá abajo.
     </p>
-    <div class="acciones">
+
+    {# Sin JavaScript: manda la pregunta a /chatbot/ y se responde en la pagina #}
+    <form class="barra-chat" id="barra-chat" method="post"
+          action="{% url 'chatbot' %}" autocomplete="off">
+      {% csrf_token %}
+      <input type="text" name="mensaje" maxlength="300" required
+             placeholder="Preguntale al asistente… (ej.: «¿cómo renuevo el DNI?»)"
+             aria-label="Pregunta al asistente">
+      <button class="boton" type="submit">Preguntar</button>
+    </form>
+
+    <div class="acciones barra-chat__acciones">
       <a class="boton" href="{% url 'tramites' %}">Ver trámites</a>
-      <a class="boton boton--secundario" href="{% url 'chatbot' %}">Hablar con el chatbot</a>
+      <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">Abrir el chat</a>
     </div>
   </div>
 </section>
@@ -38,39 +50,25 @@
   </div>
 </div>
 
+{# --- Trámites: la lista con filtros vive en la portada ------------------- #}
 <section class="seccion">
   <div class="contenedor">
     <div class="titulo-seccion">
       <div>
-        <h2>Trámites destacados</h2>
-        <p>Los más consultados por los ciudadanos.</p>
+        <h2>Trámites disponibles</h2>
+        <p>
+          {% if pagina.paginator.count %}
+            {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}
+            {% if hay_filtros %} con los filtros aplicados{% endif %}.
+          {% else %}Sin resultados.{% endif %}
+        </p>
       </div>
-      <a href="{% url 'tramites' %}">Ver los {{ total_tramites }} →</a>
+      <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">
+        ¿No lo encontrás? Preguntá
+      </a>
     </div>
 
-    <div class="rejilla">
-      {% for t in destacados %}
-        <a class="tarjeta" href="{% url 'tramite_detalle' t.pk %}">
-          <div class="etiquetas">
-            <span class="etiqueta etiqueta--tema">{{ t.get_tema_display }}</span>
-            <span class="etiqueta etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
-            {% if t.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
-          </div>
-          <h3>{{ t.titulo }}</h3>
-          <p>{{ t.descripcion|truncatewords:22 }}</p>
-          <div class="tarjeta__meta">
-            <span>🏛 {{ t.organismo.nombre }}</span>
-            <span>📍 {{ t.municipio.nombre }} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
-          </div>
-        </a>
-      {% empty %}
-        <div class="vacio">
-          <div class="vacio__icono">🗂</div>
-          <h3>Todavía no hay trámites</h3>
-          <p>Cargá los datos de ejemplo con <code>python manage.py cargar_datos</code>.</p>
-        </div>
-      {% endfor %}
-    </div>
+    {% include "parciales/lista_tramites.html" %}
   </div>
 </section>
 
@@ -87,7 +85,7 @@
       <div class="paso">
         <div class="paso__num">1</div>
         <h3>Buscá</h3>
-        <p>Filtrá por tema, municipio o modalidad, o usá el chatbot para preguntar directo.</p>
+        <p>Filtrá por tema, municipio o modalidad, o preguntale al asistente con la barra de arriba.</p>
       </div>
       <div class="paso">
         <div class="paso__num">2</div>

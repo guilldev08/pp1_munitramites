@@ -44,20 +44,27 @@
           {% endif %}
         </div>
 
-        {% if tramite.enlace_turnos or tramite.enlace_oficial %}
+        {# Enlaces oficiales: botones con el nombre que carga el admin #}
+        {% if tramite.enlaces.all or tramite.enlace_turnos or tramite.enlace_oficial %}
           <div class="panel">
             <h3 class="mt-0">Enlaces oficiales</h3>
             <div class="acciones">
-              {% if tramite.enlace_turnos %}
-                <a class="boton" href="{{ tramite.enlace_turnos }}" target="_blank" rel="noopener">
-                  Pedir turno ↗
+              {% for e in tramite.enlaces.all %}
+                <a class="boton" href="{{ e.url }}" target="_blank" rel="noopener">
+                  {{ e.nombre }} ↗
                 </a>
-              {% endif %}
-              {% if tramite.enlace_oficial %}
-                <a class="boton boton--secundario" href="{{ tramite.enlace_oficial }}" target="_blank" rel="noopener">
-                  Sitio del organismo ↗
-                </a>
-              {% endif %}
+              {% empty %}
+                {% if tramite.enlace_turnos %}
+                  <a class="boton" href="{{ tramite.enlace_turnos }}" target="_blank" rel="noopener">
+                    Pedir turno ↗
+                  </a>
+                {% endif %}
+                {% if tramite.enlace_oficial %}
+                  <a class="boton boton--secundario" href="{{ tramite.enlace_oficial }}" target="_blank" rel="noopener">
+                    Sitio del organismo ↗
+                  </a>
+                {% endif %}
+              {% endfor %}
             </div>
           </div>
         {% endif %}

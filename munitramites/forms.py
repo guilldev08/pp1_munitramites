@@ -71,6 +71,35 @@ class ConsultaForm(forms.ModelForm):
         self.fields['tramite'].empty_label = '— Sin trámite asociado —'
 
 
+class SoporteForm(forms.Form):
+    """Reporte de un problema del sitio. Solo lo puede enviar un usuario
+    logueado (la vista aplica @login_required) y se guarda como consulta
+    con el asunto inicializado en «Soporte: », asi aparece en el admin y
+    en «Mis consultas» sin tocar el esquema de la base.
+    """
+
+    asunto = forms.CharField(
+        label='Asunto',
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Ej: No puedo abrir la ficha de un trámite',
+            'maxlength': 200,
+            'autocomplete': 'off',
+        }),
+    )
+    mensaje = forms.CharField(
+        label='Describe el problema',
+        min_length=10,
+        max_length=4000,
+        widget=forms.Textarea(attrs={
+            'rows': 6,
+            'placeholder': 'Qué hiciste, qué esperabas y qué pasó. '
+                           'Cuantos más detalles, mejor.',
+            'minlength': 10,
+        }),
+    )
+
+
 class TramiteFiltroForm(forms.Form):
     """Filtros de la lista de tramites (se leen del querystring)."""
 

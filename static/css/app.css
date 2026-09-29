@@ -575,6 +575,165 @@ img { max-width: 100%; }
 .centrado { text-align: center; }
 .solo-movil { display: none; }
 
+/* Los mensajes quedan POR ENCIMA del fondo del modal, asi se ve el aviso
+   de «¡Cuenta creada!» aunque el modal siga abierto. */
+.mensajes { position: relative; z-index: 120; }
+
+.nav__usuario { font-weight: 600; color: var(--gris-700); }
+
+/* --- Barra del chatbot (dentro del hero) ------------------------------- */
+.barra-chat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px;
+  max-width: 640px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, .25);
+}
+.barra-chat input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 11px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--gris-900);
+}
+.hero .barra-chat .boton { background: var(--azul); color: #fff; }
+.hero .barra-chat .boton:hover { background: var(--azul-oscuro); }
+.barra-chat__acciones { margin-top: 20px; }
+@media (max-width: 560px) {
+  .barra-chat { flex-direction: column; align-items: stretch; }
+  .barra-chat .boton { width: 100%; }
+}
+
+/* --- Modales (pestañas emergentes) -------------------------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 16px;
+  overflow-y: auto;
+  background: rgba(15, 23, 42, .55);
+}
+.modal--abierto { display: flex; }
+
+.modal__caja {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, .35);
+}
+.modal__caja--auth { max-width: 470px; padding: 24px; }
+.modal__caja--chat {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  height: min(640px, 78vh);
+  overflow: hidden;
+}
+
+.modal__cerrar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--gris-500);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.modal__cerrar:hover { background: var(--gris-100); color: var(--gris-900); }
+
+.modal__pestanas {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding-right: 36px;
+  border-bottom: 1px solid var(--gris-200);
+}
+.modal__pestana {
+  flex: 1;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font: inherit;
+  font-size: .92rem;
+  font-weight: 600;
+  color: var(--gris-500);
+  cursor: pointer;
+}
+.modal__pestana:hover { color: var(--gris-900); }
+.modal__pestana.activo { color: var(--azul); border-bottom-color: var(--azul); }
+
+.modal__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 50px 14px 18px;
+  border-bottom: 1px solid var(--gris-200);
+}
+.modal__acciones { display: flex; align-items: center; gap: 8px; }
+.modal .chat__historial { flex: 1; }
+
+@media (max-width: 640px) {
+  .modal { padding: 20px 10px; }
+  .modal__caja--chat { height: min(560px, 84vh); }
+}
+
+/* --- Boton flotante del chat ------------------------------------------- */
+.fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--azul);
+  color: #fff;
+  font-size: 1.45rem;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(29, 78, 216, .45);
+  transition: transform .15s, background .15s;
+}
+.fab:hover { background: var(--azul-oscuro); transform: translateY(-2px); }
+
+/* --- Soporte (dos columnas) -------------------------------------------- */
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 820px) { .dos-columnas { grid-template-columns: 1fr; } }
+
+.pedido { padding: 12px 0; border-bottom: 1px dashed var(--gris-200); }
+.pedido:last-child { border-bottom: none; padding-bottom: 0; }
+.pedido__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pedido__respuesta { color: var(--gris-700); }
+
 @media (max-width: 760px) {
   .nav { width: 100%; overflow-x: auto; }
   .nav__sesion { border-left: none; padding-left: 0; margin-left: 0; }

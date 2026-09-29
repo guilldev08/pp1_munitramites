@@ -5,7 +5,8 @@ Estructura del dominio:
 
     Municipio ──┐
                 ├──► Tramite ──► Requisito
-    Organismo ──┘        │
+    Organismo ──┘        ├──► Enlace  (botones de la ficha, los edita el admin)
+                         │
                          └──► Consulta ──► User
 
 Todas las tablas viven en Firebird. Después de tocar este archivo:
@@ -115,6 +116,32 @@ class Requisito(models.Model):
 
     def __str__(self):
         return f'{self.tramite} — {self.descripcion[:40]}'
+
+
+class Enlace(models.Model):
+    """Boton de enlace oficial que se muestra en la ficha de un tramite.
+
+    El admin carga el TEXTO del boton (nombre) y la URL, asi cada organismo
+    decide como se llama el boton («Pedir turno», «Trámites en línea», …).
+    """
+
+    tramite = models.ForeignKey(
+        Tramite, on_delete=models.CASCADE, related_name='enlaces'
+    )
+    nombre = models.CharField(
+        max_length=100,
+        help_text='Texto del boton, ej.: «Pedir turno» o «Sitio del organismo».',
+    )
+    url = models.URLField(help_text='URL completa, ej.: https://ejemplo.gob.ar/…')
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Enlace oficial'
+        verbose_name_plural = 'Enlaces oficiales'
+        ordering = ['orden', 'id']
+
+    def __str__(self):
+        return f'{self.nombre} → {self.url}'
 
 
 class Consulta(models.Model):

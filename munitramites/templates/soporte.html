@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block titulo %}Soporte · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Soporte
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>Soporte del sitio</h2>
+        <p>Reportá un problema con la página o con la información de un trámite.</p>
+      </div>
+      <span class="etiqueta etiqueta--tema">Solo con cuenta logueada</span>
+    </div>
+
+    <div class="dos-columnas">
+      {# ---------------- Formulario ---------------- #}
+      <form class="formulario" method="post" novalidate>
+        <h3 class="mt-0">Nuevo pedido de soporte</h3>
+        <p class="texto-suave texto-chico">
+          Entrás con tu usuario, así podemos avisarte la respuesta en
+          <a href="{% url 'consultas' %}">«Mis consultas»</a>.
+        </p>
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alerta alerta--error">
+            {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="campo">
+          <label for="{{ form.asunto.id_for_label }}">{{ form.asunto.label }}</label>
+          {{ form.asunto }}
+          {% for e in form.asunto.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+
+        <div class="campo">
+          <label for="{{ form.mensaje.id_for_label }}">{{ form.mensaje.label }}</label>
+          {{ form.mensaje }}
+          {% if form.mensaje.help_text %}
+            <span class="ayuda">{{ form.mensaje.help_text }}</span>
+          {% endif %}
+          <span class="ayuda">Mínimo 10 caracteres. No envíes datos personales sensibles.</span>
+          {% for e in form.mensaje.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+
+        <button class="boton boton--ancho" type="submit">Enviar a soporte</button>
+      </form>
+
+      {# ---------------- Historial + ayuda ---------------- #}
+      <aside>
+        <div class="panel">
+          <h3 class="mt-0">Tus pedidos de soporte</h3>
+
+          {% if mis_pedidos %}
+            <ul class="lista-limpia">
+              {% for p in mis_pedidos %}
+                <li class="pedido">
+                  <div class="pedido__fila">
+                    <strong>{{ p.asunto|slice:"9:" }}</strong>
+                    <span class="etiqueta etiqueta--{{ p.estado }}">{{ p.get_estado_display }}</span>
+                  </div>
+                  <div class="texto-chico texto-suave">
+                    {{ p.fecha|date:"d/m/Y H:i" }}
+                    {% if p.respuesta %}
+                      · <span class="pedido__respuesta">{{ p.respuesta|truncatewords:18 }}</span>
+                    {% else %}
+                      · sin respuesta todavía
+                    {% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="texto-suave texto-chico mb-0">
+              Todavía no enviaste pedidos de soporte.
+            </p>
+          {% endif %}
+        </div>
+
+        <div class="panel">
+          <h3 class="mt-0">¿Qué va acá?</h3>
+          <ul class="lista-limpia texto-chico" style="list-style:disc; padding-left:18px; color:var(--gris-500)">
+            <li>Páginas que no cargan o botones que no responden.</li>
+            <li>Datos incorrectos en un trámite (requisitos, enlaces, horarios).</li>
+            <li>Problemas con tu cuenta o con el chatbot.</li>
+          </ul>
+          <p class="texto-suave texto-chico mb-0">
+            ¿Es una duda sobre un trámite? Usá
+            <a href="{% url 'consulta_nueva' %}">«Nueva consulta»</a> o preguntale
+            al <a href="{% url 'chatbot' %}" data-abrir="modal-chat">asistente</a>.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

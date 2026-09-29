@@ -2,9 +2,11 @@
 
 Django full stack + Firebird DB, todo corriendo con Docker.
 
-Sin JavaScript de framework, sin build step, sin API intermedia: **Django renderiza
-HTML en el servidor, habla con Firebird por ORM y maneja login, formularios y
-permisos con sus propios módulos.**
+Sin frameworks de JavaScript, sin build step y sin servicios intermedios:
+**Django renderiza HTML en el servidor, habla con Firebird por ORM y maneja
+login, formularios y permisos con sus propios módulos.** El único JS es
+`static/js/app.js` (JavaScript puro, sin dependencias): abre las pestañas
+emergentes de login/registro y de chat, y manda las preguntas al asistente.
 
 ## Requisitos
 
@@ -20,8 +22,9 @@ docker compose up -d --build
 
 | URL | Qué es |
 |---|---|
-| http://localhost:8000/ | Sitio público |
+| http://localhost:8000/ | Sitio público (portada + buscador de trámites) |
 | http://localhost:8000/tramites/ | Buscador de trámites |
+| http://localhost:8000/soporte/ | Soporte (pide iniciar sesión) |
 | http://localhost:8000/admin/ | **Panel de administración (Django)** |
 | http://localhost:8000/api/tramites/ | API JSON |
 | Firebird | puerto 3050 |
@@ -75,18 +78,35 @@ docker compose exec web python manage.py shell -c "from django.contrib.auth impo
 
 | URL | Vista | Acceso |
 |---|---|---|
-| `/` | Portada con destacados y estadísticas | público |
+| `/` | Portada: barra del chatbot + lista de trámites con filtros | público |
 | `/tramites/` | Listado con filtros y paginación | público |
-| `/tramites/<id>/` | Ficha con requisitos y organismo | público |
-| `/chatbot/` | Asistente que busca en Firebird | público |
+| `/tramites/<id>/` | Ficha con requisitos, organismo y botones de enlaces | público |
+| `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
+| `/chatbot/` | Asistente (página completa, alternativa sin JS) | público |
+| `/chatbot/api/` | JSON que usa la pestaña emergente del chat | público |
+| `/chatbot/limpiar/` | Vacía la charla de la sesión | sesión |
 | `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
 | `/consultas/nueva/` | Formulario de consulta | sesión |
-| `/registro/` | Alta de usuario | público |
-| `/login/` · `/logout/` | Sesión de ciudadanos | — |
+| `/registro/` · `/login/` | Modal de alta y de sesión (también funciona como página) | público |
+| `/logout/` | Cierra la sesión | sesión |
 | `/password/change/` | Cambio de contraseña | sesión |
 | `/admin/` | Administración de Django | `is_staff` |
 | `/admin/login/` | Login del panel | — |
 | `/api/tramites/` | JSON con los trámites | público |
+
+### Piezas del layout
+
+`base.html` lleva la barra (Inicio · Trámites · Soporte + Ingresar) y **dos
+pestañas emergentes** que se usan desde cualquier página:
+
+| Modal | Contenido | Se abre |
+|---|---|---|
+| `#modal-auth` | Pestañas **Ingresar** / **Crear cuenta** | clic en la barra, o solo al llegar a `/login/` y `/registro/` |
+| `#modal-chat` | Chat con el asistente | barra de la portada, botón 💬 flotante, o link con `data-abrir="modal-chat"` |
+
+Sin JavaScript todo sigue funcionando: los enlaces caen en `/login/` y
+`/registro/` (que abren el mismo modal del lado del servidor) y la barra del
+chat manda el POST a `/chatbot/`, que muestra la charla en la página.
 
 **No hay catch-all.** Una URL inexistente devuelve el 404 real de Django.
 
@@ -106,7 +126,8 @@ munitramites/
 ├── manage.py
 ├── README.md
 ├── static/
-│   └── css/app.css                 # hoja de estilos del sitio
+│   ├── css/app.css                 # hoja de estilos del sitio
+│   └── js/app.js                   # modales + envío del chat (sin frameworks)
 └── munitramites/                   # ← TODO lo de Django está acá
     ├── settings.py                 #    configuración (BD, apps, idioma, login)
     ├── urls.py                     #    rutas: acá se agregan las URL
@@ -114,6 +135,7 @@ munitramites/
     ├── forms.py                    #    validación en el servidor
     ├── models.py                   #    las tablas de Firebird
     ├── admin.py                    #    qué se ve en /admin/
+    ├── context_processors.py       #    form de registro para el modal
     ├── apps.py                     #    identidad de la app
     ├── tests.py                    #    tests (vacío)
     ├── wsgi.py / asgi.py           #    puntos de entrada del servidor
@@ -123,10 +145,14 @@ munitramites/
     ├── templatetags/
     │   └── hora.py                 #    filtro |hora_local
     └── templates/
-        ├── base.html               #    layout común (header, footer, nav)
-        ├── inicio.html             #    portada
-        ├── registro.html           #    alta de cuenta
-        ├── chatbot.html            #    asistente
+        ├── base.html               #    layout: barra + los 2 modales
+        ├── inicio.html             #    portada (chat + lista con filtros)
+        ├── registro.html           #    deja el modal de alta abierto
+        ├── soporte.html            #    soporte (solo con sesión)
+        ├── chatbot.html            #    asistente en página completa
+        ├── parciales/
+        │   ├── lista_tramites.html #    filtros + listado + paginación
+        │   └── chat_historial.html #    burbujas del chat
         ├── tramites/
         │   ├── lista.html          #    buscador + filtros
         │   └── detalle.html        #    ficha con requisitos
@@ -134,7 +160,7 @@ munitramites/
         │   ├── lista.html          #    mis consultas
         │   └── nueva.html          #    formulario
         └── registration/
-            └── login.html          #    página de login
+            └── login.html          #    deja el modal de login abierto
 ```
 
 ### ¿Dónde toco para...?
@@ -144,6 +170,7 @@ munitramites/
 | Agregar una ruta / vista | `urls.py` + `views.py` | — |
 | Crear una tabla nueva | `models.py` | `makemigrations` + `migrate` |
 | Ver una tabla en `/admin/` | `admin.py` | — |
+| Cambiar un botón de enlace de la ficha | `/admin/` → Trámites → **Enlaces oficiales** | — |
 | Crear una página nueva | `templates/` + `views.py` + `urls.py` | — |
 | Agregar un campo a un formulario | `forms.py` | — |
 | Cambiar el diseño | `static/css/app.css` + `templates/base.html` | — |

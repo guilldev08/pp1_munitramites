@@ -7,7 +7,7 @@ CRUD completo: alta, baja, edicion, busqueda, filtros y exportacion.
 
 from django.contrib import admin
 
-from .models import Consulta, Municipio, Organismo, Requisito, Tramite
+from .models import Consulta, Enlace, Municipio, Organismo, Requisito, Tramite
 
 
 @admin.register(Municipio)
@@ -28,6 +28,27 @@ class RequisitoInline(admin.TabularInline):
     ordering = ['orden']
 
 
+class EnlaceInline(admin.TabularInline):
+    """Botones que se ven en la ficha del tramite.
+
+    El admin escribe el nombre del boton y la URL: es lo que se muestra
+    en «Enlaces oficiales» de la vista de tramite.
+    """
+
+    model = Enlace
+    extra = 1
+    ordering = ['orden']
+    fields = ['orden', 'nombre', 'url']
+
+
+@admin.register(Enlace)
+class EnlaceAdmin(admin.ModelAdmin):
+    list_display = ['id', 'tramite', 'nombre', 'url', 'orden']
+    list_filter = ['tramite']
+    search_fields = ['nombre', 'url']
+    autocomplete_fields = ['tramite']
+
+
 @admin.register(Tramite)
 class TramiteAdmin(admin.ModelAdmin):
     list_display = [
@@ -38,7 +59,7 @@ class TramiteAdmin(admin.ModelAdmin):
     search_fields = ['titulo', 'descripcion']
     list_editable = ['destacado', 'activo']
     autocomplete_fields = ['municipio', 'organismo']
-    inlines = [RequisitoInline]
+    inlines = [EnlaceInline, RequisitoInline]
     fieldsets = (
         ('Datos principales', {
             'fields': ('titulo', 'tema', 'modalidad', 'descripcion'),
@@ -46,7 +67,7 @@ class TramiteAdmin(admin.ModelAdmin):
         ('Organización', {
             'fields': ('municipio', 'organismo', 'destacado', 'activo'),
         }),
-        ('Enlaces', {
+        ('Enlaces antiguos (solo se usan si el tramite no tiene botones arriba)', {
             'fields': ('enlace_turnos', 'enlace_oficial'),
             'classes': ('collapse',),
         }),

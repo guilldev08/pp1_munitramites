@@ -74,6 +74,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Formulario de registro para el modal del header
+                'munitramites.context_processors.formularios_modales',
             ],
         },
     },

@@ -1,73 +1,8 @@
 {% extends "base.html" %}
 
+{# La página no tiene contenido propio: el modal de login/registro que vive
+   en base.html se abre solo (se activa porque la vista de login manda `form`
+   con campos username/password). Acá solo se puede caer entrando a /login/
+   a mano o después de un intento fallido. #}
+
 {% block titulo %}Iniciar sesión · Munitramites{% endblock %}
-
-{% block contenido %}
-<section class="seccion">
-  <div class="contenedor">
-    <div class="miga">
-      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Ingresar
-    </div>
-
-    <form class="formulario formulario--angosto" method="post" novalidate>
-      <h2 class="mt-0">Iniciar sesión</h2>
-      <p class="texto-suave texto-chico">
-        Ingresá con tu usuario para enviar consultas y ver sus respuestas.
-      </p>
-
-      {% csrf_token %}
-
-      {% if form.errors %}
-        <div class="alerta alerta--error">
-          {% if form.non_field_errors %}
-            <ul style="margin:0; padding-left:18px">
-              {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
-            </ul>
-          {% else %}
-            Usuario o contraseña incorrectos. Probá de nuevo.
-          {% endif %}
-        </div>
-      {% endif %}
-
-      {% if next and user.is_authenticated %}
-        <div class="alerta alerta--info">
-          Tu cuenta no tiene acceso a esta página.
-          {% if user.is_staff %}
-            Probá con <a href="{% url 'admin:login' %}">el panel de administración</a>.
-          {% endif %}
-        </div>
-      {% endif %}
-
-      <div class="campo">
-        <label for="{{ form.username.id_for_label }}">Usuario</label>
-        <input type="text" name="{{ form.username.html_name }}"
-               id="{{ form.username.id_for_label }}"
-               value="{{ form.username.value|default:'' }}"
-               autofocus required autocomplete="username">
-        {% for e in form.username.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      <div class="campo">
-        <label for="{{ form.password.id_for_label }}">Contraseña</label>
-        <input type="password" name="{{ form.password.html_name }}"
-               id="{{ form.password.id_for_label }}"
-               required autocomplete="current-password">
-        {% for e in form.password.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-      </div>
-
-      {% if next %}
-        <input type="hidden" name="next" value="{{ next }}">
-      {% endif %}
-
-      <button class="boton boton--ancho" type="submit">Entrar</button>
-
-      <p class="centrado texto-chico mt-2 mb-0">
-        ¿No tenés cuenta? <a href="{% url 'registro' %}">Creá una</a>
-      </p>
-      <p class="centrado texto-chico mb-0">
-        <a href="{% url 'inicio' %}">← Volver al sitio</a>
-      </p>
-    </form>
-  </div>
-</section>
-{% endblock %}

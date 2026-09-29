@@ -17,13 +17,14 @@
       <span>Munitramites</span>
     </a>
 
+    {# Barra: secciones a la izquierda, soporte + acceso a la derecha #}
     <nav class="nav">
       <a href="{% url 'inicio' %}"
          {% if request.resolver_match.url_name == 'inicio' %}class="activo"{% endif %}>Inicio</a>
       <a href="{% url 'tramites' %}"
          {% if request.resolver_match.url_name == 'tramites' or request.resolver_match.url_name == 'tramite_detalle' %}class="activo"{% endif %}>Trámites</a>
-      <a href="{% url 'chatbot' %}"
-         {% if request.resolver_match.url_name == 'chatbot' %}class="activo"{% endif %}>Chatbot</a>
+      <a href="{% url 'soporte' %}"
+         {% if request.resolver_match.url_name == 'soporte' %}class="activo"{% endif %}>Soporte</a>
 
       {% if user.is_authenticated %}
         <a href="{% url 'consultas' %}"
@@ -33,22 +34,25 @@
           {% if user.is_staff %}
             <a href="{% url 'admin:index' %}">Panel</a>
           {% endif %}
+          <span class="nav__usuario">👤 {{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" style="display:inline">
             {% csrf_token %}
             <button class="boton boton--secundario boton--chico" type="submit">Salir</button>
           </form>
         </span>
       {% else %}
-        <a href="{% url 'login' %}"
-           {% if request.resolver_match.url_name == 'login' %}class="activo"{% endif %}>Ingresar</a>
-        <a class="boton boton--chico" href="{% url 'registro' %}">Crear cuenta</a>
+        {# Sin JS estos enlaces llevan a /login/ y /registro/, que abren el modal solos #}
+        <span class="nav__sesion">
+          <a href="{% url 'registro' %}" data-abrir="modal-auth" data-tab="registro">Crear cuenta</a>
+          <a class="boton boton--chico" href="{% url 'login' %}" data-abrir="modal-auth" data-tab="login">Ingresar</a>
+        </span>
       {% endif %}
     </nav>
   </div>
 </header>
 
 {% if messages %}
-  <div class="contenedor" style="margin-top:18px">
+  <div class="contenedor mensajes" style="margin-top:18px">
     {% for message in messages %}
       <div class="alerta alerta--{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}ok{% else %}info{% endif %}">
         {{ message }}
@@ -69,7 +73,8 @@
     </div>
     <div>
       <a href="{% url 'tramites' %}">Trámites</a> ·
-      <a href="{% url 'chatbot' %}">Chatbot</a> ·
+      <a href="{% url 'soporte' %}">Soporte</a> ·
+      <a href="{% url 'chatbot' %}" data-abrir="modal-chat">Chatbot</a> ·
       <a href="{% url 'api_tramites' %}">API</a> ·
       <a href="/admin/">Administración
       </a>
@@ -77,6 +82,154 @@
   </div>
 </footer>
 
+{# =========================================================================
+   Pestaña emergente: login + registro (el mismo modal hace las dos cosas)
+   Se abre sola cuando Django renderiza un form de login (form.username) o
+   de registro (form.password1), por ejemplo después de un error.
+   ========================================================================= #}
+<div class="modal{% if form.password1 or form.username %} modal--abierto{% endif %}"
+     id="modal-auth"
+     {% if not form.password1 and not form.username %}hidden{% endif %}
+     role="dialog" aria-modal="true" aria-labelledby="modal-auth-titulo">
+  <div class="modal__caja modal__caja--auth" data-modal-caja>
+    <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button>
+
+    <div class="modal__pestanas" role="tablist">
+      <button type="button" class="modal__pestana{% if not form.password1 %} activo{% endif %}"
+              data-pestana="login" role="tab">Ingresar</button>
+      <button type="button" class="modal__pestana{% if form.password1 %} activo{% endif %}"
+              data-pestana="registro" role="tab">Crear cuenta</button>
+    </div>
+
+    {# --- Pestaña 1: iniciar sesión --- #}
+    <div class="modal__panel" data-panel="login"{% if form.password1 %} hidden{% endif %}>
+      <h2 id="modal-auth-titulo" class="mt-0">Iniciar sesión</h2>
+      <p class="texto-suave texto-chico">
+        Ingresá para enviar consultas, pedir soporte y ver sus respuestas.
+      </p>
+
+      <form method="post" action="{% url 'login' %}" novalidate>
+        {% csrf_token %}
+
+        {% if form.username and not form.password1 %}
+          <div class="alerta alerta--error">
+            {% if form.non_field_errors %}
+              <ul style="margin:0; padding-left:18px">
+                {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
+              </ul>
+            {% else %}
+              Usuario o contraseña incorrectos. Probá de nuevo.
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="campo">
+          <label for="id_modal_username">Usuario</label>
+          <input type="text" id="id_modal_username" name="username"
+                 value="{{ form.username.value|default:'' }}"
+                 autocomplete="username" required autofocus>
+          {% for e in form.username.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+
+        <div class="campo">
+          <label for="id_modal_password">Contraseña</label>
+          <input type="password" id="id_modal_password" name="password"
+                 autocomplete="current-password" required>
+          {% for e in form.password.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+
+        <input type="hidden" name="next" id="id_modal_next" value="{{ next|default:'' }}">
+
+        <button class="boton boton--ancho" type="submit">Entrar</button>
+      </form>
+
+      <p class="centrado texto-chico mt-2 mb-0">
+        <a href="{% url 'inicio' %}">← Volver al sitio</a>
+      </p>
+    </div>
+
+    {# --- Pestaña 2: crear cuenta --- #}
+    <div class="modal__panel" data-panel="registro"{% if not form.password1 %} hidden{% endif %}>
+      <h2 class="mt-0">Crear cuenta</h2>
+      <p class="texto-suave texto-chico">
+        Registrarte te permite enviar consultas, pedir soporte y hacer seguimiento.
+      </p>
+
+      <form method="post" action="{% url 'registro' %}" novalidate>
+        {% csrf_token %}
+
+        {% if form_registro.non_field_errors %}
+          <div class="alerta alerta--error">
+            {% for e in form_registro.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        {% for campo in form_registro %}
+          <div class="campo">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            {{ campo }}
+            {% if campo.help_text %}
+              <span class="ayuda">{{ campo.help_text|safe }}</span>
+            {% endif %}
+            {% for e in campo.errors %}
+              <ul class="errores"><li>{{ e }}</li></ul>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <button class="boton boton--ancho" type="submit">Crear cuenta</button>
+      </form>
+
+      <p class="centrado texto-chico mt-2 mb-0">
+        <a href="{% url 'inicio' %}">← Volver al sitio</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+{# =========================================================================
+   Pestaña emergente: chatbot
+   ========================================================================= #}
+<div class="modal modal--chat" id="modal-chat" hidden
+     role="dialog" aria-modal="true" aria-label="Asistente de trámites">
+  <div class="modal__caja modal__caja--chat" data-modal-caja>
+    <div class="modal__cabecera">
+      <div>
+        <strong>Asistente de trámites</strong>
+        <div class="texto-chico texto-suave">Busca en la base real de trámites de Misiones.</div>
+      </div>
+      <div class="modal__acciones">
+        <button class="boton boton--secundario boton--chico" type="button" id="chat-limpiar">Vaciar</button>
+        <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+    </div>
+
+    <div class="chat__historial" id="chat-historial">
+      {% include "parciales/chat_historial.html" %}
+    </div>
+
+    {# Sin JavaScript este form manda a /chatbot/ y la charla se ve en la pagina #}
+    <form class="chat__entrada" id="chat-form" method="post"
+          action="{% url 'chatbot' %}" autocomplete="off">
+      {% csrf_token %}
+      <input type="text" name="mensaje" placeholder="Escribí tu consulta…"
+             maxlength="300" required aria-label="Mensaje">
+      <button class="boton" type="submit">Enviar</button>
+    </form>
+  </div>
+</div>
+
+{# Boton flotante: reabre el chat desde cualquier pagina #}
+<button class="fab" type="button" data-abrir="modal-chat" aria-label="Abrir el asistente">💬</button>
+
+<script>
+  window.MT = {
+    chatApi: "{% url 'chatbot_api' %}",
+    urlLogin: "{% url 'login' %}",
+    urlRegistro: "{% url 'registro' %}"
+  };
+</script>
+<script src="{% static 'js/app.js' %}" defer></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

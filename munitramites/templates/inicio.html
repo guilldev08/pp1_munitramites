@@ -29,6 +29,36 @@
   </div>
 </section>
 
+{# --- Los tres pasos, apenas termina el hero ------------------------------ #}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div>
+        <h2>¿Cómo funciona?</h2>
+        <p>Tres pasos para hacer tu trámite.</p>
+      </div>
+    </div>
+
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso__num">1</div>
+        <h3>Buscá</h3>
+        <p>Filtrá por tema, municipio o modalidad, o preguntale al asistente con la barra de arriba.</p>
+      </div>
+      <div class="paso">
+        <div class="paso__num">2</div>
+        <h3>Revisá los requisitos</h3>
+        <p>Cada ficha detalla todos los documentos necesarios y el organismo responsable.</p>
+      </div>
+      <div class="paso">
+        <div class="paso__num">3</div>
+        <h3>Tramitá</h3>
+        <p>Seguí el enlace oficial o acercate al organismo con la lista de requisitos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 {# --- Atajos por tema, justo antes de la búsqueda -------------------------- #}
 {% if temas %}
 <section class="seccion seccion--alterna">
@@ -66,35 +96,6 @@
     </div>
 
     {% include "parciales/lista_tramites.html" %}
-  </div>
-</section>
-
-<section class="seccion seccion--alterna">
-  <div class="contenedor">
-    <div class="titulo-seccion">
-      <div>
-        <h2>¿Cómo funciona?</h2>
-        <p>Tres pasos para hacer tu trámite.</p>
-      </div>
-    </div>
-
-    <div class="pasos">
-      <div class="paso">
-        <div class="paso__num">1</div>
-        <h3>Buscá</h3>
-        <p>Filtrá por tema, municipio o modalidad, o preguntale al asistente con la barra de arriba.</p>
-      </div>
-      <div class="paso">
-        <div class="paso__num">2</div>
-        <h3>Revisá los requisitos</h3>
-        <p>Cada ficha detalla todos los documentos necesarios y el organismo responsable.</p>
-      </div>
-      <div class="paso">
-        <div class="paso__num">3</div>
-        <h3>Tramitá</h3>
-        <p>Seguí el enlace oficial o acercate al organismo con la lista de requisitos.</p>
-      </div>
-    </div>
   </div>
 </section>
 

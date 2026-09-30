@@ -1,10 +1,22 @@
 """Funciones de ayuda para armar los datos de prueba una sola vez."""
 
 from django.contrib.auth.models import User
-from django.test import TestCase as _TestCase
+from django.test import TestCase as _TestCase, override_settings
 
 from munitramites.models import Municipio, Organismo, Perfil, Requisito, Tramite
 from munitramites.services.chatbot import indexar
+
+# CHATBOT_LLM sin proveedor: en los tests el asistente redacta con la
+# plantilla local y NUNCA se abre una conexión con Ollama. Así la suite
+# anda igual con el contenedor apagado y nadie espera los segundos de CPU
+# del modelo. Los tests del LLM lo reactivan con self.settings(...).
+CHATBOT_LLM_APAGADO = {
+    'proveedor': '',
+    'api_key': '',
+    'modelo': '',
+    'base_url': '',
+    'timeout': 20,
+}
 
 
 class TestCase(_TestCase):
@@ -13,7 +25,23 @@ class TestCase(_TestCase):
     Vacía el índice del chatbot antes y después de cada test: el índice vive
     en memoria y los tests revierten la base, así que si no se limpia, un
     test podría ver los trámites de otro.
+
+    Además deja el LLM apagado (ver CHATBOT_LLM_APAGADO): los tests dicen
+    lo que debe pasar, no lo que diga un modelo. Ese override va en
+    setUpClass y no en setUp porque varias subclases redefinen setUp sin
+    llamar a super().
     """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._llm_apagado = override_settings(CHATBOT_LLM=CHATBOT_LLM_APAGADO)
+        cls._llm_apagado.enable()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._llm_apagado.disable()
+        super().tearDownClass()
 
     def setUp(self):
         super().setUp()

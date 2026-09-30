@@ -10,11 +10,12 @@ Pipeline de tres etapas:
                     puntua cada fragmento con BM25. Si nada supera el
                     umbral, no hay contexto util.
     3. GENERAR      services/chatbot/generacion.py
-                    Arma la respuesta con el contexto recuperado. Si hay
-                    una API key configurada (settings.CHATBOT_LLM), la
-                    respuesta la genera el LLM; si no, una plantilla
-                    anclada a los fragmentos. Nunca inventa: si el umbral
-                    no se alcanza, dice que no dispone de esa informacion.
+                    Arma la respuesta con el contexto recuperado. Hoy la
+                    redacta Qwen (settings.CHATBOT_LLM → Ollama, local,
+                    contenedor `ollama` de docker-compose); si no hay
+                    proveedor o el modelo falla, una plantilla anclada a
+                    los fragmentos. Nunca inventa: si el umbral no se
+                    alcanza, dice que no dispone de esa informacion.
 
 Criterios del documento que garantiza este diseno:
 

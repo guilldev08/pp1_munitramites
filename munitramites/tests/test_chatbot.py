@@ -6,15 +6,29 @@ Criterios de aceptación del documento:
     Manejo de alucinaciones .. si no sabe, lo dice en lugar de inventar
     Cita de fuentes .......... siempre enlaza el trámite del que habla
     Privacidad ............... no almacena el historial de forma permanente
+
+La etapa 3 (generar) anda con Qwen vía Ollama; en los tests la red se
+simula, así que acá se prueba el cableado, no la calidad del modelo.
 """
 
 
+import http.client
+import urllib.error
+from unittest import mock
+
+from django.conf import settings
 from django.urls import reverse
 
 from munitramites.models import Consulta, Tramite
-from munitramites.services.chatbot import responder
+from munitramites.services.chatbot import generacion, responder
+from munitramites.services.chatbot.generacion import (
+    INSTRUCCION,
+    LLMHttp,
+    PlantillaLocal,
+    proveedor,
+)
 
-from .base import TestCase, tramite
+from .base import CHATBOT_LLM_APAGADO, TestCase, tramite
 
 
 class PipelineTests(TestCase):
@@ -135,3 +149,169 @@ class PrivacidadTests(TestCase):
         r = self.client.get(reverse('chatbot_api'))
 
         self.assertEqual(r.json()['historial'], [])
+
+
+# Configuración idéntica a la de settings.CHATBOT_LLM (Qwen en Ollama),
+# pero apuntando a una URL que nunca se usa: la red se mockea igual.
+OLLAMA_DE_PRUEBA = {
+    'proveedor': 'ollama',
+    'api_key': '',
+    'modelo': 'qwen2.5:1.5b',
+    'base_url': 'http://ollama:11434/v1',
+    'timeout': 5,
+}
+
+# Lo que devolvería Ollama si el modelo contestara.
+MODELO_RESPONDE = {
+    'choices': [{
+        'message': {
+            'content': ('Con el DNI en vigor y el formulario completado '
+                        'ya podés renovarlo en el Registro Civil.'),
+        },
+    }],
+}
+
+
+class PruebaDelLLMTests(TestCase):
+    """Etapa 3 con el modelo de verdad (Qwen corriendo en Ollama).
+
+    Los tests no esperan a la PC que genere tokens: se simula la respuesta
+    HTTP para chequear el cableado (URL, claves, prompt y caída a la
+    plantilla si algo falla).
+    """
+
+    def setUp(self):
+        super().setUp()
+        # El cooldown es estado del módulo: cada test arranca limpio.
+        generacion._en_fallo_hasta = 0.0
+
+    def tearDown(self):
+        generacion._en_fallo_hasta = 0.0
+        super().tearDown()
+
+    def test_sin_configuracion_responde_la_plantilla_local(self):
+        with self.settings(CHATBOT_LLM=CHATBOT_LLM_APAGADO):
+            p = proveedor()
+        self.assertIsInstance(p, PlantillaLocal)
+
+    def test_ollama_queda_configurado_aunque_no_haya_clave(self):
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            p = proveedor()
+
+        self.assertIsInstance(p, LLMHttp)
+        self.assertTrue(p.esta_configurado())
+
+    def test_ollama_sin_url_no_esta_configurado(self):
+        with self.settings(CHATBOT_LLM={**OLLAMA_DE_PRUEBA, 'base_url': ''}):
+            p = proveedor()
+        self.assertIsInstance(p, PlantillaLocal)
+
+    def test_llama_al_end_point_de_ollama_sin_autorizacion(self):
+        tramite()
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(
+                LLMHttp, '_post', return_value=MODELO_RESPONDE
+            ) as post:
+                rta = responder('renovacion de DNI')
+
+        url, payload, encabezados = post.call_args.args
+        self.assertEqual(url, 'http://ollama:11434/v1/chat/completions')
+        # Ollama no pide clave: no se manda Authorization.
+        self.assertEqual(encabezados, {})
+        self.assertEqual(payload['model'], 'qwen2.5:1.5b')
+        self.assertEqual(rta['texto'],
+                         MODELO_RESPONDE['choices'][0]['message']['content'])
+
+    def test_el_prompt_le_ordena_responder_solo_con_el_contexto(self):
+        tramite()
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(
+                LLMHttp, '_post', return_value=MODELO_RESPONDE
+            ) as post:
+                responder('renovacion de DNI')
+
+        mensajes = post.call_args.args[1]['messages']
+        self.assertEqual(mensajes[0]['role'], 'system')
+        self.assertEqual(mensajes[0]['content'], INSTRUCCION)
+        self.assertEqual(mensajes[1]['role'], 'user')
+        # El contexto que recibe el modelo es el RAG: los fragmentos
+        # recuperados (TOP_K como máximo), no la base entera.
+        self.assertIn('Renovacion de DNI', mensajes[1]['content'])
+        self.assertLessEqual(
+            mensajes[1]['content'].count('•'), settings.CHATBOT_TOP_K
+        )
+        self.assertEqual(post.call_args.args[1]['max_tokens'], 256)
+
+    def test_si_el_llm_falla_vuelve_la_plantilla_local(self):
+        tramite()
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(
+                LLMHttp, '_post',
+                side_effect=urllib.error.URLError('contenedor apagado'),
+            ):
+                rta = responder('renovacion de DNI')
+
+        # Nada de «no pude conectar» para el ciudadano: la plantilla.
+        self.assertTrue(rta['texto'])
+        self.assertIn('Encontré', rta['texto'])
+        self.assertTrue(rta['tramites'])
+
+    def test_timeout_o_respuesta_caida_tambien_vuelven_a_la_plantilla(self):
+        """El modelo tarda más que `timeout` o la conexión se corta a mitad."""
+        tramite()
+
+        for fallo in (TimeoutError('se pasó del tiempo'),
+                      http.client.RemoteDisconnected('se cortó la respuesta')):
+            with self.subTest(fallo=type(fallo).__name__):
+                with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+                    with mock.patch.object(LLMHttp, '_post', side_effect=fallo):
+                        rta = responder('renovacion de DNI')
+
+                self.assertIn('Encontré', rta['texto'])
+
+    def test_tras_un_fallo_no_insiste_con_la_red(self):
+        """Sin cooldown, cada consulta pagaría ~4 s de DNS para nada."""
+        tramite()
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(
+                LLMHttp, '_post', side_effect=OSError('contenedor caído')
+            ) as post:
+                rta1 = responder('renovacion de DNI')
+                rta2 = responder('renovacion de DNI')
+
+        self.assertEqual(post.call_count, 1)
+        # Aunque no insista con la red, el ciudadano siempre recibe texto.
+        self.assertIn('Encontré', rta1['texto'])
+        self.assertIn('Encontré', rta2['texto'])
+
+    def test_pasado_el_cooldown_vuelve_a_intentar(self):
+        tramite()
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(
+                LLMHttp, '_post', side_effect=OSError('caído')
+            ) as post:
+                responder('renovacion de DNI')
+                self.assertEqual(post.call_count, 1)
+
+                # Se cumple el plazo (60 s): vuelve a tocar la red.
+                generacion._en_fallo_hasta = 0.0
+                responder('renovacion de DNI')
+                self.assertEqual(post.call_count, 2)
+
+    def test_una_respuesta_ok_no_deja_cooldown(self):
+        tramite()
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(
+                LLMHttp, '_post', return_value=MODELO_RESPONDE
+            ) as post:
+                responder('renovacion de DNI')
+                responder('renovacion de DNI')
+
+        self.assertEqual(post.call_count, 2)
+        self.assertEqual(generacion._en_fallo_hasta, 0.0)

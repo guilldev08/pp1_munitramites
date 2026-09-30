@@ -183,26 +183,37 @@ DEFAULT_FROM_EMAIL = 'no-responder@munitramites.test'
 # --- Chatbot (asistente con arquitectura RAG) ------------------------------
 # `services/chatbot/` implementa indexacion -> recuperacion -> generacion.
 #
-# CHATBOT_LLM es la CLAVE DE CONEXION al modelo de lenguaje. Mientras este
-# vacio, el pipeline responde con la plantilla anclada al contexto
-# recuperado (sin alucinar: si no hay fragmentos relevantes, lo dice).
+# CHATBOT_LLM es la CONEXION con el modelo de lenguaje. Mientras el
+# proveedor este vacio, el pipeline responde con la plantilla anclada al
+# contexto recuperado (sin alucinar: si no hay fragmentos relevantes, lo
+# dice).
 #
-# Cuando haya una API key, completar estos valores y el proveedor
-# correspondiente queda enchufado sin tocar la vista ni la recuperacion:
+# Hoy el asistente redacta con Qwen (modelo ligero) corriendo EN LOCAL,
+# dentro de Docker, para no depender de internet ni de una API key:
 #
-#     CHATBOT_LLM = {
-#         'proveedor': 'openai',        # openai | anthropic | gemini | custom
-#         'api_key': 'sk-…',
-#         'modelo': 'gpt-4o-mini',
-#         'base_url': '',               # opcional (proxies, ollama, vllm)
-#         'timeout': 20,
-#     }
+#     servicio `ollama` de docker-compose.yml
+#         -> imagen propia `Dockerfile.ollama`
+#            (Ollama + qwen2.5:1.5b ya descargados adentro,
+#             se exporta con `docker save`)
+#
+# Adentro de la red de compose el host se llama `ollama`. Si algun dia el
+# sitio corre en la PC host (fuera de Docker), cambiarlo a
+# `http://localhost:11434/v1`, que es donde se publica ese puerto.
+#
+# Si el contenedor esta apagado, el modelo no llega a responder dentro de
+# `timeout` o falla la red, la respuesta cae en la plantilla local: la
+# conversacion nunca se rompe.
 CHATBOT_LLM = {
-    'proveedor': '',
+    # 'ollama' (local, sin clave) | openai | anthropic | gemini | custom
+    'proveedor': 'ollama',
+    # Solo la piden los proveedores de la nube; Ollama trabaja sin clave.
     'api_key': '',
-    'modelo': '',
-    'base_url': '',
-    'timeout': 20,
+    # Modelos disponibles: docker compose exec ollama ollama list
+    'modelo': 'qwen2.5:1.5b',
+    # URL interna del servicio `ollama` (dialecto OpenAI de Ollama).
+    'base_url': 'http://ollama:11434/v1',
+    # La PC no tiene GPU: en CPU una respuesta lleva unos segundos.
+    'timeout': 60,
 }
 
 # Fragmentos que se recuperan por consulta y se pasan como contexto al LLM.

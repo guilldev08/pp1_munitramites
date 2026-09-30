@@ -39,5 +39,37 @@ services:
       retries: 30
       start_period: 15s
 
+  ollama:
+    # PERFIL «llm»: NO se levanta con `docker compose up -d` normal.
+    # Solo cuando haya internet (o corra en una PC con banda) se arma la
+    # imagen con el modelo adentro:
+    #
+    #     docker compose --profile llm up -d --build
+    #
+    # Mientras tanto el asistente anda igual, con la plantilla local de
+    # `generacion.py` (sin modelo no se rompe nada, solo redacta peor).
+    profiles: ["llm"]
+    # Imagen propia: Ollama + el modelo Qwen ya descargados adentro,
+    # así la configuración del asistente viaja con Docker y se puede
+    # exportar con `docker save munitramites-ollama -o ollama.tar`.
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+      args:
+        MODELO: qwen2.5:1.5b
+    image: munitramites-ollama
+    # Se levanta sola si Docker Desktop se reinicia o se cae la PC
+    restart: unless-stopped
+    environment:
+      # El modelo se queda cargado en RAM. Sin esto, a los 5 minutos de
+      # inactividad Ollama lo descarga y la primera pregunta de la charla
+      # tarda bastante más (hay que volver a leer ~1 GB del disco).
+      OLLAMA_KEEP_ALIVE: 24h
+    # Sin volumen a propósito: el modelo vive en la imagen. Si se montara
+    # uno en /root/.ollama quedaría vacío y taparía el modelo.
+    ports:
+      # Para mirar el modelo desde la PC host (ollama list, api/tags)
+      - "11434:11434"
+
 volumes:
   firebird_data:

@@ -1,0 +1,36 @@
+# Ollama con el modelo Qwen ya descargado ADENTRO de la imagen.
+#
+# Así el asistente anda sin internet y la configuración viaja con Docker:
+#
+#     docker compose build ollama                  # arma la imagen (baja el modelo)
+#     docker compose up -d                          # levanta todo
+#     docker compose exec ollama ollama list        # el modelo aparece ahí
+#
+#     # Exportar / respaldar el asistente entero (imagen + modelo):
+#     docker save munitramites-ollama -o munitramites-ollama.tar
+#
+# Para cambiar de modelo, se pasa el build-arg en docker-compose.yml:
+#     MODELO=qwen2.5:0.5b   ~400 MB, el más rápido en CPU
+#     MODELO=qwen2.5:1.5b   ~1 GB,  el equilibrio (el que está por defecto)
+#     MODELO=qwen2.5:3b     ~2 GB,  más capaz y más lento sin GPU
+FROM ollama/ollama:latest
+
+ARG MODELO=qwen2.5:1.5b
+
+# Arranca el servidor, espera a que conteste, baja el modelo y lo apaga.
+# El modelo queda guardado en la capa de la imagen (no en un volumen).
+RUN /bin/ollama serve & pid=$!; \
+    i=0; \
+    until /bin/ollama list >/dev/null 2>&1; do \
+        i=$((i + 1)); \
+        if [ "$i" -ge 30 ]; then \
+            echo "Ollama no arranco durante el build"; \
+            exit 1; \
+        fi; \
+        sleep 2; \
+    done; \
+    /bin/ollama pull "${MODELO}"; \
+    kill "$pid"; wait "$pid" 2>/dev/null || true
+
+# El servidor escucha en todos lados dentro de la red de compose.
+ENV OLLAMA_HOST=0.0.0.0:11434

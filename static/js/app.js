@@ -7,6 +7,10 @@
        abren el mismo modal server-side.
      · La barra del chat y el form del modal → mandan POST a /chatbot/
        y la charla se ve en la página completa.
+
+   El modelo corre en la PC y tarda unos segundos: al enviar se pinta la
+   pregunta y un «Escribiendo…» con aria-live; al llegar la respuesta,
+   pintar() repinta el historial real que devolvió el servidor.
    ========================================================================= */
 (function () {
   'use strict';
@@ -200,6 +204,21 @@
     datos.append('mensaje', texto);
 
     boton.disabled = true;
+
+    // El modelo corre en la PC y tarda unos segundos: se pinta la pregunta
+    // de una vez y un aviso mientras redacta, así nadie cree que se colgó.
+    // aria-live acompaña a los lectores de pantalla; al llegar la respuesta
+    // pintar() repinta todo y este aviso desaparece.
+    var espera = null;
+    if (contChat) {
+      contChat.appendChild(burbuja(texto, 'usuario'));
+      espera = burbuja('Escribiendo…', 'bot');
+      espera.setAttribute('aria-live', 'polite');
+      espera.setAttribute('aria-busy', 'true');
+      contChat.appendChild(espera);
+      bajar();
+    }
+
     postChat(datos)
       .then(function (data) {
         entrada.value = '';
@@ -217,7 +236,10 @@
           bajar();
         }
       })
-      .then(function () { boton.disabled = false; });
+      .then(function () {
+        if (espera && espera.parentNode) espera.parentNode.removeChild(espera);
+        boton.disabled = false;
+      });
   }
 
   // Formulario del modal

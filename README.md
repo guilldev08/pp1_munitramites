@@ -48,6 +48,17 @@ docker compose up -d --build
 
 La primera vez tarda unos minutos (baja imágenes e instala dependencias).
 
+**El modelo del asistente es opcional**: el servicio `ollama` está detrás
+del perfil `llm`, así que `docker compose up -d` **no lo descarga** y el
+sitio arranca igual. Sin modelo el asistente responde con la plantilla
+local; para que redacte con Qwen hace falta internet (la primera vez baja
+~4,5 GB: imagen + modelo) y un solo comando:
+
+```powershell
+docker compose --profile llm up -d --build   # arma la imagen con Qwen adentro
+docker compose exec ollama ollama list       # qwen2.5:1.5b aparece ahí
+```
+
 ### Cargar los datos de ejemplo
 
 ```powershell
@@ -177,6 +188,10 @@ Sin JavaScript todo sigue funcionando: los enlaces caen en `/login/` y
 `/registro/` (que abren el mismo modal del lado del servidor) y la barra del
 chat manda el POST a `/chatbot/`, que muestra la charla en la página.
 
+Con JavaScript, mientras el modelo local redacta (unos segundos), el modal
+muestra la pregunta de una vez y un **«Escribiendo…»** con `aria-live`; al
+llegar la respuesta se repinta el historial que devolvió el servidor.
+
 **No hay catch-all.** Una URL inexistente devuelve el 404 real de Django.
 
 Orden en `urls.py` (importa): admin → auth → páginas → API → estáticos.
@@ -192,6 +207,7 @@ en el propio archivo.
 ```
 munitramites/
 ├── Dockerfile
+├── Dockerfile.ollama                # Ollama + el modelo Qwen ya adentro
 ├── docker-compose.yml
 ├── requirements.txt
 ├── manage.py
@@ -222,9 +238,9 @@ munitramites/
     │   └── chatbot/                #    RAG: indexar → recuperar → generar
     │       ├── indexar.py          #    1. convierte trámites en fragmentos
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
-    │       ├── generacion.py       #    3. plantilla local o LLM (settings)
+    │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (93)
+    ├── tests/                      #    tests de aceptación (103)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -332,7 +348,13 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 93 tests
+docker compose exec web python manage.py test --noinput         # correr los 103 tests
+
+docker compose exec ollama ollama list                          # modelos cargados
+docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
+docker compose exec ollama ollama pull qwen2.5:3b               # bajar otro modelo
+docker compose build ollama                                     # (re)armar la imagen con el modelo
+docker save munitramites-ollama -o ollama.tar                   # exportar imagen + modelo
 ```
 
 ### Ejecutar código desde el host
@@ -415,9 +437,10 @@ escrito acá**: es lo que hace verificable el documento.
 | **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) | `test_chatbot` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
+| **IA — modelo local (Qwen/Ollama)** | `generacion.py` (`LLMHttp`) · `settings.CHATBOT_LLM` · `Dockerfile.ollama` | `test_chatbot.PruebaDelLLMTests` |
 | **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
 | **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
-| **RNF-09** Despliegue (Docker) | `Dockerfile` + `docker-compose.yml` | — |
+| **RNF-09** Despliegue (Docker) | `Dockerfile` + `Dockerfile.ollama` + `docker-compose.yml` | — |
 | **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |
 | **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, sin JS obligatorio | `test_chatbot` |
 
@@ -425,34 +448,79 @@ escrito acá**: es lo que hace verificable el documento.
 
 El chatbot **no adivina**: arma un índice con los trámites, busca los
 fragmentos que responden la pregunta y responde citando de dónde salió.
-Tres etapas, tres archivos, todas en `services/chatbot/`:
+Tres etapas, tres archivos, todas en `services/chatbot/`. La etapa 3 es la
+única que habla con el modelo: **Qwen2.5 corriendo en Ollama, dentro de
+Docker** (ver «El modelo: Qwen corriendo en Ollama» más abajo).
 
 | Etapa | Archivo | Qué hace |
 |---|---|---|
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (señales en `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
-| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados. Por defecto usa `PlantillaLocal` (sin dependencias ni costo); si hay proveedor configurado, usa `LLMHttp` |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: hoy con **Qwen vía `LLMHttp`** (Ollama, local). Si el proveedor no está configurado o falla la red, usa `PlantillaLocal` (sin dependencias ni costo) |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, dice explícitamente que no dispone de esa información |
 
-### Conectar un LLM (cuando quieras)
+### El modelo: Qwen corriendo en Ollama (local)
 
-Está todo cableado: falta solamente la clave. En `settings.py`:
+El asistente redacta con **Qwen2.5** (ligero, ~1 GB) corriendo **en tu PC**,
+dentro de un contenedor de Docker: sin API key y sin mandar los datos de
+nadie a ningún lado. Ese contenedor está detrás del **perfil `llm`** de
+Docker Compose, así que `docker compose up -d` **no lo arma ni descarga
+nada**: el modelo se enciende aparte, cuando haya internet.
 
-```python
-CHATBOT_LLM = {
-    'proveedor': 'openai',        # 'openai' | 'anthropic' | 'gemini' | 'custom'
-    'api_key':   'sk-...',        # ← esto es lo único que hace falta
-    'modelo':    'gpt-4o-mini',
-    'base_url':  '',              # opcional: Ollama/vLLM/proxy compatible
-    'timeout':   20,
-}
+| Pieza | Dónde está | Qué hace |
+|---|---|---|
+| Contenedor `ollama` | `docker-compose.yml` (perfil `llm`) + `Dockerfile.ollama` | arma una imagen propia con Ollama **y el modelo ya descargado adentro** |
+| Configuración | `settings.py` → `CHATBOT_LLM` | proveedor `ollama`, modelo, URL interna `http://ollama:11434/v1` y `timeout` |
+| Cliente HTTP | `services/chatbot/generacion.py` | habla el dialecto OpenAI de Ollama con `urllib`, sin dependencias |
+| Respaldo | `generacion.py::PlantillaLocal` | lo que contesta el asistente mientras el modelo no esté disponible |
+
+```powershell
+docker compose up -d                         # uso normal: SIN modelo, arranca al toque
+docker compose --profile llm up -d --build   # con modelo: baja ~4,5 GB una sola vez
+docker compose exec ollama ollama list       # qwen2.5:1.5b aparece ahí
 ```
 
-Mientras `api_key` esté vacía, el asistente responde con `PlantillaLocal`.
-Si el modelo no responde o falla la red, **cae igual en la plantilla local**:
-la conversación nunca se rompe. El prompt que recibe el modelo (responder solo
-con el contexto, citar el trámite y admitir cuando no sabe) está en
-`generacion.py::INSTRUCCION`.
+**El modelo viaja con la imagen**: se respalda y se mueve con Docker sin
+volver a descargar nada (no hay volumen, por eso el modelo no se pierde ni
+se tapa).
+
+```powershell
+docker save munitramites-ollama -o munitramites-ollama.tar   # exportar
+docker load -i munitramites-ollama.tar                       # importar en otra PC
+```
+
+Cambiar de modelo (Qwen u otro que hable el dialecto OpenAI):
+
+```yaml
+# docker-compose.yml → services.ollama.build.args
+args:
+  MODELO: qwen2.5:0.5b   # ~400 MB, el más rápido en CPU
+  MODELO: qwen2.5:1.5b   # ~1 GB,  el que está por defecto
+  MODELO: qwen2.5:3b     # ~2 GB,  más capaz y más lento
+```
+
+```powershell
+docker compose build ollama               # baja el modelo nuevo
+```
+
+**Si el modelo no está construido (perfil apagado), el contenedor está
+caído o el modelo se pasa del tiempo, la respuesta cae en la plantilla
+local**: la conversación nunca se rompe y responde al instante. El prompt
+que recibe el modelo (responder solo con el contexto, citar el trámite y
+admitir cuando no sabe) está en `generacion.py::INSTRUCCION`.
+
+Además, tras un fallo el asistente **no vuelve a tocar la red durante
+60 segundos** (`generacion.py::ESPERA_TRAS_UN_FALLO`): sin ese cooldown
+cada consulta pagaría la espera del resolver de red (~4 s buscando el
+host `ollama` que no existe) para terminar igual en la plantilla. En la
+práctica el primer intento cuesta lo que tenga que costar y los
+siguientes responden ya.
+
+Si algún día se prefiere un modelo en la nube, alcanza con cambiar
+`CHATBOT_LLM` en `settings.py`: `proveedor: 'openai' | 'anthropic' |
+'gemini'`, su `api_key` y el `modelo`; no se toca ni la vista ni el RAG.
+Y si el sitio corre **fuera de Docker** (en la PC host), cambiar el
+`base_url` a `http://localhost:11434/v1`, que es donde se publica el puerto.
 
 Otras perillas: `CHATBOT_TOP_K` (fragmentos que se pasan como contexto) y
 `CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse).
@@ -531,6 +599,8 @@ Luego escribí SQL y cerrá con `quit;`.
 | Backend Firebird | `django-firebird` 5.0.4 | (pip) |
 | Driver | `firebird-driver` 2.0.3 | (pip) |
 | Firebird Server | 4.0.7 | `firebirdsql/firebird:4.0.7` |
+| Ollama | latest | `Dockerfile.ollama` → imagen propia `munitramites-ollama` |
+| Modelo del asistente | `qwen2.5:1.5b` (~1 GB, CPU) | baja en el build de esa imagen |
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 

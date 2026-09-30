@@ -240,13 +240,14 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (103)
+    ├── tests/                      #    tests de aceptación (109)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
-    │   ├── test_chatbot.py         #    asistente: precisión y privacidad
+    │   ├── test_chatbot.py         #    asistente: RAG, privacidad y LLM local
     │   ├── test_consultas.py       #    RF-08/09/10
     │   ├── test_roles.py           #    ESP-02 · RF-03/11/13
+    │   ├── test_rnf.py             #    RNF-03 rendimiento · RNF-05 integridad
     │   └── test_admin.py           #    cara del panel + candado de permisos
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
@@ -348,7 +349,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 103 tests
+docker compose exec web python manage.py test --noinput         # correr los 109 tests
 
 docker compose exec ollama ollama list                          # modelos cargados
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
@@ -438,7 +439,13 @@ escrito acá**: es lo que hace verificable el documento.
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — modelo local (Qwen/Ollama)** | `generacion.py` (`LLMHttp`) · `settings.CHATBOT_LLM` · `Dockerfile.ollama` | `test_chatbot.PruebaDelLLMTests` |
+| **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), DNI validado y único, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
+| **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en la portada, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
+| **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página, índice BM25 en memoria y cooldown del LLM | `test_rnf.RendimientoTests` |
+| **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
+| **RNF-05** Integridad | `unique` (Municipio/Organismo), `unique_together` (Requisitos), `PROTECT`/`CASCADE` en las claves foráneas | `test_rnf.IntegridadTests` · `test_auth` |
 | **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
+| **RNF-07** Compatibilidad | el entorno definido del proyecto (Docker) y páginas que andan sin JavaScript ni plugins | `test_chatbot.test_pagina_del_chat_sin_javascript` |
 | **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
 | **RNF-09** Despliegue (Docker) | `Dockerfile` + `Dockerfile.ollama` + `docker-compose.yml` | — |
 | **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |

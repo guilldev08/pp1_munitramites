@@ -29,6 +29,26 @@
   </div>
 </section>
 
+{# --- Atajos por tema, justo antes de la búsqueda -------------------------- #}
+{% if temas %}
+<section class="seccion seccion--alterna">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div>
+        <h2>Explorar por tema</h2>
+        <p>Entrá directo a la categoría que necesitás.</p>
+      </div>
+    </div>
+    <div class="etiquetas">
+      {% for x in temas %}
+        <a class="etiqueta etiqueta--tema" style="padding:7px 14px; font-size:.85rem"
+           href="{% url 'tramites' %}?tema={{ x.tema }}">{{ x.tema }} ({{ x.total }})</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 {# --- Trámites: la lista con filtros vive en la portada ------------------- #}
 <section class="seccion">
   <div class="contenedor">
@@ -78,22 +98,4 @@
   </div>
 </section>
 
-{% if temas %}
-<section class="seccion">
-  <div class="contenedor">
-    <div class="titulo-seccion">
-      <div>
-        <h2>Explorar por tema</h2>
-        <p>Entrá directo a la categoría que necesitás.</p>
-      </div>
-    </div>
-    <div class="etiquetas">
-      {% for x in temas %}
-        <a class="etiqueta etiqueta--tema" style="padding:7px 14px; font-size:.85rem"
-           href="{% url 'tramites' %}?tema={{ x.tema }}">{{ x.tema }} ({{ x.total }})</a>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
 {% endblock %}

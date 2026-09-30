@@ -347,6 +347,32 @@ Get-Content script.py -Raw | docker compose exec -T web python manage.py shell
 "print(1+1)" | docker compose exec -T web python manage.py shell
 ```
 
+## Git
+
+| | |
+|---|---|
+| Repositorio | <https://github.com/guilldev08/pp1_munitramites> |
+| Raíz del repo | `C:\Users\guille\Desktop\pp1_munitramites\munitramites` (la carpeta que tiene `manage.py`) |
+| Rama | `master`, siempre igual a `origin/master` |
+
+**Solo existe un `.git`**, el de esa raíz. Abrir el proyecto desde la carpeta
+de arriba (`pp1_munitramites\`) hace que algunas herramientas muestren
+«cambios» que no existen: ahí no hay repositorio. Si aparece un `.git` de más
+no se inicializa otro, se elimina ese.
+
+Qué deja afuera el `.gitignore`: `__pycache__/`, entornos virtuales, `*.fdb`
+(las bases de Firebird), `.env` y claves, logs, `.vscode/` y cachés de
+linters.
+
+Flujo habitual:
+
+```powershell
+git status          # qué cambió
+git add -A
+git commit -m "qué se hizo"
+git push origin master
+```
+
 ## Tests y trazabilidad
 
 ```powershell

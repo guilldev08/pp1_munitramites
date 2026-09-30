@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *.so
 
+# Secretos (nunca subir)
+.env
+.env.*
+*.pem
+*.key
+
 # Entornos virtuales
 .venv/
 venv/
@@ -29,3 +35,10 @@ Thumbs.db
 
 # Docker (se regeneran en cada build)
 *.tar
+
+# Herramientas de calidad / linters
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/

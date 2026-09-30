@@ -1,10 +1,12 @@
-{# =============================================================================
+{% comment %}
+   =============================================================================
    Tarjetas de resumen del panel. Las arma la etiqueta panel_admin
    (templatetags/panel_admin.py) y se muestran arriba del listado de modelos.
 
    Cada tarjeta es un enlace al listado ya filtrado, así con un clic se llega
    a lo que hay que atender. Las que no le corresponden al rol no se muestran.
-   ============================================================================= #}
+   =============================================================================
+{% endcomment %}
 <div class="panel-resumen">
 
   {% if puede_ver_tramites %}

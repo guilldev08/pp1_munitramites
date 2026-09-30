@@ -29,27 +29,6 @@
   </div>
 </section>
 
-<div class="contenedor">
-  <div class="stats">
-    <div class="stat">
-      <div class="stat__valor">{{ total_tramites }}</div>
-      <div class="stat__etiqueta">Trámites</div>
-    </div>
-    <div class="stat">
-      <div class="stat__valor">{{ total_organismos }}</div>
-      <div class="stat__etiqueta">Organismos</div>
-    </div>
-    <div class="stat">
-      <div class="stat__valor">{{ total_municipios }}</div>
-      <div class="stat__etiqueta">Municipios</div>
-    </div>
-    <div class="stat">
-      <div class="stat__valor">{{ total_requisitos }}</div>
-      <div class="stat__etiqueta">Requisitos listados</div>
-    </div>
-  </div>
-</div>
-
 {# --- Trámites: la lista con filtros vive en la portada ------------------- #}
 <section class="seccion">
   <div class="contenedor">
@@ -57,9 +36,7 @@
       <div>
         <h2>Trámites disponibles</h2>
         <p>
-          {% if pagina.paginator.count %}
-            {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}
-            {% if hay_filtros %} con los filtros aplicados{% endif %}.
+          {% if pagina.paginator.count %}{{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}{% if hay_filtros %} con los filtros aplicados{% endif %}.
           {% else %}Sin resultados.{% endif %}
         </p>
       </div>

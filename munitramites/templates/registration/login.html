@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
-{# La página no tiene contenido propio: el modal de login/registro que vive
+{% comment %}
+   La página no tiene contenido propio: el modal de login/registro que vive
    en base.html se abre solo (se activa porque la vista de login manda `form`
    con campos username/password). Acá solo se puede caer entrando a /login/
-   a mano o después de un intento fallido. #}
+   a mano o después de un intento fallido.
+{% endcomment %}
 
 {% block titulo %}Iniciar sesión · Munitramites{% endblock %}

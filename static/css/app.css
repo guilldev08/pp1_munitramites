@@ -170,26 +170,6 @@ img { max-width: 100%; }
 
 .acciones { display: flex; gap: 10px; flex-wrap: wrap; }
 
-/* --- Estadisticas ------------------------------------------------------- */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-top: -36px;
-  position: relative;
-  z-index: 2;
-}
-
-.stat {
-  background: #fff;
-  border-radius: var(--radio);
-  box-shadow: var(--sombra);
-  padding: 18px;
-  text-align: center;
-}
-.stat__valor { font-size: 1.9rem; font-weight: 800; color: var(--azul); line-height: 1; }
-.stat__etiqueta { font-size: .82rem; color: var(--gris-500); margin-top: 6px; }
-
 /* --- Secciones ---------------------------------------------------------- */
 .seccion { padding: 44px 0; }
 .seccion--alterna { background: #fff; border-top: 1px solid var(--gris-200); border-bottom: 1px solid var(--gris-200); }

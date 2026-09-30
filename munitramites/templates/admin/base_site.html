@@ -1,7 +1,8 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{# =============================================================================
+{% comment %}
+   =============================================================================
    Panel de Munitramites: es la plantilla base de TODO el /admin/.
 
    Copiada de django/contrib/admin/templates/admin/base_site.html con dos
@@ -11,7 +12,8 @@
      2. el título y la marca salen de settings (admin.site.site_header /
         site_title), que se configuran en admin.py.
    Si Django cambia el markup de base.html, actualizar este archivo.
-   ============================================================================= #}
+   =============================================================================
+{% endcomment %}
 
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin.css' %}">{% endblock %}
 

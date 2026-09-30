@@ -1,10 +1,12 @@
-{# =========================================================================
+{% comment %}
+   =========================================================================
    Lista de trámites con filtros y paginación.
 
    Se usa en la portada y en /tramites/. Todo lo que depende de la URL es
    RELATIVO (el form no lleva action y los links son ?…), así funciona
    igual en las dos páginas.
-   ========================================================================= #}
+   =========================================================================
+{% endcomment %}
 
 {# --- Filtros (GET, se guardan en la URL) --- #}
 <form class="filtros" method="get">

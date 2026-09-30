@@ -84,11 +84,13 @@
   </div>
 </footer>
 
-{# =========================================================================
+{% comment %}
+   =========================================================================
    Pestaña emergente: login + registro (el mismo modal hace las dos cosas)
    Se abre sola cuando Django renderiza un form de login (form.username) o
    de registro (form.password1), por ejemplo después de un error.
-   ========================================================================= #}
+   =========================================================================
+{% endcomment %}
 <div class="modal{% if form.password1 or form.username %} modal--abierto{% endif %}"
      id="modal-auth"
      {% if not form.password1 and not form.username %}hidden{% endif %}
@@ -193,9 +195,11 @@
   </div>
 </div>
 
-{# =========================================================================
+{% comment %}
+   =========================================================================
    Pestaña emergente: chatbot
-   ========================================================================= #}
+   =========================================================================
+{% endcomment %}
 <div class="modal modal--chat" id="modal-chat" hidden
      role="dialog" aria-modal="true" aria-label="Asistente de trámites">
   <div class="modal__caja modal__caja--chat" data-modal-caja>

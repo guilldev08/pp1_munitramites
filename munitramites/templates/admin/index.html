@@ -1,7 +1,8 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static panel_admin %}
 
-{# =============================================================================
+{% comment %}
+   =============================================================================
    Índice del panel: copia de django/.../admin/index.html con tres cambios:
      1. se carga también static/css/admin.css (nuestros estilos del panel);
      2. se muestra un saludo arriba del listado;
@@ -10,7 +11,8 @@
    El resto (listado de modelos, acciones recientes) es el de Django, en
    español gracias a LANGUAGE_CODE = 'es'.
    Si Django cambia este archivo, comparar contra la versión instalada.
-   ============================================================================= #}
+   =============================================================================
+{% endcomment %}
 
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}"><link rel="stylesheet" href="{% static "css/admin.css" %}">{% endblock %}
 

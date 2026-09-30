@@ -7,17 +7,14 @@ misma lista de tramites con filtros que usa /tramites/.
 from django.db.models import Count
 from django.shortcuts import render
 
-from ..models import Municipio, Organismo, Requisito, Tramite
+from ..models import Tramite
 from .tramites import contexto_lista_tramites
 
 
 def inicio(request):
     """Portada: hero con la barra del chatbot + lista de tramites con filtros."""
     context = {
-        'total_tramites': Tramite.objects.filter(activo=True).count(),
-        'total_organismos': Organismo.objects.count(),
-        'total_municipios': Municipio.objects.count(),
-        'total_requisitos': Requisito.objects.count(),
+        # Contadores por tema, para la nube «Explorar por tema»
         'temas': (
             Tramite.objects.filter(activo=True)
             .values('tema')

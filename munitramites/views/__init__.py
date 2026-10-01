@@ -19,7 +19,7 @@ Para AGREGAR UNA VISTA NUEVA:
 """
 
 from .api import api_tramites
-from .chatbot import chatbot, chatbot_api, chatbot_limpiar
+from .chatbot import buscador_api, chatbot, chatbot_api, chatbot_limpiar
 from .consultas import consulta_detalle, consulta_nueva, consultas
 from .cuenta import perfil, registro
 from .pagina import inicio
@@ -29,6 +29,7 @@ from .tramites import tramite_detalle, tramites
 __all__ = [
     'PREFIJO_SOPORTE',
     'api_tramites',
+    'buscador_api',
     'chatbot',
     'chatbot_api',
     'chatbot_limpiar',

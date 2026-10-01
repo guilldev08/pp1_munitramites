@@ -367,6 +367,25 @@ img { max-width: 100%; }
 @media (max-width: 900px) { .filtros { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .filtros { grid-template-columns: 1fr; } }
 
+/* --- Respuesta del asistente en la barra de búsqueda -------------------- */
+.asistente-barra {
+  background: var(--sup);
+  border: 1px solid var(--gris-200);
+  border-left: 4px solid var(--azul);
+  border-radius: var(--radio);
+  padding: 16px;
+  margin-bottom: 24px;
+}
+.asistente-barra__titulo {
+  margin: 0 0 10px;
+  font-size: .85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--gris-500);
+}
+.asistente-barra__pie { margin: 4px 0 0; font-size: .85rem; }
+
 /* --- Tablas ------------------------------------------------------------- */
 .tabla-wrap {
   overflow-x: auto;

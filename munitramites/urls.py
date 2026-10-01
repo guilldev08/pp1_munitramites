@@ -96,6 +96,7 @@ urlpatterns = [
     path('tramites/<int:pk>/', views.tramite_detalle, name='tramite_detalle'),
     path('chatbot/', views.chatbot, name='chatbot'),
     path('chatbot/api/', views.chatbot_api, name='chatbot_api'),
+    path('buscador/api/', views.buscador_api, name='buscador_api'),
     path('chatbot/limpiar/', views.chatbot_limpiar, name='chatbot_limpiar'),
     path('soporte/', views.soporte, name='soporte'),
     path('consultas/', views.consultas, name='consultas'),

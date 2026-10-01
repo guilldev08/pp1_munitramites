@@ -21,7 +21,8 @@ Qué hace el sistema, en corto:
   describe [Quién puede qué](#quién-puede-qué-dentro-del-panel): el *editor*
   no toca usuarios ni borra, y solo el *superusuario* administra cuentas.
 - **Buscador de trámites** con filtros y fichas que muestran requisitos,
-  organismo responsable y enlaces oficiales.
+  organismo responsable y enlaces oficiales. Lo que se escribe en «Buscar»
+  lo responde además el asistente, en un panel arriba de los resultados.
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
 - **Asistente virtual** con RAG: busca en los trámites reales, cita la fuente
@@ -168,6 +169,7 @@ Todo eso vive en `admin.py` (`SoloSuperusuario`, `SinAutogestion`,
 | `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
 | `/chatbot/` | Asistente (página completa, alternativa sin JS) | público |
 | `/chatbot/api/` | JSON que usa la pestaña emergente del chat | público |
+| `/buscador/api/` | JSON del asistente para la barra «Buscar» (no guarda la charla) | público |
 | `/chatbot/limpiar/` | Vacía la charla de la sesión | sesión (el botón solo se muestra si hay sesión) |
 | `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
 | `/consultas/nueva/` | Formulario de consulta | sesión |
@@ -253,7 +255,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (140)
+    ├── tests/                      #    tests de aceptación (146)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -363,7 +365,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 140 tests
+docker compose exec web python manage.py test --noinput         # correr los 146 tests
 
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
 docker compose exec ollama ollama list                          # modelos cargados (el perfil tiene que estar arriba)
@@ -458,6 +460,7 @@ el código (`admin.py`, sección *Organismos*); lo cubren
 | **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) · `generacion.py` (filtros `_sin_eco` y `_cifras_ajenas`, monto sin indexar sin llamar al modelo) | `test_chatbot` · `test_chatbot.AlucinacionesTests` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
+| **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
 | **IA — modelo local (Qwen/Ollama)** | `generacion.py` (`LLMHttp`) · `settings.CHATBOT_LLM` · `Dockerfile.ollama` | `test_chatbot.PruebaDelLLMTests` |
 | **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), DNI validado y único, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
 | **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en la portada, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
@@ -465,7 +468,7 @@ el código (`admin.py`, sección *Organismos*); lo cubren
 | **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
 | **RNF-05** Integridad | `unique` (Municipio/Organismo), `unique_together` (Requisitos), `PROTECT`/`CASCADE` en las claves foráneas | `test_rnf.IntegridadTests` · `test_auth` |
 | **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
-| **RNF-07** Compatibilidad | el entorno definido del proyecto (Docker) y páginas que andan sin JavaScript ni plugins | `test_chatbot.test_pagina_del_chat_sin_javascript` |
+| **RNF-07** Compatibilidad | el entorno definido del proyecto (Docker) y páginas que andan sin JavaScript ni plugins | `test_chatbot.test_pagina_del_chat_sin_javascript` · `test_chatbot.BuscadorTests.test_el_enlace_sin_javascript_de_verdad_responde` |
 | **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
 | **RNF-09** Despliegue (Docker) | `Dockerfile` + `Dockerfile.ollama` + `docker-compose.yml` | — |
 | **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |
@@ -485,6 +488,17 @@ Docker** (ver «El modelo: Qwen corriendo en Ollama» más abajo).
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
 | 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: hoy con **Qwen vía `LLMHttp`** (Ollama, local). Si el proveedor no está configurado o falla la red, usa `PlantillaLocal` (sin dependencias ni costo) |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, dice explícitamente que no dispone de esa información |
+
+**Se le puede preguntar desde tres lugares**: el modal 💬 (desde cualquier
+página), la página `/chatbot/` (con su alternativa sin JS: `/chatbot/?q=…`)
+y la **barra de búsqueda del sitio**: lo que se escriba en «Buscar» filtra
+la lista y, arriba de los resultados, un panel con el mismo pipeline
+redacta la respuesta (`parciales/lista_tramites.html` + `app.js`). Ese
+panel sale por `/buscador/api/?q=…`, que llama al mismo `responder()` que
+el chat pero **sin tocar la sesión**: lo que se busca no queda en la charla
+(privacidad, verificado en vivo). Sin JavaScript el panel muestra el
+enlace a `/chatbot/?q=…`, que responde la misma pregunta en el chat.
+Tests: `test_chatbot.BuscadorTests`.
 
 ### El modelo: Qwen corriendo en Ollama (local)
 

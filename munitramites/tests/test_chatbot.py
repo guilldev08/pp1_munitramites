@@ -208,6 +208,71 @@ class VistasChatbotTests(TestCase):
         self.assertEqual(historial[0]['texto'], 'renovacion de DNI')
 
 
+class BuscadorTests(TestCase):
+    """La barra de búsqueda del sitio también dispara el asistente."""
+
+    def test_la_barra_de_busqueda_ofrece_al_asistente(self):
+        """Con texto en «Buscar» aparece el panel de respuesta + fallback."""
+        tramite()
+
+        r = self.client.get(reverse('tramites'), {'q': 'renovacion de DNI'})
+
+        self.assertContains(r, 'id="respuesta-ia"')
+        self.assertContains(r, 'data-consulta="renovacion de DNI"')
+        # Sin JavaScript: enlace al chat con la misma consulta
+        self.assertContains(r, reverse('chatbot') + '?q=')
+
+        # El panel vive en el parcial compartido: anda en la portada también
+        r_portada = self.client.get(reverse('inicio'),
+                                    {'q': 'renovacion de DNI'})
+        self.assertContains(r_portada, 'id="respuesta-ia"')
+
+    def test_sin_texto_en_la_barra_no_aparece_el_panel(self):
+        tramite()
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertNotContains(r, 'id="respuesta-ia"')
+
+    def test_el_enlace_sin_javascript_de_verdad_responde(self):
+        tramite()
+
+        r = self.client.get(reverse('chatbot'), {'q': 'renovacion de DNI'})
+
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Renovacion de DNI')
+
+    def test_el_json_del_buscador_responde_sin_guardar_la_charla(self):
+        tramite()
+
+        r = self.client.get(reverse('buscador_api'),
+                            {'q': 'renovacion de DNI'})
+
+        datos = r.json()
+        self.assertTrue(datos['texto'])
+        self.assertEqual(datos['tramites'][0]['titulo'], 'Renovacion de DNI')
+        self.assertIn('url', datos['tramites'][0])
+        # Privacidad: lo que se busca en la barra NO queda en la charla
+        self.assertEqual(self.client.session.get('chatbot', []), [])
+
+    def test_el_buscador_usa_el_mismo_pipeline_sin_historial(self):
+        with mock.patch(
+            'munitramites.views.chatbot.responder',
+            return_value={'texto': 'ok', 'tramites': [], 'fragmentos': []},
+        ) as r:
+            self.client.get(reverse('buscador_api'), {'q': '¿y el plazo?'})
+
+        # Misma función que el chat, pero cada búsqueda se resuelve sola
+        r.assert_called_once_with('¿y el plazo?')
+
+    def test_el_json_sin_consulta_no_llama_al_pipeline(self):
+        with mock.patch('munitramites.views.chatbot.responder') as r:
+            resp = self.client.get(reverse('buscador_api'))
+
+        self.assertEqual(resp.json(), {'texto': '', 'tramites': []})
+        r.assert_not_called()
+
+
 class PrivacidadTests(TestCase):
     """«Sin almacenar el historial conversacional de forma permanente»."""
 

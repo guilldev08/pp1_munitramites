@@ -16,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from ..services.chatbot import es_limpieza, responder
 
@@ -105,6 +105,32 @@ def chatbot_api(request):
             _agregar_mensaje(request, request.POST.get('mensaje', ''))
 
     return JsonResponse({'historial': _historial_para_json(request)})
+
+
+@require_GET
+def buscador_api(request):
+    """JSON del asistente para la BARRA DE BUSQUEDA del sitio.
+
+    GET ?q=… responde con el MISMO pipeline RAG que el chat, pero sin tocar
+    la sesión: lo que se escribe en la barra de búsqueda no queda en la
+    charla del modal (privacidad) ni la ensucia con búsquedas sueltas.
+
+    Sin JavaScript no se usa este JSON: el <noscript> del listado lleva a
+    /chatbot/?q=… que responde la misma pregunta en la página del chat.
+    """
+    q = (request.GET.get('q') or '').strip()
+    if not q:
+        return JsonResponse({'texto': '', 'tramites': []})
+
+    rta = responder(q)
+    return JsonResponse({
+        'texto': rta['texto'],
+        'tramites': [
+            {'pk': t.pk, 'titulo': t.titulo,
+             'url': reverse('tramite_detalle', args=[t.pk])}
+            for t in rta['tramites']
+        ],
+    })
 
 
 @login_required

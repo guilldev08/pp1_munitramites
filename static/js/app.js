@@ -162,24 +162,29 @@
       contChat.appendChild(b);
 
       if (msg.tramites && msg.tramites.length) {
-        var ul = document.createElement('ul');
-        ul.className = 'lista-limpia';
-        ul.style.marginTop = '10px';
-        msg.tramites.forEach(function (t) {
-          var li = document.createElement('li');
-          li.style.padding = '6px 0';
-          li.style.borderTop = '1px dashed var(--gris-200)';
-          var a = document.createElement('a');
-          a.href = t.url || ('/tramites/' + t.pk + '/');
-          a.textContent = '→ ' + t.titulo;
-          li.appendChild(a);
-          ul.appendChild(li);
-        });
-        b.appendChild(ul);
+        b.appendChild(listaTramites(msg.tramites));
       }
     });
 
     bajar();
+  }
+
+  // Enlaces a fichas de trámites: lo comparte el chat y el buscador
+  function listaTramites(tramites) {
+    var ul = document.createElement('ul');
+    ul.className = 'lista-limpia';
+    ul.style.marginTop = '10px';
+    tramites.forEach(function (t) {
+      var li = document.createElement('li');
+      li.style.padding = '6px 0';
+      li.style.borderTop = '1px dashed var(--gris-200)';
+      var a = document.createElement('a');
+      a.href = t.url || ('/tramites/' + t.pk + '/');
+      a.textContent = '→ ' + t.titulo;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    return ul;
   }
 
   function postChat(datos) {
@@ -259,6 +264,45 @@
       abrir('modal-chat');
       enviar(barra);
     });
+  }
+
+  /* --------------------------------------------------------------------
+     Barra de búsqueda del sitio: si se escribió algo en «Buscar», la
+     consulta también la responde el asistente (mismo pipeline RAG que el
+     chat, pero por /buscador/api/ y sin tocar la sesión). Sin JavaScript
+     queda el enlace del <noscript> a /chatbot/?q=…
+     -------------------------------------------------------------------- */
+  var panelBusqueda = document.getElementById('respuesta-ia');
+  if (panelBusqueda) {
+    var consultaBarra = panelBusqueda.getAttribute('data-consulta') || '';
+    var cuerpoBarra = document.getElementById('respuesta-ia-cuerpo');
+    if (consultaBarra && cuerpoBarra) {
+      fetch(window.MT.buscadorApi + '?q=' + encodeURIComponent(consultaBarra), {
+        credentials: 'same-origin'
+      })
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          cuerpoBarra.innerHTML = '';
+          cuerpoBarra.appendChild(burbuja(data.texto || '', 'bot'));
+          if (data.tramites && data.tramites.length) {
+            cuerpoBarra.lastChild.appendChild(listaTramites(data.tramites));
+          }
+        })
+        .catch(function () {
+          cuerpoBarra.innerHTML = '';
+          var aviso = document.createElement('p');
+          aviso.className = 'mb-0';
+          aviso.textContent = 'No pude consultar al asistente. ';
+          var enlace = document.createElement('a');
+          enlace.href = window.MT.urlChat + '?q=' + encodeURIComponent(consultaBarra);
+          enlace.textContent = 'Intentar en el chat →';
+          aviso.appendChild(enlace);
+          cuerpoBarra.appendChild(aviso);
+        });
+    }
   }
 
   // Botón «Vaciar chat»

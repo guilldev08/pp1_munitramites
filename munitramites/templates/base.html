@@ -7,7 +7,7 @@
   <meta name="description" content="Información de trámites públicos de la provincia de Misiones.">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script>
-    /* Temo: se aplica ANTES de pintar para que no destelle el otro tema.
+    /* Tema: se aplica ANTES de pintar para que no destelle el otro tema.
        Manda la preferencia guardada; si el usuario nunca eligió, la del
        sistema (Windows/macOS en modo oscuro → el sitio arranca oscuro). */
     (function () {
@@ -97,7 +97,7 @@
       <a href="{% url 'soporte' %}">Soporte</a> ·
       <a href="{% url 'chatbot' %}" data-abrir="modal-chat">Chatbot</a> ·
       <a href="{% url 'api_tramites' %}">API</a> ·
-      <a href="/admin/">Administración
+      <a href="{% url 'admin:index' %}">Administración
       </a>
     </div>
   </div>
@@ -225,10 +225,12 @@
     <div class="modal__cabecera">
       <div>
         <strong>Asistente de trámites</strong>
-        <div class="texto-chico texto-suave">Busca en la base real de trámites de Misiones.</div>
+        <div class="texto-chico texto-suave">Responde con los trámites cargados de Misiones y cita la fuente.</div>
       </div>
       <div class="modal__acciones">
-        <button class="boton boton--secundario boton--chico" type="button" id="chat-limpiar">Vaciar</button>
+        {% if user.is_authenticated %}
+          <button class="boton boton--secundario boton--chico" type="button" id="chat-limpiar">Vaciar</button>
+        {% endif %}
         <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button>
       </div>
     </div>

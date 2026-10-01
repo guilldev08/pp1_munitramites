@@ -4,15 +4,22 @@ Django full stack + Firebird DB, todo corriendo con Docker.
 
 Sin frameworks de JavaScript, sin build step y sin servicios intermedios:
 **Django renderiza HTML en el servidor, habla con Firebird por ORM y maneja
-login, formularios y permisos con sus propios módulos.** El único JS es
-`static/js/app.js` (JavaScript puro, sin dependencias): abre las pestañas
-emergentes de login/registro y de chat, y manda las preguntas al asistente.
+login, formularios y permisos con sus propios módulos.** El único archivo JS
+es `static/js/app.js` (JavaScript puro, sin dependencias): abre las pestañas
+emergentes de login/registro y de chat, manda las preguntas al asistente y
+voltea el tema claro/oscuro. Acompañan tres scripts chicos **inline** (se
+cargan con la página, sin pedir nada más): el de `base.html` que aplica el
+tema antes de pintar, el que deja `window.MT` a mano de las plantillas y el
+de `chatbot.html` que mantiene el historial abajo del todo.
 
 Qué hace el sistema, en corto:
 
 - **Registro con DNI**, inicio y cierre de sesión, y **recuperación de
   contraseña por correo** (RF-15).
-- **Dos roles**: Usuario (ciudadano) y Administrador (panel `/admin/`).
+- **Dos roles en el sitio**: Usuario (ciudadano) y Administrador (panel
+  `/admin/`). Dentro del panel, además, la escalera de dos peldaños que
+  describe [Quién puede qué](#quién-puede-qué-dentro-del-panel): el *editor*
+  no toca usuarios ni borra, y solo el *superusuario* administra cuentas.
 - **Buscador de trámites** con filtros y fichas que muestran requisitos,
   organismo responsable y enlaces oficiales.
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
@@ -161,14 +168,14 @@ Todo eso vive en `admin.py` (`SoloSuperusuario`, `SinAutogestion`,
 | `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
 | `/chatbot/` | Asistente (página completa, alternativa sin JS) | público |
 | `/chatbot/api/` | JSON que usa la pestaña emergente del chat | público |
-| `/chatbot/limpiar/` | Vacía la charla de la sesión | sesión |
+| `/chatbot/limpiar/` | Vacía la charla de la sesión | sesión (el botón solo se muestra si hay sesión) |
 | `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
 | `/consultas/nueva/` | Formulario de consulta | sesión |
 | `/registro/` · `/login/` | Modal de alta y de sesión (también funciona como página) | público |
 | `/logout/` | Cierra la sesión (RF-14) | sesión |
 | `/perfil/` | Datos personales: nombre, apellido, correo y DNI | sesión |
 | `/password/reset/` · `/done/` · `/<uid>/<token>/` · `/complete/` | Recuperar la contraseña olvidada (RF-15) | público |
-| `/password/change/` · `/done/` | Cambio de contraseña estando adentro | sesión |
+| `/password/change/` · `/done/` | Cambio de contraseña estando adentro (página propia del sitio) | sesión |
 | `/consultas/<id>/` | Detalle de la consulta y respuesta del administrador (RF-10) | sesión |
 | `/admin/` | Administración de Django | `is_staff` |
 | `/admin/login/` | Login del panel | — |
@@ -246,7 +253,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (116)
+    ├── tests/                      #    tests de aceptación (121)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -254,6 +261,7 @@ munitramites/
     │   ├── test_consultas.py       #    RF-08/09/10
     │   ├── test_roles.py           #    ESP-02 · RF-03/11/13
     │   ├── test_rnf.py             #    RNF-03 rendimiento · RNF-05 integridad
+    │   ├── test_tema.py            #    tema claro/oscuro + contraste WCAG
     │   └── test_admin.py           #    cara del panel + candado de permisos
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
@@ -355,13 +363,13 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 116 tests
+docker compose exec web python manage.py test --noinput         # correr los 121 tests
 
-docker compose exec ollama ollama list                          # modelos cargados
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
-docker compose exec ollama ollama pull qwen2.5:3b               # bajar otro modelo
+docker compose exec ollama ollama list                          # modelos cargados (el perfil tiene que estar arriba)
+docker compose exec ollama ollama pull qwen2.5:3b               # bajar otro modelo (el perfil también)
 docker compose build ollama                                     # (re)armar la imagen con el modelo
-docker save munitramites-ollama -o ollama.tar                   # exportar imagen + modelo
+docker save munitramites-ollama -o munitramites-ollama.tar      # exportar imagen + modelo
 ```
 
 ### Ejecutar código desde el host
@@ -420,6 +428,12 @@ arma un nombre con la ruta completa que Firebird no puede crear).
 tests. **Si agregás una funcionalidad nueva, dejá su criterio de aceptación
 escrito acá**: es lo que hace verificable el documento.
 
+**Códigos sin fila en la tabla**: ESP-03, RF-04 y RF-06 no tienen requisito
+propio en este sistema. **RF-05** (*Gestionar organismos*) sí existe y está en
+el código (`admin.py`, sección *Organismos*); lo cubren
+`test_roles.AdministradorTests` (alta con el área de acción) y `test_tramites`
+(la ficha los muestra), por eso se cita en el archivo y no en esta tabla.
+
 | Documento | Dónde está en el código | Test |
 |---|---|---|
 | **ESP-01** Autenticación | `forms.py`, `views/cuenta.py`, `templates/registration/` | `test_auth` |
@@ -427,8 +441,8 @@ escrito acá**: es lo que hace verificable el documento.
 | **ESP-04** Administración | `/admin/` (`admin.py`) | `test_roles` · `test_tramites` · `test_admin` |
 | **ESP-05** Consultas | `views/consultas.py`, `models.Consulta` | `test_consultas` |
 | **ESP-06** Base de datos | Firebird + `models.py` + `migrations/` | todos (corren sobre Firebird) |
-| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_admin` · `test_tema` |
-| **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` |
+| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_admin` · `test_tema` · `test_tramites.ApiTests` |
+| **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` · `test_auth.PerfilTests` (editar sus datos) |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
 | **RF-03** Gestión de roles | `is_staff` / `is_superuser` | `test_roles` · `test_admin` |
 | **RF-07** Administrar trámites | `/admin/` → Trámites (con Requisitos y Enlaces) | `test_roles` · `test_tramites` · `test_admin` |
@@ -437,9 +451,9 @@ escrito acá**: es lo que hace verificable el documento.
 | **RF-10** Gestionar consultas | `/consultas/<id>/` (respuesta del staff) | `test_consultas.GestionDelAdminTests` |
 | **RF-11** Gestionar usuarios | `/admin/` → Usuarios + inline de Perfil (DNI) | `test_roles.AdministradorTests` · `test_admin` |
 | **RF-12** Almacenamiento de datos | Firebird vía ORM | todos |
-| **RF-13** Control de acceso | `LoginRequired` en cada vista privada | `test_roles.AnonimoTests` · `test_consultas` · `test_admin.CandadoDelEditorTests` |
+| **RF-13** Control de acceso | `LoginRequired` en cada vista privada | `test_roles.AnonimoTests` · `test_auth.SesionTests` · `test_consultas` · `test_admin.CandadoDelEditorTests` |
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
-| **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` |
+| **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` · `test_auth.PerfilTests` (cambio estando adentro) |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
 | **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) | `test_chatbot` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
@@ -447,7 +461,7 @@ escrito acá**: es lo que hace verificable el documento.
 | **IA — modelo local (Qwen/Ollama)** | `generacion.py` (`LLMHttp`) · `settings.CHATBOT_LLM` · `Dockerfile.ollama` | `test_chatbot.PruebaDelLLMTests` |
 | **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), DNI validado y único, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
 | **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en la portada, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
-| **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página, índice BM25 en memoria y cooldown del LLM | `test_rnf.RendimientoTests` |
+| **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página (`views/tramites.py::POR_PAGINA`), índice BM25 en memoria y cooldown del LLM | `test_rnf.RendimientoTests` (sin N+1 y caché del índice) · `test_tramites.ListadoTests.test_paga_de_a_seis_por_pagina` · `test_chatbot.PruebaDelLLMTests` (cooldown) |
 | **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
 | **RNF-05** Integridad | `unique` (Municipio/Organismo), `unique_together` (Requisitos), `PROTECT`/`CASCADE` en las claves foráneas | `test_rnf.IntegridadTests` · `test_auth` |
 | **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
@@ -467,7 +481,7 @@ Docker** (ver «El modelo: Qwen corriendo en Ollama» más abajo).
 
 | Etapa | Archivo | Qué hace |
 |---|---|---|
-| 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (señales en `apps.py`) |
+| 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
 | 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: hoy con **Qwen vía `LLMHttp`** (Ollama, local). Si el proveedor no está configurado o falla la red, usa `PlantillaLocal` (sin dependencias ni costo) |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, dice explícitamente que no dispone de esa información |
@@ -513,8 +527,15 @@ args:
 ```
 
 ```powershell
-docker compose build ollama               # baja el modelo nuevo
+docker compose build ollama                  # baja el modelo nuevo
+docker compose --profile llm up -d --build   # y lo deja corriendo
 ```
+
+**El sitio también tiene que saber el nombre nuevo**:
+`munitramites/settings.py` → `CHATBOT_LLM['modelo']` es el modelo que el
+cliente le pide a Ollama. Si queda el viejo, Ollama recibe un modelo
+inexistente, la llamada falla en silencio y el asistente contesta siempre
+con la plantilla local, sin ningún error a la vista.
 
 **Si el modelo no está construido (perfil apagado), el contenedor está
 caído o el modelo se pasa del tiempo, la respuesta cae en la plantilla
@@ -599,7 +620,7 @@ Luego escribí SQL y cerrá con `quit;`.
 | `ORGANISMO` | 7 | seed (incluye `ocupacion` / área de acción) |
 | `TRAMITE` | 8 | seed |
 | `REQUISITO` | 32 | seed |
-| `ENLACE` | varios | seed + `/admin/` |
+| `ENLACE` | 0 con el seed | botones con nombre: se cargan en `/admin/`; la ficha muestra igual los `enlace_turnos` / `enlace_oficial` que trae el seed |
 | `CONSULTA` | 3+ | seed + formularios (incluye el prefijo `Soporte: `) |
 | `PERFIL` | 1+ | se crea con el registro (guarda el DNI) |
 | `AUTH_USER` | 2 | Django (usuarios) |
@@ -638,15 +659,20 @@ Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 
 ### Pendiente para producción
 
-`manage.py check --deploy` reporta 6 avisos, todos esperados en desarrollo:
+`manage.py check --deploy` reporta **6** avisos (verificados con el comando),
+todos esperados en desarrollo:
 
 | Aviso | Cómo resolverlo |
 |---|---|
-| `W018 DEBUG=True` | `DEBUG = False` |
-| `W009 SECRET_KEY` | generar una clave real y sacarla del repositorio |
-| `ALLOWED_HOSTS = ['*']` | listar los dominios reales |
-| `W004/W008` HSTS y SSL | poner el sitio detrás de HTTPS |
-| `W012/W016` cookies secure | `SESSION_COOKIE_SECURE` / `CSRF_COOKIE_SECURE` |
+| `W018` `DEBUG = True` | `DEBUG = False` |
+| `W009` `SECRET_KEY` | generar una clave real y sacarla del repositorio |
+| `W004` HSTS | `SECURE_HSTS_SECONDS` (recién cuando el sitio sea solo HTTPS) |
+| `W008` SSL redirect | `SECURE_SSL_REDIRECT = True`, o el proxy que redirija a HTTPS |
+| `W012` cookies de sesión | `SESSION_COOKIE_SECURE = True` |
+| `W016` cookies CSRF | `CSRF_COOKIE_SECURE = True` |
+
+Aparte (lo toca el deploy, no `--deploy`): `ALLOWED_HOSTS = ['*']` es de
+desarrollo; en producción se listan los dominios reales.
 
 Además: `runserver` es el servidor de desarrollo. En producción usar gunicorn
 (ya está en `requirements.txt`) o un servidor WSGI equivalente.

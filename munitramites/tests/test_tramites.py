@@ -58,6 +58,21 @@ class ListadoTests(TestCase):
 
         self.assertNotContains(r, 'Renovacion de DNI')
 
+    def test_paga_de_a_seis_por_pagina(self):
+        """RNF-03: el listado trae 6 por pantalla y el resto en la página 2."""
+        for n in range(1, 8):
+            tramite(titulo=f'Tramite numero {n}', tema='Documentacion')
+
+        r = self.client.get(reverse('tramites'))
+        self.assertContains(r, 'Tramite numero 1')
+        self.assertContains(r, 'Tramite numero 6')
+        self.assertNotContains(r, 'Tramite numero 7')
+        self.assertContains(r, 'pagina=2')
+
+        r = self.client.get(reverse('tramites'), {'pagina': 2})
+        self.assertContains(r, 'Tramite numero 7')
+        self.assertNotContains(r, 'Tramite numero 1')
+
     def test_filtra_por_texto_tema_y_municipio(self):
         tramite()
         tramite(titulo='Licencia de conducir', tema='Transito',

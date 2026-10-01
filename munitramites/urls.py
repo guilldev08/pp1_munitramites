@@ -73,7 +73,10 @@ urlpatterns = [
     # Cambio de clave estando adentro de la sesion
     path(
         'password/change/',
-        auth_views.PasswordChangeView.as_view(success_url='/password/change/done/'),
+        auth_views.PasswordChangeView.as_view(
+            template_name='registration/password_change_form.html',
+            success_url='/password/change/done/',
+        ),
         name='password_change',
     ),
     path(

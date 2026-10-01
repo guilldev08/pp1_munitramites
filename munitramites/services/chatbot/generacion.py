@@ -20,12 +20,13 @@ alucinaciones y cita de fuentes).
 import http.client
 import json
 import time
-import urllib.error
 import urllib.request
 
 from django.conf import settings
 
 __all__ = [
+    'INSTRUCCION',
+    'LLMHttp',
     'PlantillaLocal',
     'ProveedorLLM',
     'generar_respuesta',
@@ -79,6 +80,24 @@ INSTRUCCION = (
 )
 
 
+# El formato del prompt vive en UN solo lugar. Los tres proveedores (el
+# dialecto OpenAI que usamos con Ollama/Qwen, Anthropic y Gemini) mandan el
+# mismo mensaje de usuario, así que si cambia el formato, cambia acá.
+def _contexto(fragmentos):
+    """Los fragmentos recuperados, en viñetas."""
+    return '\n'.join(f'• {f.texto}' for f in fragmentos)
+
+
+def _usuario(pregunta, fragmentos):
+    """El mensaje de usuario: contexto entre marcas y la pregunta al final.
+
+    Las marcas «Contexto:» y «Pregunta:» son las que la INSTRUCCION le pide
+    al modelo que respete: cambiar este formato sin cambiar la INSTRUCCION
+    (o al revés) rompe el contrato del prompt.
+    """
+    return f'Contexto:\n{_contexto(fragmentos)}\n\nPregunta: {pregunta}'
+
+
 class ProveedorLLM:
     """Contrato que cumplen todos los proveedores de generación."""
 
@@ -103,7 +122,6 @@ class PlantillaLocal(ProveedorLLM):
                 tramites.append(f.tramite_titulo)
 
         n = len(tramites)
-        plural = 's' if n != 1 else ''
         if n == 1:
             return (
                 f'Encontré el trámite «{tramites[0]}» para «{pregunta}». '
@@ -161,13 +179,9 @@ class LLMHttp(ProveedorLLM):
             return json.loads(respuesta.read().decode('utf-8'))
 
     def _mensajes(self, pregunta, fragmentos):
-        contexto = '\n'.join(f'• {f.texto}' for f in fragmentos)
         return [
             {'role': 'system', 'content': INSTRUCCION},
-            {
-                'role': 'user',
-                'content': f'Contexto:\n{contexto}\n\nPregunta: {pregunta}',
-            },
+            {'role': 'user', 'content': _usuario(pregunta, fragmentos)},
         ]
 
     # -- Proveedores --------------------------------------------------------
@@ -192,7 +206,6 @@ class LLMHttp(ProveedorLLM):
         return cuerpo['choices'][0]['message']['content']
 
     def _anthropic(self, pregunta, fragmentos):
-        contexto = '\n'.join(f'• {f.texto}' for f in fragmentos)
         cuerpo = self._post(
             'https://api.anthropic.com/v1/messages',
             {
@@ -201,7 +214,7 @@ class LLMHttp(ProveedorLLM):
                 'system': INSTRUCCION,
                 'messages': [{
                     'role': 'user',
-                    'content': f'Contexto:\n{contexto}\n\nPregunta: {pregunta}',
+                    'content': _usuario(pregunta, fragmentos),
                 }],
             },
             {
@@ -212,7 +225,6 @@ class LLMHttp(ProveedorLLM):
         return cuerpo['content'][0]['text']
 
     def _gemini(self, pregunta, fragmentos):
-        contexto = '\n'.join(f'• {f.texto}' for f in fragmentos)
         modelo = self.config.get('modelo') or 'gemini-1.5-flash'
         base = self.config.get('base_url') or (
             'https://generativelanguage.googleapis.com/v1beta'
@@ -222,9 +234,7 @@ class LLMHttp(ProveedorLLM):
             {
                 'system_instruction': {'parts': [{'text': INSTRUCCION}]},
                 'contents': [{
-                    'parts': [{
-                        'text': f'Contexto:\n{contexto}\n\nPregunta: {pregunta}',
-                    }],
+                    'parts': [{'text': _usuario(pregunta, fragmentos)}],
                 }],
             },
             {'x-goog-api-key': self.config['api_key']},

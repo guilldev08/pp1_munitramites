@@ -264,7 +264,7 @@ class TramiteAdmin(BaseAdmin):
 # --- Consultas de los ciudadanos ---------------------------------------------
 @admin.register(Consulta)
 class ConsultaAdmin(BaseAdmin):
-    """Consultas, sugerencias y reclamos que llegan desde el sitio (y el chat)."""
+    """Consultas, sugerencias y reclamos que llegan desde los formularios."""
 
     list_display = [
         'id', 'tipo_pildora', 'asunto', 'estado_pildora',

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load hora %}
 
 {% block titulo %}Soporte{% endblock %}
 
@@ -67,7 +68,7 @@
                     <span class="etiqueta etiqueta--{{ p.estado }}">{{ p.get_estado_display }}</span>
                   </div>
                   <div class="texto-chico texto-suave">
-                    {{ p.fecha|date:"d/m/Y H:i" }}
+                    {{ p.fecha|hora_local|date:"d/m/Y H:i" }}
                     {% if p.respuesta %}
                       · <span class="pedido__respuesta">{{ p.respuesta|truncatewords:18 }}</span>
                     {% else %}

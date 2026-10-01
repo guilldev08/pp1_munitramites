@@ -829,3 +829,12 @@ img { max-width: 100%; }
 
   --sombra: 0 1px 3px rgba(0, 0, 0, .45), 0 4px 14px rgba(0, 0, 0, .3);
 }
+
+/* Movimiento: quien pide menos movimiento en el sistema no recibe las
+   transiciones de tarjetas, botones ni burbujas (RNF-11 / WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

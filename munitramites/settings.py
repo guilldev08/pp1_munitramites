@@ -183,10 +183,7 @@ DEFAULT_FROM_EMAIL = 'no-responder@munitramites.test'
 # --- Chatbot (asistente con arquitectura RAG) ------------------------------
 # `services/chatbot/` implementa indexacion -> recuperacion -> generacion.
 #
-# CHATBOT_LLM es la CONEXION con el modelo de lenguaje. Mientras el
-# proveedor este vacio, el pipeline responde con la plantilla anclada al
-# contexto recuperado (sin alucinar: si no hay fragmentos relevantes, lo
-# dice).
+# CHATBOT_LLM es la CONEXION con el modelo de lenguaje.
 #
 # Hoy el asistente redacta con Qwen (modelo ligero) corriendo EN LOCAL,
 # dentro de Docker, para no depender de internet ni de una API key:
@@ -200,15 +197,21 @@ DEFAULT_FROM_EMAIL = 'no-responder@munitramites.test'
 # sitio corre en la PC host (fuera de Docker), cambiarlo a
 # `http://localhost:11434/v1`, que es donde se publica ese puerto.
 #
-# Si el contenedor esta apagado, el modelo no llega a responder dentro de
-# `timeout` o falla la red, la respuesta cae en la plantilla local: la
-# conversacion nunca se rompe.
+# Si `proveedor` queda vacio, el contenedor esta apagado, el modelo no
+# llega a responder dentro de `timeout` o falla la red, la respuesta cae
+# en la plantilla local: la conversacion nunca se rompe.
 CHATBOT_LLM = {
     # 'ollama' (local, sin clave) | openai | anthropic | gemini | custom
     'proveedor': 'ollama',
     # Solo la piden los proveedores de la nube; Ollama trabaja sin clave.
     'api_key': '',
-    # Modelos disponibles: docker compose exec ollama ollama list
+    # Modelo que el cliente le PIDE a Ollama. Si cambia el MODELO del
+    # build-arg en docker-compose.yml, cambialo tambien aca: si no, Ollama
+    # recibe un modelo inexistente, la llamada falla en silencio y el
+    # asistente contesta siempre con la plantilla local.
+    # Listado de los disponibles:
+    #   docker compose --profile llm up -d
+    #   docker compose exec ollama ollama list
     'modelo': 'qwen2.5:1.5b',
     # URL interna del servicio `ollama` (dialecto OpenAI de Ollama).
     'base_url': 'http://ollama:11434/v1',

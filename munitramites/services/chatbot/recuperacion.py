@@ -25,9 +25,9 @@ __all__ = ['buscar', 'normalizar', 'tokenizar']
 VACIAS = {
     'que', 'como', 'cual', 'cuales', 'donde', 'cuando', 'para', 'por',
     'una', 'uno', 'unos', 'unas', 'del', 'con', 'sin', 'sobre', 'desde',
-    'hasta', 'entre', 'muy', 'mas', 'muy', 'este', 'esta', 'estos',
+    'hasta', 'entre', 'muy', 'mas', 'este', 'esta', 'estos',
     'estas', 'ese', 'esa', 'eso', 'aquel', 'the', 'and', 'los', 'las',
-    'por', 'que', 'se', 'su', 'sus', 'lo', 'le', 'les', 'al', 'yo',
+    'se', 'su', 'sus', 'lo', 'le', 'les', 'al', 'yo',
     'tu', 'usted', 'nos', 'el', 'la', 'es', 'son', 'ser', 'hay', 'hola',
 }
 

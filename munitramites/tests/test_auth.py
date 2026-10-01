@@ -232,3 +232,15 @@ class PerfilTests(TestCase):
         self.assertRedirects(r, reverse('password_change_done'))
         user.refresh_from_db()
         self.assertTrue(user.check_password('OtraClave1234'))
+
+    def test_el_formulario_de_cambio_de_clave_es_del_sitio(self):
+        """ESP-01: la página hereda base.html, no la plantilla gris de Django."""
+        user = ciudadano(username='ana')
+        self.client.force_login(user)
+
+        r = self.client.get(reverse('password_change'))
+
+        self.assertEqual(r.status_code, 200)
+        self.assertTemplateUsed(r, 'registration/password_change_form.html')
+        self.assertContains(r, 'Cambiar contraseña')
+        self.assertContains(r, 'modal-chat')   # la barra y el chat del sitio

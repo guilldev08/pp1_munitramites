@@ -6,6 +6,8 @@ gestionar las consultas y sugerencias recibidas».
 """
 
 
+from datetime import datetime, timezone as dt_timezone
+
 from django.urls import reverse
 
 from munitramites.models import Consulta
@@ -98,6 +100,33 @@ class VerConsultasTests(TestCase):
         r = self.client.get(reverse('consulta_detalle', args=[ajena.pk]))
         self.assertRedirects(r, reverse('consultas'))
 
+    def test_las_horas_son_locales_en_la_lista_y_en_el_detalle(self):
+        """RNF-02: las dos pantallas muestran la hora de Argentina.
+
+        `fecha` se guarda en UTC (USE_TZ=True). Sin el filtro `hora_local`
+        la lista y el detalle marcaban horas distintas para la MISMA
+        consulta (00:00 vs 03:00), que es lo primero que se ve al abrir
+        un pedido.
+        """
+        ana = ciudadano(username='ana')
+        consulta = Consulta.objects.create(
+            usuario=ana, asunto='Consulta con hora', contenido='Contenido.'
+        )
+        # 03:00 UTC = 00:00 en Argentina (UTC-3, sin horario de verano)
+        Consulta.objects.filter(pk=consulta.pk).update(
+            fecha=datetime(2026, 3, 4, 3, 0, tzinfo=dt_timezone.utc)
+        )
+        self.client.force_login(ana)
+
+        detalle = self.client.get(reverse('consulta_detalle',
+                                           args=[consulta.pk]))
+        self.assertContains(detalle, '04/03/2026 00:00')
+        self.assertNotContains(detalle, '04/03/2026 03:00')
+
+        lista = self.client.get(reverse('consultas'))
+        self.assertContains(lista, '04/03/2026 00:00')
+        self.assertNotContains(lista, '04/03/2026 03:00')
+
 
 class SoporteTests(TestCase):
 
@@ -132,6 +161,23 @@ class SoporteTests(TestCase):
 
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Problema con el chat')
+
+    def test_las_horas_del_soporte_tambien_son_locales(self):
+        """El listado de pedidos usa el mismo `hora_local` que las consultas."""
+        user = ciudadano(username='ana')
+        pedido = Consulta.objects.create(
+            usuario=user, asunto=f'{PREFIJO_SOPORTE}Pantalla en negro',
+            contenido='No carga la lista.',
+        )
+        Consulta.objects.filter(pk=pedido.pk).update(
+            fecha=datetime(2026, 3, 4, 3, 0, tzinfo=dt_timezone.utc)
+        )
+        self.client.force_login(user)
+
+        r = self.client.get(reverse('soporte'))
+
+        self.assertContains(r, '04/03/2026 00:00')
+        self.assertNotContains(r, '04/03/2026 03:00')
 
 
 class GestionDelAdminTests(TestCase):

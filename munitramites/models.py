@@ -97,14 +97,6 @@ class Tramite(models.Model):
     def __str__(self):
         return self.titulo
 
-    @property
-    def temas_display(self):
-        return self.get_tema_display()
-
-    @property
-    def modalidad_display(self):
-        return self.get_modalidad_display()
-
 
 class Requisito(models.Model):
     """Un requisito concreto de un tramite (1 a N)."""
@@ -178,10 +170,6 @@ class Perfil(models.Model):
 
     def __str__(self):
         return f'{self.user.username} — DNI {self.dni or "sin cargar"}'
-
-    @property
-    def dni_valido(self):
-        return self.dni.isdigit() and 7 <= len(self.dni) <= 8
 
 
 class Consulta(models.Model):

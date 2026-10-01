@@ -28,7 +28,7 @@ from munitramites.services.chatbot.generacion import (
     proveedor,
 )
 
-from .base import CHATBOT_LLM_APAGADO, TestCase, tramite
+from .base import CHATBOT_LLM_APAGADO, TestCase, ciudadano, tramite
 
 
 class PipelineTests(TestCase):
@@ -123,6 +123,17 @@ class VistasChatbotTests(TestCase):
         r = self.client.post(reverse('chatbot_limpiar'))
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse('login'), r['Location'])
+
+    def test_el_boton_de_vaciar_no_se_muestra_sin_sesion(self):
+        """Al anónimo no se le ofrece un botón que lo manda al login."""
+        tramite()
+
+        r = self.client.post(reverse('chatbot'), {'mensaje': 'renovacion de DNI'})
+        self.assertNotContains(r, 'Vaciar chat')
+
+        self.client.force_login(ciudadano(username='ana'))
+        r = self.client.get(reverse('chatbot'))
+        self.assertContains(r, 'Vaciar chat')
 
 
 class PrivacidadTests(TestCase):

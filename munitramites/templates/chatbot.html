@@ -12,9 +12,11 @@
     <div class="titulo-seccion">
       <div>
         <h2>Asistente de trámites</h2>
-        <p>Busca en la base real de Firebird. No es una IA: responde con lo que hay cargado.</p>
+        <p>Responde con los trámites y requisitos cargados en el sistema, sin
+          inventar, y cita la fuente de cada respuesta. El modelo corre en este
+          equipo.</p>
       </div>
-      {% if historial %}
+      {% if user.is_authenticated %}
         <form method="post" action="{% url 'chatbot_limpiar' %}">
           {% csrf_token %}
           <button class="boton boton--secundario boton--chico" type="submit">Vaciar chat</button>

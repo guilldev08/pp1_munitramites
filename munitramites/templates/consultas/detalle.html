@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load hora %}
 
 {% block titulo %}Consulta #{{ consulta.pk }}{% endblock %}
 
@@ -16,7 +17,7 @@
         <h2>{{ consulta.asunto }}</h2>
         <p class="texto-suave">
           {{ consulta.get_tipo_display }} ·
-          {{ consulta.fecha|date:"d/m/Y H:i" }} ·
+          {{ consulta.fecha|hora_local|date:"d/m/Y H:i" }} ·
           {% if consulta.tramite %}
             trámite: <a href="{% url 'tramite_detalle' consulta.tramite.pk %}">
               {{ consulta.tramite }}

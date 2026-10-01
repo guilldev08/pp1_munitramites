@@ -211,7 +211,6 @@ img { max-width: 100%; }
 
 /* --- Secciones ---------------------------------------------------------- */
 .seccion { padding: 44px 0; }
-.seccion--alterna { background: var(--gris-100); border-top: 1px solid var(--gris-200); border-bottom: 1px solid var(--gris-200); }
 
 .titulo-seccion {
   display: flex;

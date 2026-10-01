@@ -7,18 +7,23 @@
   --azul: #1d4ed8;
   --azul-oscuro: #1e3a8a;
   --azul-claro: #dbeafe;
-  --gris-50: #f8fafc;
-  --gris-100: #f1f5f9;
-  --gris-200: #e2e8f0;
-  --gris-400: #94a3b8;
-  --gris-500: #64748b;
-  --gris-700: #334155;
-  --gris-900: #0f172a;
-  --verde: #16a34a;
+  /* Grises un escalón MÁS OSCUROS que el Tailwind original: el fondo se
+     nota gris, los bordes se marcan y ningún texto queda clarito. La
+     medida es el contraste (WCAG): todo lo que era texto pasa de ~2,6:1
+     a ~5:1 o más, que es lo que se pide para que se lea en pantallas
+     malas. Si algún gris se mueve, revisar los pares de contraste. */
+  --gris-50: #eaeff6;
+  --gris-100: #dde5ef;
+  --gris-200: #c4cfdd;
+  --gris-400: #5a6a80;
+  --gris-500: #44536a;
+  --gris-700: #26344a;
+  --gris-900: #0b1220;
+  --verde: #15803d;
   --verde-claro: #dcfce7;
-  --ambar: #d97706;
+  --ambar: #b45309;
   --ambar-claro: #fef3c7;
-  --rojo: #dc2626;
+  --rojo: #b91c1c;
   --rojo-claro: #fee2e2;
   --radio: 10px;
   --sombra: 0 1px 3px rgba(15, 23, 42, .08), 0 4px 14px rgba(15, 23, 42, .05);
@@ -35,6 +40,9 @@ body {
   background: var(--gris-50);
   line-height: 1.6;
 }
+
+/* Placeholders: el navegador los pinta demasiado claritos para el fondo */
+input::placeholder, textarea::placeholder { color: var(--gris-500); opacity: 1; }
 
 a { color: var(--azul); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -135,7 +143,7 @@ img { max-width: 100%; }
 .boton--secundario { background: #fff; color: var(--gris-700); border-color: var(--gris-200); }
 .boton--secundario:hover { background: var(--gris-100); }
 .boton--peligro { background: var(--rojo); }
-.boton--peligro:hover { background: #b91c1c; }
+.boton--peligro:hover { background: #991b1b; }
 .boton--chico { padding: 6px 11px; font-size: .85rem; }
 .boton--ancho { width: 100%; }
 .boton[disabled] { opacity: .6; cursor: not-allowed; }

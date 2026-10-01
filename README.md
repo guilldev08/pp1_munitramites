@@ -253,7 +253,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (121)
+    ├── tests/                      #    tests de aceptación (140)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -363,7 +363,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 121 tests
+docker compose exec web python manage.py test --noinput         # correr los 140 tests
 
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
 docker compose exec ollama ollama list                          # modelos cargados (el perfil tiene que estar arriba)
@@ -455,7 +455,7 @@ el código (`admin.py`, sección *Organismos*); lo cubren
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
 | **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` · `test_auth.PerfilTests` (cambio estando adentro) |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
-| **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) | `test_chatbot` |
+| **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) · `generacion.py` (filtros `_sin_eco` y `_cifras_ajenas`, monto sin indexar sin llamar al modelo) | `test_chatbot` · `test_chatbot.AlucinacionesTests` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — modelo local (Qwen/Ollama)** | `generacion.py` (`LLMHttp`) · `settings.CHATBOT_LLM` · `Dockerfile.ollama` | `test_chatbot.PruebaDelLLMTests` |
@@ -540,8 +540,33 @@ con la plantilla local, sin ningún error a la vista.
 **Si el modelo no está construido (perfil apagado), el contenedor está
 caído o el modelo se pasa del tiempo, la respuesta cae en la plantilla
 local**: la conversación nunca se rompe y responde al instante. El prompt
-que recibe el modelo (responder solo con el contexto, citar el trámite y
-admitir cuando no sabe) está en `generacion.py::INSTRUCCION`.
+que recibe el modelo (contestar exactamente lo preguntado —sin repetir
+siempre la misma fórmula—, responder solo con el contexto, citar el
+trámite y admitir cuando no sabe) está en `generacion.py::INSTRUCCION`.
+
+**La respuesta del modelo no se muestra sin pasar por filtros**
+(`generacion.py`):
+
+- `_sin_eco` recorta los marcadores «Contexto: … Pregunta: …» si el
+  modelo los pegó en vez de contestar,
+- `_cifras_ajenas` descarta cualquier cifra que no estuviera en el
+  contexto: nunca se le muestra al ciudadano un monto o un plazo
+  inventado (pasó en vivo: «$50.000.000» por renovar el DNI),
+- las preguntas por **monto** se contestan **sin llamar al modelo** si
+  el contexto no trae ninguno: sale un «no dispongo» inmediato y
+  determinista, sin gastar los segundos de CPU.
+
+Si un filtro descarta la respuesta, se usa la plantilla local (que tiene
+varias redacciones, para que la charla no se vea clonada). Todo eso está
+cubierto por `tests/test_chatbot.py::AlucinacionesTests`.
+
+**Cuando la pregunta es corta** («¿y el plazo?») el pipeline la busca
+junto con las preguntas anteriores del usuario y le pasa al modelo la
+**pregunta previa**, para que sepa de qué habla; las respuestas propias
+anteriores no se mandan (un modelo de 1,5 B las copiaba tal cual para
+otro trámite). Los casos fijos —saludo, ayuda, «gracias», «chau» y
+«limpiar»— responden sin buscar en el índice, y un saludo seguido de una
+pregunta ya no se traga la pregunta.
 
 Además, tras un fallo el asistente **no vuelve a tocar la red durante
 60 segundos** (`generacion.py::ESPERA_TRAS_UN_FALLO`): sin ese cooldown

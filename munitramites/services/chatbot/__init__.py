@@ -21,17 +21,26 @@ Criterios del documento que garantiza este diseno:
 
     · Precisión contextual ..... solo se responde con fragmentos indexados
     · Manejo de alucinaciones .. umbral + «no dispongo de esa información»
+                                 + filtros de salida (cifras ajenas al
+                                 contexto y eco del prompt) en generacion.py
     · Cita de fuentes .......... cada respuesta enlaza sus tramites
     · Privacidad ............... la charla vive en la sesion, no en la base
 
 Uso tipico (desde una vista):
 
-    from munitramites.services.chatbot import responder
-    rta = responder('¿qué necesito para renovar el DNI?')
+    from munitramites.services.chatbot import es_limpieza, responder
+    historial = request.session.get('chatbot', [])
+    if es_limpieza(pregunta):        # «limpiar» escrito a mano
+        historial = []
+    rta = responder(pregunta, historial)
     rta['texto']      # str legible
     rta['tramites']   # [Tramite, …] fuentes citadas
+
+Con `historial` el asistente entiende seguimientos («¿y el plazo?»): si la
+pregunta es corta, el modelo recibe también la pregunta anterior del
+usuario para saber de qué habla.
 """
 
-from .pipeline import responder
+from .pipeline import es_limpieza, responder
 
-__all__ = ['responder']
+__all__ = ['es_limpieza', 'responder']

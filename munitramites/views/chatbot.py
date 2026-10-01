@@ -18,7 +18,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from ..services.chatbot import responder
+from ..services.chatbot import es_limpieza, responder
 
 # Maximo de mensajes que se guardan en la sesion
 LIMITE_HISTORIAL = 20
@@ -28,10 +28,18 @@ def _agregar_mensaje(request, pregunta):
     """Pregunta al pipeline y guarda pregunta + respuesta en la sesion.
 
     Es el unico lugar que escribe en request.session['chatbot']: lo usan
-    la pagina /chatbot/ y el modal (via /chatbot/api/).
+    la pagina /chatbot/ y el modal (via /chatbot/api/). La charla anterior
+    se le pasa al pipeline, que la usa para entender seguimientos («¿y el
+    plazo?») y se la manda al modelo para que la respuesta siga el hilo.
+
+    «limpiar» escrito a mano vacia la charla: es lo que promete la ayuda
+    del asistente (el boton del chat manda accion=limpiar a la API).
     """
     historial = request.session.get('chatbot', [])
-    rta = responder(pregunta)
+    if es_limpieza(pregunta):
+        historial = []
+
+    rta = responder(pregunta, historial)
 
     # Solo pk y titulo: minimiza el tamaño de la cookie de sesion
     historial = historial + [

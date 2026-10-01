@@ -7,15 +7,14 @@
   --azul: #1d4ed8;
   --azul-oscuro: #1e3a8a;
   --azul-claro: #dbeafe;
-  /* Grises un escalón MÁS OSCUROS que el Tailwind original: el fondo se
-     nota gris, los bordes se marcan y ningún texto queda clarito. La
-     medida es el contraste (WCAG): todo lo que era texto pasa de ~2,6:1
-     a ~5:1 o más, que es lo que se pide para que se lea en pantallas
-     malas. Si algún gris se mueve, revisar los pares de contraste. */
-  --gris-50: #eaeff6;
+  /* Grises MÁS OSCUROS que el Tailwind original: el fondo general es un
+     gris claro de verdad (#f8fafc era casi blanco y no se leía nada) y
+     ningún texto queda clarito. La medida es el contraste (WCAG AA =
+     4,5:1): si algún gris se mueve, revisar los pares sobre el fondo. */
+  --gris-50: #d4dce7;
   --gris-100: #dde5ef;
   --gris-200: #c4cfdd;
-  --gris-400: #5a6a80;
+  --gris-400: #4d5d74;
   --gris-500: #44536a;
   --gris-700: #26344a;
   --gris-900: #0b1220;
@@ -180,7 +179,7 @@ img { max-width: 100%; }
 
 /* --- Secciones ---------------------------------------------------------- */
 .seccion { padding: 44px 0; }
-.seccion--alterna { background: #fff; border-top: 1px solid var(--gris-200); border-bottom: 1px solid var(--gris-200); }
+.seccion--alterna { background: var(--gris-100); border-top: 1px solid var(--gris-200); border-bottom: 1px solid var(--gris-200); }
 
 .titulo-seccion {
   display: flex;

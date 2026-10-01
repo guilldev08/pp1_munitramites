@@ -6,6 +6,20 @@
   <title>Munitramites - {% block titulo %}Trámites de Misiones{% endblock %}</title>
   <meta name="description" content="Información de trámites públicos de la provincia de Misiones.">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script>
+    /* Temo: se aplica ANTES de pintar para que no destelle el otro tema.
+       Manda la preferencia guardada; si el usuario nunca eligió, la del
+       sistema (Windows/macOS en modo oscuro → el sitio arranca oscuro). */
+    (function () {
+      var tema = null;
+      try { tema = localStorage.getItem('munitramites-tema'); } catch (e) {}
+      if (tema !== 'claro' && tema !== 'oscuro') {
+        tema = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ? 'oscuro' : 'claro';
+      }
+      document.documentElement.setAttribute('data-tema', tema);
+    })();
+  </script>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -49,6 +63,11 @@
           <a class="boton boton--chico" href="{% url 'login' %}" data-abrir="modal-auth" data-tab="login">Ingresar</a>
         </span>
       {% endif %}
+
+      {# Interruptor de tema: el icono lo pone app.js según data-tema #}
+      <button class="tema-boton" type="button" id="cambiar-tema"
+              aria-pressed="false" aria-label="Cambiar al tema oscuro"
+              title="Tema oscuro">🌙</button>
     </nav>
   </div>
 </header>

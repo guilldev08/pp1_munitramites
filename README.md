@@ -192,6 +192,12 @@ Con JavaScript, mientras el modelo local redacta (unos segundos), el modal
 muestra la pregunta de una vez y un **«Escribiendo…»** con `aria-live`; al
 llegar la respuesta se repinta el historial que devolvió el servidor.
 
+La barra también trae el **interruptor de tema** (🌙 / ☀️): voltea entre el
+tema claro y el oscuro, guarda la elección en `localStorage` y, si el usuario
+nunca tocó nada, respeta la del sistema (`prefers-color-scheme`). `base.html`
+fija `data-tema` en `<head>`, **antes de pintar**, para que no destelle el
+otro tema; los dos se miden con contraste AA en `tests/test_tema.py`.
+
 **No hay catch-all.** Una URL inexistente devuelve el 404 real de Django.
 
 Orden en `urls.py` (importa): admin → auth → páginas → API → estáticos.
@@ -240,7 +246,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (109)
+    ├── tests/                      #    tests de aceptación (116)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -349,7 +355,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 109 tests
+docker compose exec web python manage.py test --noinput         # correr los 116 tests
 
 docker compose exec ollama ollama list                          # modelos cargados
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
@@ -421,7 +427,7 @@ escrito acá**: es lo que hace verificable el documento.
 | **ESP-04** Administración | `/admin/` (`admin.py`) | `test_roles` · `test_tramites` · `test_admin` |
 | **ESP-05** Consultas | `views/consultas.py`, `models.Consulta` | `test_consultas` |
 | **ESP-06** Base de datos | Firebird + `models.py` + `migrations/` | todos (corren sobre Firebird) |
-| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_admin` |
+| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_admin` · `test_tema` |
 | **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
 | **RF-03** Gestión de roles | `is_staff` / `is_superuser` | `test_roles` · `test_admin` |
@@ -449,7 +455,7 @@ escrito acá**: es lo que hace verificable el documento.
 | **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
 | **RNF-09** Despliegue (Docker) | `Dockerfile` + `Dockerfile.ollama` + `docker-compose.yml` | — |
 | **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |
-| **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, sin JS obligatorio | `test_chatbot` |
+| **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, sin JS obligatorio, tema claro/oscuro con contraste AA | `test_chatbot` · `test_tema` |
 
 ## Asistente virtual (RAG)
 
@@ -573,7 +579,9 @@ docker compose exec firebird gbak -c -user SYSDBA -password masterkey \
   `/registro/` (que abren el modal del lado del servidor) y la barra del chat
   manda el POST a `/chatbot/`.
 - El contraste, el orden de tabulación y los tamaños de texto están en
-  `static/css/app.css` (incluye `prefers-reduced-motion`).
+  `static/css/app.css` (incluye `prefers-reduced-motion`). Los pares de color
+  de los **dos temas** (claro y oscuro) se calculan contra WCAG AA (4,5:1) en
+  `tests/test_tema.py`: si alguien mueve un gris, se entera el test.
 
 ## Acceder a la base de datos
 

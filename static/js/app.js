@@ -276,8 +276,38 @@
   }
 
   /* --------------------------------------------------------------------
-     Arranque
+     Tema claro / oscuro (el atributo data-tema lo pone base.html antes
+     de pintar; acá solo se voltea y se recuerda la elección)
      -------------------------------------------------------------------- */
+  var botonTema = document.getElementById('cambiar-tema');
+
+  function temaActual() {
+    return document.documentElement.getAttribute('data-tema') || 'claro';
+  }
+
+  function pintarTema() {
+    if (!botonTema) return;
+    var oscuro = temaActual() === 'oscuro';
+    botonTema.textContent = oscuro ? '☀️' : '🌙';
+    botonTema.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
+    botonTema.setAttribute('aria-label',
+      oscuro ? 'Cambiar al tema claro' : 'Cambiar al tema oscuro');
+    botonTema.setAttribute('title', oscuro ? 'Tema claro' : 'Tema oscuro');
+  }
+
+  if (botonTema) {
+    botonTema.addEventListener('click', function () {
+      var siguiente = temaActual() === 'oscuro' ? 'claro' : 'oscuro';
+      document.documentElement.setAttribute('data-tema', siguiente);
+      try { localStorage.setItem('munitramites-tema', siguiente); } catch (e) {}
+      pintarTema();
+    });
+    pintarTema();
+  }
+
+  /* --------------------------------------------------------------------
+      Arranque
+      -------------------------------------------------------------------- */
   document.addEventListener('DOMContentLoaded', function () {
     var abierto = $('.modal--abierto');
     if (abierto) document.body.style.overflow = 'hidden';

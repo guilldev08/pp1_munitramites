@@ -205,6 +205,14 @@ def _redaccion(opciones, pregunta):
     return opciones[zlib.crc32(pregunta.encode('utf-8')) % len(opciones)]
 
 
+def _citar(texto, limite=60):
+    """La consulta recortada, para citarla dentro de una respuesta."""
+    texto = (texto or '').strip()
+    if len(texto) <= limite:
+        return texto
+    return texto[:limite].rstrip() + '…'
+
+
 class PlantillaLocal(ProveedorLLM):
     """Respuesta armada con las plantillas del sitio (sin modelo externo).
 
@@ -509,11 +517,27 @@ _HAY_MONTO = re.compile(
 )
 
 _SIN_DATO = (
-    'No dispongo de ese dato en la base de conocimiento de Munitramites: '
-    'el monto exacto no está en la ficha indexada. En la ficha del '
-    'trámite están los requisitos y los enlaces oficiales donde sí '
-    'podés consultarlo.'
+    'No dispongo del monto de «{consulta}»: la base no indexa montos. '
+    'En la ficha del trámite están los requisitos y los enlaces '
+    'oficiales donde sí podés consultarlo.',
+    'No dispongo de ese dato por «{consulta}»: los montos no están en '
+    'las fichas indexadas. Mirá la ficha del trámite y sus enlaces '
+    'oficiales, ahí sí figura.',
+    'No dispongo de ese monto para «{consulta}»: las fichas indexadas '
+    'no traen precios. Fijate en la ficha del trámite y en sus enlaces '
+    'oficiales, que ahí sí está publicado.',
 )
+
+
+def _sin_dato(pregunta):
+    """Idea de `pipeline._sin_informacion`: con la consulta a la vista.
+
+    Dos preguntas de precio distintas no pueden recibir la misma frase
+    clonada (se veía un bot roto): la respuesta cita lo que se preguntó
+    y elige la variante de forma estable por la consulta.
+    """
+    cita = _citar(pregunta)
+    return _redaccion(_SIN_DATO, cita).format(consulta=cita)
 
 
 def generar_respuesta(pregunta, fragmentos, historial=()):
@@ -527,7 +551,7 @@ def generar_respuesta(pregunta, fragmentos, historial=()):
     contexto = _contexto(fragmentos)
 
     if _PREGUNTA_MONTO.search(pregunta) and not _HAY_MONTO.search(contexto):
-        return _SIN_DATO
+        return _sin_dato(pregunta)
 
     texto = proveedor().completar(pregunta, fragmentos, historial)
 

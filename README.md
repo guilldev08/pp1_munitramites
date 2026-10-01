@@ -255,7 +255,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (146)
+    ├── tests/                      #    tests de aceptación (150)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -365,7 +365,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 146 tests
+docker compose exec web python manage.py test --noinput         # correr los 150 tests
 
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
 docker compose exec ollama ollama list                          # modelos cargados (el perfil tiene que estar arriba)
@@ -487,7 +487,7 @@ Docker** (ver «El modelo: Qwen corriendo en Ollama» más abajo).
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
 | 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: hoy con **Qwen vía `LLMHttp`** (Ollama, local). Si el proveedor no está configurado o falla la red, usa `PlantillaLocal` (sin dependencias ni costo) |
-| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, dice explícitamente que no dispone de esa información |
+| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, lo dice citando lo que se preguntó —nunca dos consultas distintas con la misma frase— sin inventar nada |
 
 **Se le puede preguntar desde tres lugares**: el modal 💬 (desde cualquier
 página), la página `/chatbot/` (con su alternativa sin JS: `/chatbot/?q=…`)
@@ -568,7 +568,14 @@ trámite y admitir cuando no sabe) está en `generacion.py::INSTRUCCION`.
   inventado (pasó en vivo: «$50.000.000» por renovar el DNI),
 - las preguntas por **monto** se contestan **sin llamar al modelo** si
   el contexto no trae ninguno: sale un «no dispongo» inmediato y
-  determinista, sin gastar los segundos de CPU.
+  determinista, sin gastar los segundos de CPU,
+- los **«no sé»** (sin contexto y los de monto) **citan la consulta
+  entrecomillada y traen tres variantes** cada uno, elegidas de forma
+  estable por la consulta: dos preguntas distintas nunca reciben el
+  mismo texto —pasó en vivo: «g» y «ag» salían letra por letra
+  iguales—, y las consultas de menos de 3 letras se contestan
+  aparte, pidiendo que la completen (`pipeline._sin_informacion`
+  y `generacion._sin_dato`).
 
 Si un filtro descarta la respuesta, se usa la plantilla local (que tiene
 varias redacciones, para que la charla no se vea clonada). Todo eso está

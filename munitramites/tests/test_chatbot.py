@@ -50,9 +50,27 @@ class PipelineTests(TestCase):
 
         rta = responder('¿cuánto cuesta un helado de mochaccino?')
 
-        self.assertIn('No dispongo', rta['texto'])
+        # Cita lo que se preguntó: eso hace que dos consultas nunca
+        # reciban exactamente el mismo texto.
+        self.assertIn('helado de mochaccino', rta['texto'])
         self.assertEqual(rta['tramites'], [])
         self.assertEqual(rta['fragmentos'], [])
+
+    def test_dos_consultas_sin_resultados_no_se_contesta_lo_mismo(self):
+        """Pasó en vivo: «g» y «ag» recibían la MISMA frase fija."""
+        self.assertNotEqual(responder('g')['texto'],
+                            responder('ag')['texto'])
+
+    def test_una_consulta_de_dos_letras_pide_que_la_completen(self):
+        """«No encontré nada sobre "g"» no le sirve a nadie."""
+        texto = responder('ag')['texto']
+
+        self.assertIn('«ag»', texto)
+        self.assertIn('completa', texto)
+
+    def test_la_misma_consulta_se_contesta_igual(self):
+        """Estable: la misma pregunta no cambia de respuesta en la charla."""
+        self.assertEqual(responder('g')['texto'], responder('g')['texto'])
 
     def test_pregunta_vacia_pide_que_escriba(self):
         rta = responder('   ')
@@ -639,6 +657,25 @@ class AlucinacionesTests(TestCase):
         self.assertEqual(post.call_count, 0)   # ni gastó los segundos de CPU
         self.assertIn('No dispongo', texto)
         self.assertIn('monto', texto)
+
+    def test_dos_preguntas_de_monto_no_reciben_el_mismo_texto(self):
+        """La respuesta por monto era OTRA frase fija: ahora cita lo que
+        se preguntó, así dos consultas distintas no salen idénticas."""
+        fragmentos = [self._fragmento(
+            'Renovacion de DNI. Requisitos: DNI anterior y abonar la tasa.'
+        )]
+
+        with self.settings(CHATBOT_LLM=OLLAMA_DE_PRUEBA):
+            with mock.patch.object(LLMHttp, '_post') as post:
+                a = generacion.generar_respuesta(
+                    'cuanto se paga por el DNI', fragmentos)
+                b = generacion.generar_respuesta(
+                    'cuanto vale la habilitacion', fragmentos)
+
+        self.assertEqual(post.call_count, 0)   # los dos, sin modelo
+        self.assertNotEqual(a, b)
+        self.assertIn('«cuanto se paga por el DNI»', a)
+        self.assertIn('«cuanto vale la habilitacion»', b)
 
     def test_si_el_contexto_trae_el_monto_se_le_pregunta_al_modelo(self):
         fragmentos = [self._fragmento('Renovacion de DNI. Tasa: $5.000.')]

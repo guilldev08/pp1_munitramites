@@ -8,9 +8,9 @@
      · La barra del chat y el form del modal → mandan POST a /chatbot/
        y la charla se ve en la página completa.
 
-   El modelo corre en la PC y tarda unos segundos: al enviar se pinta la
-   pregunta y un «Escribiendo…» con aria-live; al llegar la respuesta,
-   pintar() repinta el historial real que devolvió el servidor.
+   Al enviar se pinta la pregunta y un «Escribiendo…» con aria-live;
+   al llegar la respuesta, pintar() repinta el historial real que
+   devolvió el servidor.
    ========================================================================= */
 (function () {
   'use strict';
@@ -210,10 +210,10 @@
 
     boton.disabled = true;
 
-    // El modelo corre en la PC y tarda unos segundos: se pinta la pregunta
-    // de una vez y un aviso mientras redacta, así nadie cree que se colgó.
-    // aria-live acompaña a los lectores de pantalla; al llegar la respuesta
-    // pintar() repinta todo y este aviso desaparece.
+    // Se pinta la pregunta de una vez y un aviso mientras el servidor
+    // contesta, así nadie cree que se colgó. aria-live acompaña a los
+    // lectores de pantalla; al llegar la respuesta pintar() repinta todo
+    // y este aviso desaparece.
     var espera = null;
     if (contChat) {
       contChat.appendChild(burbuja(texto, 'usuario'));

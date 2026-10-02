@@ -10,19 +10,18 @@ Pipeline de tres etapas:
                     puntua cada fragmento con BM25. Si nada supera el
                     umbral, no hay contexto util.
     3. GENERAR      services/chatbot/generacion.py
-                    Arma la respuesta con el contexto recuperado. Hoy la
-                    redacta Qwen (settings.CHATBOT_LLM → Ollama, local,
-                    contenedor `ollama` de docker-compose); si no hay
-                    proveedor o el modelo falla, una plantilla anclada a
-                    los fragmentos. Nunca inventa: si el umbral no se
-                    alcanza, dice que no dispone de esa informacion.
+                    Arma la respuesta con el contexto recuperado: una
+                    plantilla anclada a los fragmentos, con variantes
+                    para no repetirse. Nunca inventa: si el umbral no se
+                    alcanza, dice que no dispone de esa informacion, y
+                    una pregunta por monto que no esta indexada se
+                    contesta con «no dispongo» antes de redactar.
 
 Criterios del documento que garantiza este diseno:
 
     · Precisión contextual ..... solo se responde con fragmentos indexados
     · Manejo de alucinaciones .. umbral + «no dispongo de esa información»
-                                 + filtros de salida (cifras ajenas al
-                                 contexto y eco del prompt) en generacion.py
+                                 + el corte de montos de generacion.py
     · Cita de fuentes .......... cada respuesta enlaza sus tramites
     · Privacidad ............... la charla vive en la sesion, no en la base
 
@@ -37,8 +36,8 @@ Uso tipico (desde una vista):
     rta['tramites']   # [Tramite, …] fuentes citadas
 
 Con `historial` el asistente entiende seguimientos («¿y el plazo?»): si la
-pregunta es corta, el modelo recibe también la pregunta anterior del
-usuario para saber de qué habla.
+pregunta es corta, se busca junto con la pregunta anterior del usuario
+para saber de qué habla.
 """
 
 from .pipeline import es_limpieza, responder

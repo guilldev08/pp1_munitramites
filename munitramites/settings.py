@@ -182,44 +182,12 @@ DEFAULT_FROM_EMAIL = 'no-responder@munitramites.test'
 
 # --- Chatbot (asistente con arquitectura RAG) ------------------------------
 # `services/chatbot/` implementa indexacion -> recuperacion -> generacion.
-#
-# CHATBOT_LLM es la CONEXION con el modelo de lenguaje.
-#
-# Hoy el asistente redacta con Qwen (modelo ligero) corriendo EN LOCAL,
-# dentro de Docker, para no depender de internet ni de una API key:
-#
-#     servicio `ollama` de docker-compose.yml
-#         -> imagen propia `Dockerfile.ollama`
-#            (Ollama + qwen2.5:1.5b ya descargados adentro,
-#             se exporta con `docker save`)
-#
-# Adentro de la red de compose el host se llama `ollama`. Si algun dia el
-# sitio corre en la PC host (fuera de Docker), cambiarlo a
-# `http://localhost:11434/v1`, que es donde se publica ese puerto.
-#
-# Si `proveedor` queda vacio, el contenedor esta apagado, el modelo no
-# llega a responder dentro de `timeout` o falla la red, la respuesta cae
-# en la plantilla local: la conversacion nunca se rompe.
-CHATBOT_LLM = {
-    # 'ollama' (local, sin clave) | openai | anthropic | gemini | custom
-    'proveedor': 'ollama',
-    # Solo la piden los proveedores de la nube; Ollama trabaja sin clave.
-    'api_key': '',
-    # Modelo que el cliente le PIDE a Ollama. Si cambia el MODELO del
-    # build-arg en docker-compose.yml, cambialo tambien aca: si no, Ollama
-    # recibe un modelo inexistente, la llamada falla en silencio y el
-    # asistente contesta siempre con la plantilla local.
-    # Listado de los disponibles:
-    #   docker compose --profile llm up -d
-    #   docker compose exec ollama ollama list
-    'modelo': 'qwen2.5:1.5b',
-    # URL interna del servicio `ollama` (dialecto OpenAI de Ollama).
-    'base_url': 'http://ollama:11434/v1',
-    # La PC no tiene GPU: en CPU una respuesta lleva unos segundos.
-    'timeout': 60,
-}
+# La generacion es una plantilla anclada al contexto (ver
+# `services/chatbot/generacion.py`): no hay modelo ni servicio dentro
+# del proyecto.
 
-# Fragmentos que se recuperan por consulta y se pasan como contexto al LLM.
+# Fragmentos que se recuperan por consulta y se pasan como contexto para
+# redactar la respuesta.
 CHATBOT_TOP_K = 4
 # Puntaje minimo para considerar que un fragmento responde la pregunta.
 # Por debajo, el asistente responde que no dispone de esa informacion.

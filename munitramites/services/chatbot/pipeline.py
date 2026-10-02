@@ -3,7 +3,7 @@
     responder(pregunta, historial) → {
         'texto':     str legible para el ciudadano,
         'tramites':  [Tramite] fuentes citadas (enlazables),
-        'fragmentos':[Fragmento] contexto recuperado (lo que usó el LLM),
+        'fragmentos':[Fragmento] contexto recuperado,
     }
 
 Reglas de la conversación:
@@ -16,7 +16,7 @@ Reglas de la conversación:
       que no se dispone de esa información (nunca se inventa), citando
       lo que se preguntó y sin repetir siempre la misma frase,
     · un seguimiento corto («¿y el plazo?») se busca junto con lo que se
-      preguntó antes, y el historial entero se le pasa al modelo,
+      preguntó antes,
     · la charla no se guarda en la base: vive en la sesión del usuario.
 """
 
@@ -158,8 +158,9 @@ def responder(pregunta, historial=None):
 
     `historial` es la charla previa de la sesión (dicts con `rol` y
     `texto`, la misma que ve el ciudadano en pantalla): se usa para
-    entender seguimientos cortos y se le pasa al modelo para que la
-    respuesta siga el hilo de la conversación.
+    entender seguimientos cortos —con la pregunta anterior se sabe de
+    qué trámite habla «¿y el plazo?»— y para que un seguimiento cite
+    los trámites en vez de repetir la pregunta suelta.
     """
     pregunta = (pregunta or '').strip()
 

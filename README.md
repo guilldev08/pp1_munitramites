@@ -58,17 +58,6 @@ docker compose up -d --build
 
 La primera vez tarda unos minutos (baja imágenes e instala dependencias).
 
-**El modelo del asistente es opcional**: el servicio `ollama` está detrás
-del perfil `llm`, así que `docker compose up -d` **no lo descarga** y el
-sitio arranca igual. Sin modelo el asistente responde con la plantilla
-local; para que redacte con Qwen hace falta internet (la primera vez baja
-~4,5 GB: imagen + modelo) y un solo comando:
-
-```powershell
-docker compose --profile llm up -d --build   # arma la imagen con Qwen adentro
-docker compose exec ollama ollama list       # qwen2.5:1.5b aparece ahí
-```
-
 ### Cargar los datos de ejemplo
 
 ```powershell
@@ -203,8 +192,8 @@ Sin JavaScript todo sigue funcionando: los enlaces caen en `/login/` y
 `/registro/` (que abren el mismo modal del lado del servidor) y la barra del
 chat manda el POST a `/chatbot/`, que muestra la charla en la página.
 
-Con JavaScript, mientras el modelo local redacta (unos segundos), el modal
-muestra la pregunta de una vez y un **«Escribiendo…»** con `aria-live`; al
+Con JavaScript, el modal muestra la pregunta de una vez y un
+**«Escribiendo…»** con `aria-live` mientras el servidor contesta; al
 llegar la respuesta se repinta el historial que devolvió el servidor.
 
 La barra también trae el **interruptor de tema** (🌙 / ☀️): voltea entre el
@@ -228,7 +217,6 @@ en el propio archivo.
 ```
 munitramites/
 ├── Dockerfile
-├── Dockerfile.ollama                # Ollama + el modelo Qwen ya adentro
 ├── docker-compose.yml
 ├── requirements.txt
 ├── manage.py
@@ -259,13 +247,13 @@ munitramites/
     │   └── chatbot/                #    RAG: indexar → recuperar → generar
     │       ├── indexar.py          #    1. convierte trámites en fragmentos
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
-    │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
+    │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (154)
+    ├── tests/                      #    tests de aceptación (135)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
-    │   ├── test_chatbot.py         #    asistente: RAG, privacidad y LLM local
+    │   ├── test_chatbot.py         #    asistente: RAG y privacidad
     │   ├── test_consultas.py       #    RF-08/09/10
     │   ├── test_roles.py           #    ESP-02 · RF-03/11/13
     │   ├── test_rnf.py             #    RNF-03 rendimiento · RNF-05 integridad
@@ -341,7 +329,6 @@ munitramites/
 | Cambiar la base de datos | `settings.py` → `DATABASES` | — |
 | Cambiar idioma / zona horaria | `settings.py` → `LANGUAGE_CODE` / `TIME_ZONE` | — |
 | Cambiar login / redirecciones | `settings.py` → bloque `LOGIN_*` | — |
-| Conectar el LLM del chatbot | `settings.py` → `CHATBOT_LLM` | — |
 | Mover el admin de ruta | `urls.py` → línea `path('admin/', ...)` | — |
 | Agregar una dependencia | `requirements.txt` | `docker compose up -d --build` |
 
@@ -371,13 +358,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 154 tests
-
-docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
-docker compose exec ollama ollama list                          # modelos cargados (el perfil tiene que estar arriba)
-docker compose exec ollama ollama pull qwen2.5:3b               # bajar otro modelo (el perfil también)
-docker compose build ollama                                     # (re)armar la imagen con el modelo
-docker save munitramites-ollama -o munitramites-ollama.tar      # exportar imagen + modelo
+docker compose exec web python manage.py test --noinput         # correr los 135 tests
 ```
 
 ### Ejecutar código desde el host
@@ -463,20 +444,19 @@ el código (`admin.py`, sección *Organismos*); lo cubren
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
 | **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` · `test_auth.PerfilTests` (cambio estando adentro) |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
-| **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) · `generacion.py` (filtros `_sin_eco` y `_cifras_ajenas`, monto sin indexar sin llamar al modelo) | `test_chatbot` · `test_chatbot.AlucinacionesTests` |
+| **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) · `generacion.py` (corte de montos: un precio que no está indexado se contesta con «no dispongo») | `test_chatbot` · `test_chatbot.AlucinacionesTests` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
-| **IA — modelo local (Qwen/Ollama)** | `generacion.py` (`LLMHttp`) · `settings.CHATBOT_LLM` · `Dockerfile.ollama` | `test_chatbot.PruebaDelLLMTests` |
 | **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), DNI validado y único, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
 | **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en la portada, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
-| **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página (`views/tramites.py::POR_PAGINA`), índice BM25 en memoria y cooldown del LLM | `test_rnf.RendimientoTests` (sin N+1 y caché del índice) · `test_tramites.ListadoTests.test_paga_de_a_seis_por_pagina` · `test_chatbot.PruebaDelLLMTests` (cooldown) |
+| **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página (`views/tramites.py::POR_PAGINA`) e índice BM25 en memoria | `test_rnf.RendimientoTests` (sin N+1 y caché del índice) · `test_tramites.ListadoTests.test_paga_de_a_seis_por_pagina` |
 | **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
 | **RNF-05** Integridad | `unique` (Municipio/Organismo), `unique_together` (Requisitos), `PROTECT`/`CASCADE` en las claves foráneas | `test_rnf.IntegridadTests` · `test_auth` |
 | **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
 | **RNF-07** Compatibilidad | el entorno definido del proyecto (Docker) y páginas que andan sin JavaScript ni plugins | `test_chatbot.test_pagina_del_chat_sin_javascript` · `test_chatbot.BuscadorTests.test_el_enlace_sin_javascript_de_verdad_responde` |
 | **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
-| **RNF-09** Despliegue (Docker) | `Dockerfile` + `Dockerfile.ollama` + `docker-compose.yml` | — |
+| **RNF-09** Despliegue (Docker) | `Dockerfile` + `docker-compose.yml` | — |
 | **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |
 | **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, sin JS obligatorio, tema claro/oscuro con contraste AA | `test_chatbot` · `test_tema` |
 
@@ -484,15 +464,13 @@ el código (`admin.py`, sección *Organismos*); lo cubren
 
 El chatbot **no adivina**: arma un índice con los trámites, busca los
 fragmentos que responden la pregunta y responde citando de dónde salió.
-Tres etapas, tres archivos, todas en `services/chatbot/`. La etapa 3 es la
-única que habla con el modelo: **Qwen2.5 corriendo en Ollama, dentro de
-Docker** (ver «El modelo: Qwen corriendo en Ollama» más abajo).
+Tres etapas, tres archivos, todas en `services/chatbot/`.
 
 | Etapa | Archivo | Qué hace |
 |---|---|---|
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
-| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: hoy con **Qwen vía `LLMHttp`** (Ollama, local). Si el proveedor no está configurado o falla la red, usa `PlantillaLocal` (sin dependencias ni costo) |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados usando `PlantillaLocal` (plantillas con varias variantes, sin dependencias ni costo); una pregunta por monto que no está indexada se contesta con «no dispongo» antes de redactar |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, lo dice citando lo que se preguntó —nunca dos consultas distintas con la misma frase— sin inventar nada |
 
 **Se le puede preguntar desde tres lugares**: el modal 💬 (desde cualquier
@@ -506,107 +484,38 @@ el chat pero **sin tocar la sesión**: lo que se busca no queda en la charla
 enlace a `/chatbot/?q=…`, que responde la misma pregunta en el chat.
 Tests: `test_chatbot.BuscadorTests`.
 
-### El modelo: Qwen corriendo en Ollama (local)
+### Cómo redacta (y por qué no inventa)
 
-El asistente redacta con **Qwen2.5** (ligero, ~1 GB) corriendo **en tu PC**,
-dentro de un contenedor de Docker: sin API key y sin mandar los datos de
-nadie a ningún lado. Ese contenedor está detrás del **perfil `llm`** de
-Docker Compose, así que `docker compose up -d` **no lo arma ni descarga
-nada**: el modelo se enciende aparte, cuando haya internet.
+La etapa 3 no trae un modelo dentro del proyecto: la respuesta la arma
+`generacion.py::PlantillaLocal` con las plantillas del sitio, siempre
+anclada a los fragmentos que recuperó el índice. Cada caso tiene más de
+una redacción, elegida de forma estable por la consulta (misma pregunta,
+misma frase; preguntas distintas, frases distintas), para que la charla
+no se vea clonada.
 
-| Pieza | Dónde está | Qué hace |
-|---|---|---|
-| Contenedor `ollama` | `docker-compose.yml` (perfil `llm`) + `Dockerfile.ollama` | arma una imagen propia con Ollama **y el modelo ya descargado adentro** |
-| Configuración | `settings.py` → `CHATBOT_LLM` | proveedor `ollama`, modelo, URL interna `http://ollama:11434/v1` y `timeout` |
-| Cliente HTTP | `services/chatbot/generacion.py` | habla el dialecto OpenAI de Ollama con `urllib`, sin dependencias |
-| Respaldo | `generacion.py::PlantillaLocal` | lo que contesta el asistente mientras el modelo no esté disponible |
-
-```powershell
-docker compose up -d                         # uso normal: SIN modelo, arranca al toque
-docker compose --profile llm up -d --build   # con modelo: baja ~4,5 GB una sola vez
-docker compose exec ollama ollama list       # qwen2.5:1.5b aparece ahí
-```
-
-**El modelo viaja con la imagen**: se respalda y se mueve con Docker sin
-volver a descargar nada (no hay volumen, por eso el modelo no se pierde ni
-se tapa).
-
-```powershell
-docker save munitramites-ollama -o munitramites-ollama.tar   # exportar
-docker load -i munitramites-ollama.tar                       # importar en otra PC
-```
-
-Cambiar de modelo (Qwen u otro que hable el dialecto OpenAI):
-
-```yaml
-# docker-compose.yml → services.ollama.build.args
-args:
-  MODELO: qwen2.5:0.5b   # ~400 MB, el más rápido en CPU
-  MODELO: qwen2.5:1.5b   # ~1 GB,  el que está por defecto
-  MODELO: qwen2.5:3b     # ~2 GB,  más capaz y más lento
-```
-
-```powershell
-docker compose build ollama                  # baja el modelo nuevo
-docker compose --profile llm up -d --build   # y lo deja corriendo
-```
-
-**El sitio también tiene que saber el nombre nuevo**:
-`munitramites/settings.py` → `CHATBOT_LLM['modelo']` es el modelo que el
-cliente le pide a Ollama. Si queda el viejo, Ollama recibe un modelo
-inexistente, la llamada falla en silencio y el asistente contesta siempre
-con la plantilla local, sin ningún error a la vista.
-
-**Si el modelo no está construido (perfil apagado), el contenedor está
-caído o el modelo se pasa del tiempo, la respuesta cae en la plantilla
-local**: la conversación nunca se rompe y responde al instante. El prompt
-que recibe el modelo (contestar exactamente lo preguntado —sin repetir
-siempre la misma fórmula—, responder solo con el contexto, citar el
-trámite y admitir cuando no sabe) está en `generacion.py::INSTRUCCION`.
-
-**La respuesta del modelo no se muestra sin pasar por filtros**
-(`generacion.py`):
-
-- `_sin_eco` recorta los marcadores «Contexto: … Pregunta: …» si el
-  modelo los pegó en vez de contestar,
-- `_cifras_ajenas` descarta cualquier cifra que no estuviera en el
-  contexto: nunca se le muestra al ciudadano un monto o un plazo
-  inventado (pasó en vivo: «$50.000.000» por renovar el DNI),
-- las preguntas por **monto** se contestan **sin llamar al modelo** si
-  el contexto no trae ninguno: sale un «no dispongo» inmediato y
-  determinista, sin gastar los segundos de CPU,
-- los **«no sé»** (sin contexto y los de monto) **citan la consulta
-  entrecomillada y traen tres variantes** cada uno, elegidas de forma
-  estable por la consulta: dos preguntas distintas nunca reciben el
-  mismo texto —pasó en vivo: «g» y «ag» salían letra por letra
-  iguales—, y las consultas de menos de 3 letras se contestan
-  aparte, pidiendo que la completen (`pipeline._sin_informacion`
-  y `generacion._sin_dato`).
-
-Si un filtro descarta la respuesta, se usa la plantilla local (que tiene
-varias redacciones, para que la charla no se vea clonada). Todo eso está
-cubierto por `tests/test_chatbot.py::AlucinacionesTests`.
+**Las preguntas por monto no llegan a redactarse** (`generacion.py`):
+si el contexto no trae ninguno, la única respuesta posible sería una
+invención, así que sale un «no dispongo» inmediato y determinista
+(pasó en vivo: «$50.000.000» por renovar el DNI). Y los **«no sé»**
+(sin contexto y los de monto) **citan la consulta entrecomillada y
+traen tres variantes** cada uno, elegidas de forma estable por la
+consulta: dos preguntas distintas nunca reciben el mismo texto —pasó
+en vivo: «g» y «ag» salían letra por letra iguales—, y las consultas de
+menos de 3 letras se contestan aparte, pidiendo que la completen
+(`pipeline._sin_informacion` y `generacion._sin_dato`).
 
 **Cuando la pregunta es corta** («¿y el plazo?») el pipeline la busca
-junto con las preguntas anteriores del usuario y le pasa al modelo la
-**pregunta previa**, para que sepa de qué habla; las respuestas propias
-anteriores no se mandan (un modelo de 1,5 B las copiaba tal cual para
-otro trámite). Los casos fijos —saludo, ayuda, «gracias», «chau» y
-«limpiar»— responden sin buscar en el índice, y un saludo seguido de una
-pregunta ya no se traga la pregunta.
+junto con las preguntas anteriores del usuario, así el seguimiento cae
+en los trámites correctos, y la plantilla cita esos trámites en vez de
+repetir la pregunta suelta. Los casos fijos —saludo, ayuda, «gracias»,
+«chau» y «limpiar»— responden sin buscar en el índice, y un saludo
+seguido de una pregunta ya no se traga la pregunta.
 
-Además, tras un fallo el asistente **no vuelve a tocar la red durante
-60 segundos** (`generacion.py::ESPERA_TRAS_UN_FALLO`): sin ese cooldown
-cada consulta pagaría la espera del resolver de red (~4 s buscando el
-host `ollama` que no existe) para terminar igual en la plantilla. En la
-práctica el primer intento cuesta lo que tenga que costar y los
-siguientes responden ya.
-
-Si algún día se prefiere un modelo en la nube, alcanza con cambiar
-`CHATBOT_LLM` en `settings.py`: `proveedor: 'openai' | 'anthropic' |
-'gemini'`, su `api_key` y el `modelo`; no se toca ni la vista ni el RAG.
-Y si el sitio corre **fuera de Docker** (en la PC host), cambiar el
-`base_url` a `http://localhost:11434/v1`, que es donde se publica el puerto.
+Si algún día el asistente se conecta a un **servicio de lenguaje
+aparte**, el punto de conexión es `generar_respuesta()` en
+`generacion.py`: ni la vista, ni el RAG ni el pipeline cambian. Todo lo
+de este apartado está cubierto por `tests/test_chatbot.py`
+(`PipelineTests`, `PlantillaLocalTests` y `AlucinacionesTests`).
 
 Otras perillas: `CHATBOT_TOP_K` (fragmentos que se pasan como contexto) y
 `CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse).
@@ -687,8 +596,6 @@ Luego escribí SQL y cerrá con `quit;`.
 | Backend Firebird | `django-firebird` 5.0.4 | (pip) |
 | Driver | `firebird-driver` 2.0.3 | (pip) |
 | Firebird Server | 4.0.7 | `firebirdsql/firebird:4.0.7` |
-| Ollama | latest | `Dockerfile.ollama` → imagen propia `munitramites-ollama` |
-| Modelo del asistente | `qwen2.5:1.5b` (~1 GB, CPU) | baja en el build de esa imagen |
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 

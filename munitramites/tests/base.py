@@ -3,7 +3,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase as _TestCase, override_settings
 
-from munitramites.models import Municipio, Organismo, Perfil, Requisito, Tramite
+from munitramites.models import (
+    Municipio, Organismo, Perfil, Requisito, Tema, Tramite,
+)
 from munitramites.services.chatbot import indexar
 
 # CHATBOT_LLM sin proveedor: en los tests el asistente redacta con la
@@ -64,12 +66,12 @@ def organismo(nombre='Registro Civil de Misiones', direccion='Av. Mitre 1234'):
     return obj
 
 
-def tramite(titulo='Renovacion de DNI', tema='Documentacion',
+def tramite(titulo='Renovacion de DNI', tema='Documentación',
             modalidad='presencial', **kwargs):
     """Trámite de prueba con un requisito cargado."""
     datos = {
         'titulo': titulo,
-        'tema': tema,
+        'tema': Tema.objects.get_or_create(nombre=tema)[0],
         'modalidad': modalidad,
         'municipio': municipio(),
         'organismo': organismo(),

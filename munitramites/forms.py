@@ -10,7 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from .models import Consulta, Municipio, Perfil, Tramite
+from .models import Consulta, Municipio, Perfil, Tema, Tramite
 
 
 class RegistroForm(UserCreationForm):
@@ -198,7 +198,8 @@ class TramiteFiltroForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['tema'].choices += list(Tramite.Tema.choices)
+        self.fields['tema'].choices += [(t.pk, t.nombre)
+                                        for t in Tema.objects.all()]
         self.fields['municipio'].choices += [
             (m.pk, m.nombre) for m in Municipio.objects.all()
         ]
@@ -217,7 +218,7 @@ class TramiteFiltroForm(forms.Form):
                 | Q(requisitos__descripcion__icontains=datos['q'])
             ).distinct()
         if datos['tema']:
-            queryset = queryset.filter(tema=datos['tema'])
+            queryset = queryset.filter(tema_id=datos['tema'])
         if datos['municipio']:
             queryset = queryset.filter(municipio_id=datos['municipio'])
         if datos['modalidad']:

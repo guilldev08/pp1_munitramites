@@ -34,7 +34,7 @@ def _construir():
     """Recorre los tramites activos y arma los fragmentos."""
     tramites = (
         Tramite.objects.filter(activo=True)
-        .select_related('municipio', 'organismo')
+        .select_related('municipio', 'organismo', 'tema')
         .prefetch_related('requisitos')
     )
 
@@ -47,7 +47,7 @@ def _construir():
             tipo='ficha',
             texto=(
                 f'{t.titulo}. {t.descripcion} '
-                f'Tema: {t.get_tema_display()}. '
+                f'Tema: {t.tema}. '
                 f'Modalidad: {t.get_modalidad_display()}. '
                 f'Municipio: {t.municipio.nombre}. '
                 f'Organismo responsable: {t.organismo.nombre}. '

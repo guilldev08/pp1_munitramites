@@ -20,9 +20,11 @@ Qué hace el sistema, en corto:
   `/admin/`). Dentro del panel, además, la escalera de dos peldaños que
   describe [Quién puede qué](#quién-puede-qué-dentro-del-panel): el *editor*
   no toca usuarios ni borra, y solo el *superusuario* administra cuentas.
-- **Buscador de trámites** con filtros y fichas que muestran requisitos,
-  organismo responsable y enlaces oficiales. Lo que se escribe en «Buscar»
-  lo responde además el asistente, en un panel arriba de los resultados.
+- **Buscador de trámites** con filtros (texto, tema, municipio, modalidad)
+  y fichas que muestran requisitos, organismo responsable y enlaces
+  oficiales; los temas se cargan desde el panel, no son opciones fijas.
+  Lo que se escribe en «Buscar» lo responde además el asistente, en un
+  panel arriba de los resultados.
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
 - **Asistente virtual** con RAG: busca en los trámites reales, cita la fuente
@@ -73,7 +75,8 @@ docker compose exec ollama ollama list       # qwen2.5:1.5b aparece ahí
 docker compose exec web python manage.py cargar_datos
 ```
 
-Crea 9 municipios, 7 organismos, 8 trámites, 32 requisitos y 3 consultas.
+Crea 9 municipios, 7 organismos, 7 temas, 8 trámites, 32 requisitos y
+3 consultas.
 Es **idempotente**: se puede correr las veces que haga falta sin duplicar nada.
 
 ## Usuarios
@@ -139,6 +142,9 @@ Detalles pensados para el día a día:
   ver el sitio público y cambiar la contraseña.
 - **Píldoras de color** en los listados: tema y modalidad de los trámites, tipo
   y estado de las consultas, rol de cada cuenta. Las celdas vacías se ven «—».
+- **Tabla de Temas**: los temas de los trámites dejan de ser opciones fijas
+  del código y se cargan desde el panel; ahí mismo aparecen en el formulario
+  de alta de trámites y en los filtros del listado.
 - **Acciones masivas**: *Activar / Desactivar trámites*, *Marcar como
   respondidas* (solo las que ya tienen respuesta cargada) y *Cerrar consultas*.
 - **Casillas en línea** para destacar o publicar un trámite sin abrir la ficha.
@@ -151,7 +157,7 @@ Detalles pensados para el día a día:
 
 | En `/admin/` | Editor (`is_staff`, sin superusuario) | Superusuario |
 |---|---|---|
-| Trámites, Requisitos, Enlaces, Municipios, Organismos, Consultas | alta y edición | **+ borrado** |
+| Trámites, Requisitos, Enlaces, Municipios, Organismos, Temas, Consultas | alta y edición | **+ borrado** |
 | Usuarios, Grupos (los roles) y Perfiles (DNI) | no aparece en el índice y responde **403** por URL directa | sí |
 | La propia fila de usuario | — | se abre en modo lectura: **nadie se edita ni se borra a sí mismo** |
 | Sacar un requisito o enlace de la ficha de un trámite | sí (es editar el trámite) | sí |
@@ -255,7 +261,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. plantilla local o LLM (Qwen/Ollama)
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (150)
+    ├── tests/                      #    tests de aceptación (154)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -365,7 +371,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 150 tests
+docker compose exec web python manage.py test --noinput         # correr los 154 tests
 
 docker compose --profile llm up -d --build                      # encender el modelo (baja ~4,5 GB)
 docker compose exec ollama ollama list                          # modelos cargados (el perfil tiene que estar arriba)

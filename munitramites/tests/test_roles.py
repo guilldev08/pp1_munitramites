@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 
 from django.urls import reverse
 
-from munitramites.models import Organismo, Tramite
+from munitramites.models import Organismo, Tema, Tramite
 
 from .base import TestCase, administrador, ciudadano, municipio, organismo
 
@@ -64,9 +64,20 @@ class AdministradorTests(TestCase):
         for ruta in ('/admin/munitramites/tramite/',
                      '/admin/munitramites/consulta/',
                      '/admin/munitramites/organismo/',
+                     '/admin/munitramites/tema/',
                      '/admin/munitramites/perfil/',
                      '/admin/auth/user/'):
             self.assertContains(r, ruta)
+
+    def test_puede_cargar_temas_personalizados(self):
+        """RF-07: los temas se cargan desde el panel (antes: choices)."""
+        r = self.client.post(reverse('admin:munitramites_tema_add'),
+                             {'nombre': 'Medio Ambiente'})
+
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(
+            Tema.objects.filter(nombre='Medio Ambiente').exists()
+        )
 
     def test_puede_gestionar_usuarios(self):
         """RF-11: consultar y administrar los usuarios registrados."""
@@ -81,7 +92,7 @@ class AdministradorTests(TestCase):
         """RF-07: crear y editar trámites desde el panel."""
         r = self.client.post(reverse('admin:munitramites_tramite_add'), {
             'titulo': 'Certificado de residencia',
-            'tema': 'Documentacion',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'virtual',
             'descripcion': 'Se pide en linea.',
             'municipio': municipio().pk,

@@ -23,7 +23,7 @@ def contexto_lista_tramites(request):
     filtros = TramiteFiltroForm(request.GET or None)
     queryset = (
         Tramite.objects.filter(activo=True)
-        .select_related('municipio', 'organismo')
+        .select_related('municipio', 'organismo', 'tema')
         .prefetch_related('requisitos')
     )
     queryset = filtros.filtrar(queryset)
@@ -55,14 +55,15 @@ def tramites(request):
 def tramite_detalle(request, pk):
     """Ficha completa: organismo, requisitos y enlaces oficiales."""
     tramite = get_object_or_404(
-        Tramite.objects.select_related('municipio', 'organismo')
+        Tramite.objects.select_related('municipio', 'organismo', 'tema')
         .prefetch_related('requisitos', 'enlaces'),
         pk=pk, activo=True,
     )
     relacionados = (
-        Tramite.objects.filter(
-            activo=True, tema=tramite.tema
-        ).exclude(pk=tramite.pk)[:3]
+        Tramite.objects
+        .filter(activo=True, tema=tramite.tema)
+        .select_related('municipio', 'tema')
+        .exclude(pk=tramite.pk)[:3]
     )
     return render(request, 'tramites/detalle.html', {
         'tramite': tramite,

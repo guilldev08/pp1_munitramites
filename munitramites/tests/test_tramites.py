@@ -9,7 +9,7 @@ información».
 
 from django.urls import reverse
 
-from munitramites.models import Enlace, Requisito
+from munitramites.models import Enlace, Requisito, Tema
 
 from .base import TestCase, administrador, municipio, organismo, tramite
 
@@ -43,7 +43,7 @@ class ListadoTests(TestCase):
 
     def test_lista_los_tramites_activos(self):
         tramite()
-        tramite(titulo='Partida de nacimiento', tema='Documentacion')
+        tramite(titulo='Partida de nacimiento', tema='Documentación')
 
         r = self.client.get(reverse('tramites'))
 
@@ -61,7 +61,7 @@ class ListadoTests(TestCase):
     def test_paga_de_a_seis_por_pagina(self):
         """RNF-03: el listado trae 6 por pantalla y el resto en la página 2."""
         for n in range(1, 8):
-            tramite(titulo=f'Tramite numero {n}', tema='Documentacion')
+            tramite(titulo=f'Tramite numero {n}', tema='Documentación')
 
         r = self.client.get(reverse('tramites'))
         self.assertContains(r, 'Tramite numero 1')
@@ -75,14 +75,15 @@ class ListadoTests(TestCase):
 
     def test_filtra_por_texto_tema_y_municipio(self):
         tramite()
-        tramite(titulo='Licencia de conducir', tema='Transito',
-                municipio=municipio('Obera'))
+        licencia = tramite(titulo='Licencia de conducir', tema='Tránsito',
+                           municipio=municipio('Obera'))
 
         r = self.client.get(reverse('tramites'), {'q': 'licencia'})
         self.assertContains(r, 'Licencia de conducir')
         self.assertNotContains(r, 'Renovacion de DNI')
 
-        r = self.client.get(reverse('tramites'), {'tema': 'Transito'})
+        r = self.client.get(reverse('tramites'),
+                            {'tema': str(licencia.tema_id)})
         self.assertContains(r, 'Licencia de conducir')
 
         r = self.client.get(reverse('tramites'), {'municipio': municipio('Obera').pk})
@@ -180,3 +181,33 @@ class ApiTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()['count'], 1)
         self.assertEqual(r.json()['tramites'][0]['titulo'], 'Renovacion de DNI')
+
+
+class TemasTests(TestCase):
+    """La tabla Tema: se carga desde el panel y alimenta los filtros."""
+
+    def test_los_siete_temas_originales_vienen_cargados(self):
+        """La migración siembra los temas que antes eran choices fijos."""
+        nombres = set(Tema.objects.values_list('nombre', flat=True))
+
+        self.assertTrue({
+            'Documentación', 'Tránsito', 'Comercio', 'Seguridad',
+            'Salud', 'Impuestos', 'Vivienda',
+        } <= nombres)
+
+    def test_un_tema_personalizado_se_muestra_en_la_lista(self):
+        """RF-07: el admin carga un tema nuevo y la lista lo refleja."""
+        tramite(titulo='Reciclaje urbano', tema='Medio Ambiente')
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertContains(r, 'etiqueta--tema">Medio Ambiente')
+
+    def test_filtra_por_un_tema_personalizado(self):
+        propio = tramite(titulo='Reciclaje urbano', tema='Medio Ambiente')
+        tramite(titulo='Partida de nacimiento')
+
+        r = self.client.get(reverse('tramites'), {'tema': str(propio.tema_id)})
+
+        self.assertContains(r, 'Reciclaje urbano')
+        self.assertNotContains(r, 'Partida de nacimiento')

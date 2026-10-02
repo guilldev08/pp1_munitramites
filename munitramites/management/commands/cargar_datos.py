@@ -13,8 +13,25 @@ from django.db import transaction
 from django.utils import timezone
 
 from munitramites.models import (
-    Consulta, Municipio, Organismo, Requisito, Tramite,
+    Consulta, Municipio, Organismo, Requisito, Tema, Tramite,
 )
+
+
+# El combo viejo del modelo usaba claves sin acento; el catálogo guarda
+# el rótulo (lo que se ve en el formulario y en las fichas).
+TEMAS = {'Documentacion': 'Documentación', 'Transito': 'Tránsito'}
+
+# Los 7 temas del `choices` original: los crea la migración 0004, pero
+# acá se aseguran de existir por si la base se vació (catálogo, no datos).
+TEMAS_BASE = (
+    'Documentacion', 'Transito', 'Comercio', 'Seguridad',
+    'Salud', 'Impuestos', 'Vivienda',
+)
+
+
+def _tema(clave):
+    """Fila de Tema para la clave histórica del trámite (idempotente)."""
+    return Tema.objects.get_or_create(nombre=TEMAS.get(clave, clave))[0]
 
 
 MUNICIPIOS = [
@@ -168,7 +185,7 @@ CONSULTAS = [
 
 
 class Command(BaseCommand):
-    help = 'Carga municipios, organismos, tramites, requisitos y consultas.'
+    help = 'Carga municipios, organismos, temas, tramites, requisitos y consultas.'
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -184,6 +201,11 @@ class Command(BaseCommand):
             )
         self.stdout.write(f'  Organismos:      {Organismo.objects.count()}')
 
+        # Temas -------------------------------------------------------
+        for clave in TEMAS_BASE:
+            _tema(clave)
+        self.stdout.write(f'  Temas:           {Tema.objects.count()}')
+
         # Tramites + requisitos -------------------------------------------
         creados = 0
         for (titulo, tema, modalidad, muni, org, destacado,
@@ -191,7 +213,7 @@ class Command(BaseCommand):
             tramite, created = Tramite.objects.get_or_create(
                 titulo=titulo,
                 defaults={
-                    'tema': tema,
+                    'tema': _tema(tema),
                     'modalidad': modalidad,
                     'municipio': Municipio.objects.get(nombre=muni),
                     'organismo': Organismo.objects.get(nombre=org),

@@ -6,8 +6,8 @@ Estructura del dominio:
     Municipio ──┐
                 ├──► Tramite ──► Requisito
     Organismo ──┘        ├──► Enlace  (botones de la ficha, los edita el admin)
-                         │
-                         └──► Consulta ──► User ──► Perfil (DNI)
+    Tema ────────────────┘
+                          └──► Consulta ──► User ──► Perfil (DNI)
 
 Todas las tablas viven en Firebird. Después de tocar este archivo:
 
@@ -55,17 +55,27 @@ class Organismo(models.Model):
         return self.nombre
 
 
+class Tema(models.Model):
+    """Tema de un tramite, cargado desde el panel.
+
+    Antes era un `choices` fijo en el modelo (Documentación, Tránsito, …):
+    ahora es una tabla, así el administrador carga los que quiera sin
+    tocar código. Los 7 iniciales los crea la migración 0004.
+    """
+
+    nombre = models.CharField(max_length=60, unique=True)
+
+    class Meta:
+        verbose_name = 'Tema'
+        verbose_name_plural = 'Temas'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
+
+
 class Tramite(models.Model):
     """Un tramite publico que puede realizar un ciudadano."""
-
-    class Tema(models.TextChoices):
-        DOCUMENTACION = 'Documentacion', 'Documentación'
-        TRANSITO = 'Transito', 'Tránsito'
-        COMERCIO = 'Comercio', 'Comercio'
-        SEGURIDAD = 'Seguridad', 'Seguridad'
-        SALUD = 'Salud', 'Salud'
-        IMPUESTOS = 'Impuestos', 'Impuestos'
-        VIVIENDA = 'Vivienda', 'Vivienda'
 
     class Modalidad(models.TextChoices):
         PRESENCIAL = 'presencial', 'Presencial'
@@ -73,7 +83,7 @@ class Tramite(models.Model):
         MIXTA = 'mixta', 'Mixta'
 
     titulo = models.CharField(max_length=200)
-    tema = models.CharField(max_length=20, choices=Tema.choices)
+    tema = models.ForeignKey(Tema, on_delete=models.PROTECT, related_name='tramites')
     modalidad = models.CharField(max_length=20, choices=Modalidad.choices)
     municipio = models.ForeignKey(
         Municipio, on_delete=models.PROTECT, related_name='tramites'

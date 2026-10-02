@@ -11,12 +11,12 @@ def api_tramites(request):
         {
             'id': t.pk,
             'titulo': t.titulo,
-            'tema': t.tema,
+            'tema': str(t.tema),
             'modalidad': t.modalidad,
             'municipio': t.municipio.nombre,
             'organismo': t.organismo.nombre,
         }
         for t in Tramite.objects.filter(activo=True)
-        .select_related('municipio', 'organismo')
+        .select_related('municipio', 'organismo', 'tema')
     ]
     return JsonResponse({'count': len(datos), 'tramites': datos})

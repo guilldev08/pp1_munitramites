@@ -15,7 +15,7 @@
     <div class="titulo-seccion">
       <div>
         <div class="etiquetas mb-1">
-          <span class="etiqueta etiqueta--tema">{{ tramite.get_tema_display }}</span>
+          <span class="etiqueta etiqueta--tema">{{ tramite.tema }}</span>
           <span class="etiqueta etiqueta--{{ tramite.modalidad }}">{{ tramite.get_modalidad_display }}</span>
           {% if tramite.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
         </div>
@@ -74,7 +74,7 @@
         <div class="panel">
           <h3 class="mt-0">Datos del trámite</h3>
           <dl class="datos">
-            <div><dt>Tema</dt><dd>{{ tramite.get_tema_display }}</dd></div>
+            <div><dt>Tema</dt><dd>{{ tramite.tema }}</dd></div>
             <div><dt>Modalidad</dt><dd>{{ tramite.get_modalidad_display }}</dd></div>
             <div><dt>Municipio</dt><dd>{{ tramite.municipio.nombre }}</dd></div>
             <div><dt>Requisitos</dt><dd>{{ tramite.requisitos.count }}</dd></div>
@@ -101,7 +101,7 @@
         {% for t in relacionados %}
           <a class="tarjeta" href="{% url 'tramite_detalle' t.pk %}">
             <div class="etiquetas">
-              <span class="etiqueta etiqueta--tema">{{ t.get_tema_display }}</span>
+              <span class="etiqueta etiqueta--tema">{{ t.tema }}</span>
               <span class="etiqueta etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
             </div>
             <h3>{{ t.titulo }}</h3>

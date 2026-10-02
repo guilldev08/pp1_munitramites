@@ -22,6 +22,7 @@ Además del registro a secas, este archivo define tres cosas:
    │ tos, Enlaces,      │                     │                      │
    │ Municipios,        │                     │                      │
    │ Organismos,        │                     │                      │
+   │ Temas,             │                     │                      │
    │ Consultas          │                     │                      │
    │ Usuarios, Grupos   │ no aparece (403)    │ sí                   │
    │ (roles), Perfiles  │                     │                      │
@@ -40,7 +41,8 @@ from django.db.models import Count
 from django.utils.html import format_html
 
 from .models import (
-    Consulta, Enlace, Municipio, Organismo, Perfil, Requisito, Tramite,
+    Consulta, Enlace, Municipio, Organismo, Perfil, Requisito, Tema,
+    Tramite,
 )
 
 # --- La marca del panel -------------------------------------------------------
@@ -199,6 +201,27 @@ class RequisitoAdmin(BaseAdmin):
     ordering = ['tramite', 'orden']
 
 
+# --- Temas (tabla nueva: se cargan desde el panel) ------------------------------------------------
+@admin.register(Tema)
+class TemaAdmin(BaseAdmin):
+    """Tema de los trámites: antes un combo fijo, ahora filas que carga
+    el administrador; cualquier fila nueva ya aparece en el formulario."""
+
+    list_display = ['id', 'nombre', 'tramites']
+    search_fields = ['nombre']
+    ordering = ['nombre']
+
+    def get_queryset(self, request):
+        # Un COUNT por tema: la columna «Trámites» no hace N+1.
+        return super().get_queryset(request).annotate(
+            cantidad_tramites=Count('tramites')
+        )
+
+    @admin.display(description='Trámites', ordering='cantidad_tramites')
+    def tramites(self, obj):
+        return obj.cantidad_tramites
+
+
 # --- Trámites (RF-07) ---------------------------------------------------------
 @admin.register(Tramite)
 class TramiteAdmin(BaseAdmin):
@@ -212,7 +235,7 @@ class TramiteAdmin(BaseAdmin):
     search_fields = [
         'titulo', 'descripcion', 'organismo__nombre', 'municipio__nombre',
     ]
-    list_select_related = ['municipio', 'organismo']
+    list_select_related = ['tema', 'municipio', 'organismo']
     list_editable = ['destacado', 'activo']
     ordering = ['-destacado', 'titulo']
     autocomplete_fields = ['municipio', 'organismo']
@@ -234,14 +257,14 @@ class TramiteAdmin(BaseAdmin):
         }),
     )
 
-    @admin.display(description='Tema', ordering='tema')
+    @admin.display(description='Tema', ordering='tema__nombre')
     def tema_pildora(self, obj):
         colores = {
-            'Documentacion': 'azul', 'Transito': 'gris', 'Comercio': 'morado',
+            'Documentación': 'azul', 'Tránsito': 'gris', 'Comercio': 'morado',
             'Seguridad': 'rojo', 'Salud': 'verde', 'Impuestos': 'ambar',
             'Vivienda': 'gris',
         }
-        return pildora(obj.get_tema_display(), colores.get(obj.tema, 'gris'))
+        return pildora(str(obj.tema), colores.get(str(obj.tema), 'gris'))
 
     @admin.display(description='Modalidad', ordering='modalidad')
     def modalidad_pildora(self, obj):

@@ -74,12 +74,29 @@ def ciudadano(username='ana', dni='28111222', password='ClaveSegura123', **kwarg
     return user
 
 
-def administrador(username='admin', password='ClaveSegura123'):
-    """Rol Administrador del documento: entra al panel y gestiona todo.
+def administrador(username='admin', password='ClaveSegura123', **kwargs):
+    """Rol Administrador del documento: entra a /panel/ y gestiona todo.
 
-    En Django eso es `is_staff` + `is_superuser` (los permisos de cada tabla
-    vienen dados por el superusuario; si algún día hace falta un rol intermedio,
-    se usan los grupos y `User.user_permissions`).
+    En Django eso es `is_staff=True` SIN `is_superuser` (el /admin/ de
+    Django queda para el superusuario; ver middleware.py). Los permisos de
+    cada tabla, si algún día hacen falta, vienen por grupos
+    (`User.user_permissions`).
+    """
+    datos = {
+        'email': f'{username}@munitramites.test',
+        'is_staff': True,
+    }
+    datos.update(kwargs)
+    user = User.objects.create_user(username=username, password=password, **datos)
+    Perfil.objects.create(user=user, dni='99111222')
+    return user
+
+
+def superusuario(username='jefe', password='ClaveSegura123'):
+    """La ÚNICA cuenta de superusuario (la regla la impone `senales.py`).
+
+    Ojo: solo puede existir UNA por base de datos — si un test necesita
+    otra cuenta, que use `ciudadano()` o `administrador()`.
     """
     user = User.objects.create_superuser(
         username=username, email=f'{username}@munitramites.test',

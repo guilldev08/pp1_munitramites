@@ -19,3 +19,8 @@ class MunitramitesConfig(AppConfig):
         from .services.chatbot import indexar
 
         indexar.conectar_senales()
+
+        # Regla de oro: UNA sola cuenta de superusuario (ver senales.py).
+        from . import senales
+
+        senales.conectar_senales()

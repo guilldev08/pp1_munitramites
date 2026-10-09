@@ -1,0 +1,106 @@
+{% extends "panel/base_panel.html" %}
+
+{% block panel_titulo %}Centro de Trámites{% endblock %}
+{% block panel_bajada %}Alta, edición y publicación de los trámites del sitio.{% endblock %}
+{% block panel_acciones %}
+  <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
+{% endblock %}
+
+{% block panel_contenido %}
+<nav class="subfiltros" aria-label="Filtrar por estado">
+  <a href="?" {% if not estado %}class="activo"{% endif %}>Todos</a>
+  <a href="?estado=activos" {% if estado == 'activos' %}class="activo"{% endif %}>Activos</a>
+  <a href="?estado=inactivos" {% if estado == 'inactivos' %}class="activo"{% endif %}>Inactivos</a>
+</nav>
+
+{% if pagina.object_list %}
+  <div class="tabla-wrap">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Trámite</th>
+          <th>Tema</th>
+          <th>Municipio</th>
+          <th>Estado</th>
+          <th>Destacado</th>
+          <th class="tabla__acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in pagina %}
+          <tr>
+            <td>
+              <strong>{{ t.titulo }}</strong>
+              <div class="texto-suave texto-chico">{{ t.organismo.nombre }}</div>
+            </td>
+            <td><span class="etiqueta etiqueta--tema">{{ t.tema }}</span></td>
+            <td>{{ t.municipio }}</td>
+            <td>
+              {% if t.activo %}
+                <span class="etiqueta etiqueta--activo">Activo</span>
+              {% else %}
+                <span class="etiqueta etiqueta--inactivo">Inactivo</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if t.destacado %}
+                <span class="etiqueta etiqueta--destacado">★ Sí</span>
+              {% else %}<span class="texto-suave">—</span>{% endif %}
+            </td>
+            <td class="tabla__acciones">
+              <div class="acciones acciones--fila">
+                <a class="boton boton--secundario boton--chico"
+                   href="{% url 'panel_tramite_editar' t.pk %}">Editar</a>
+
+                <form method="post" action="{% url 'panel_tramite_estado' t.pk %}">
+                  {% csrf_token %}
+                  {% if t.activo %}
+                    <input type="hidden" name="accion" value="desactivar">
+                    <button class="boton boton--secundario boton--chico" type="submit">Desactivar</button>
+                  {% else %}
+                    <input type="hidden" name="accion" value="activar">
+                    <button class="boton boton--chico" type="submit">Activar</button>
+                  {% endif %}
+                </form>
+
+                <form method="post" action="{% url 'panel_tramite_estado' t.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="accion" value="destacar">
+                  <button class="boton boton--secundario boton--chico" type="submit">
+                    {% if t.destacado %}Quitar ★{% else %}Destacar{% endif %}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagina.paginator.num_pages > 1 %}
+    <nav class="paginacion">
+      {% if pagina.has_previous %}
+        <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">← Anterior</a>
+      {% else %}<span class="inactivo">← Anterior</span>{% endif %}
+
+      {% for n in pagina.paginator.page_range %}
+        {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+        {% else %}<a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ n }}">{{ n }}</a>{% endif %}
+      {% endfor %}
+
+      {% if pagina.has_next %}
+        <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente →</a>
+      {% else %}<span class="inactivo">Siguiente →</span>{% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+  <div class="vacio">
+    <div class="vacio__icono">🗂️</div>
+    <h3>No hay trámites{% if estado == 'inactivos' %} inactivos{% elif estado == 'activos' %} activos{% endif %}</h3>
+    <p>Cargá el primero y los ciudadanos van a poder verlo en el sitio.</p>
+    <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
+  </div>
+{% endif %}
+{% endblock %}

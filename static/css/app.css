@@ -309,6 +309,8 @@ img { max-width: 100%; }
 .campo input[type="email"],
 .campo input[type="password"],
 .campo input[type="search"],
+.campo input[type="number"],
+.campo input[type="url"],
 .campo select,
 .campo textarea {
   width: 100%;
@@ -794,6 +796,113 @@ img { max-width: 100%; }
   .nav__sesion { border-left: none; padding-left: 0; margin-left: 0; }
   .hero { padding: 38px 0 46px; }
   .seccion { padding: 32px 0; }
+}
+
+/* =========================================================================
+   PANEL DE ADMINISTRACIÓN (/panel/)
+   =========================================================================
+   Barra de pestañas, filtros chicos, filas de los inlines de trámites y
+   etiquetas de rol/estado. Todo con los MISMOS tokens que el resto del
+   sitio: hereda los dos temas (claro y oscuro) sin un solo color nuevo. */
+
+.seccion--panel { padding-top: 34px; }
+
+/* Pestañas de secciones del panel */
+.pestanas {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--gris-200);
+}
+.pestanas a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--gris-700);
+  text-decoration: none;
+}
+.pestanas a:hover { background: var(--gris-100); text-decoration: none; }
+.pestanas a.activo { background: var(--azul-claro); color: var(--azul-txt); }
+
+/* Filtros chicos sobre las tablas del panel (estado, búsqueda) */
+.subfiltros {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.subfiltros a {
+  padding: 6px 12px;
+  border: 1px solid var(--gris-200);
+  border-radius: 999px;
+  background: var(--sup);
+  color: var(--gris-700);
+  font-size: .85rem;
+  text-decoration: none;
+}
+.subfiltros a:hover { background: var(--gris-100); text-decoration: none; }
+.subfiltros a.activo {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+  font-weight: 600;
+}
+.subfiltros--busqueda input[type="search"] {
+  flex: 1 1 240px;
+  min-width: 180px;
+  padding: 8px 12px;
+  border: 1px solid var(--gris-200);
+  border-radius: 999px;
+  font-size: .9rem;
+  font-family: inherit;
+  background: var(--sup);
+  color: var(--gris-900);
+}
+.subfiltros--busqueda input[type="search"]:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--anillo);
+}
+
+/* Acciones de las filas de las tablas del panel */
+.tabla__acciones { text-align: right; }
+.acciones--fila { justify-content: flex-end; gap: 6px; }
+.acciones--fila form { margin: 0; }
+
+/* Filas de los inlines (requisitos y enlaces del trámite) */
+.inline-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px dashed var(--gris-200);
+  border-radius: 8px;
+  background: var(--gris-50);
+}
+.inline-fila .campo { flex: 1 1 180px; margin-bottom: 0; }
+.inline-fila .campo input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  transform: translateY(2px);
+}
+.inline-fila--borrar { border-color: var(--rojo); opacity: .8; }
+
+/* Etiquetas de rol y de estado (colores ya probados en tests/test_tema.py) */
+.etiqueta--activo { background: var(--verde-claro); color: var(--verde); }
+.etiqueta--inactivo { background: var(--gris-100); color: var(--gris-500); }
+.etiqueta--superusuario { background: var(--violeta-bg); color: var(--violeta-txt); }
+.etiqueta--administrador { background: var(--azul-claro); color: var(--azul-txt); }
+.etiqueta--usuario { background: var(--gris-100); color: var(--gris-700); }
+
+@media (max-width: 820px) {
+  .tabla__acciones { text-align: left; }
+  .acciones--fila { justify-content: flex-start; }
 }
 
 /* =========================================================================

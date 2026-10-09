@@ -1,0 +1,51 @@
+{% extends "panel/base_panel.html" %}
+
+{% block panel_titulo %}{% if editar %}Editar cuenta{% else %}Nuevo usuario{% endif %}{% endblock %}
+{% block panel_bajada %}
+  {% if editar %}
+    Rol y datos de «{{ objetivo.username }}».
+  {% else %}
+    Creá una cuenta con rol «Usuario» (solo usa el sitio) o «Administrador» (entra al panel).
+  {% endif %}
+{% endblock %}
+{% block panel_acciones %}
+  <a class="boton boton--secundario" href="{% url 'panel_usuarios' %}">← Volver al listado</a>
+{% endblock %}
+
+{% block panel_contenido %}
+<form class="formulario formulario--medio" method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="alerta alerta--info">
+    <strong>Importante:</strong> el rol <strong>Superusuario</strong> no se
+    crea ni se modifica desde el panel. Hay UNA sola cuenta de superusuario
+    y se da de alta con <code>manage.py createsuperuser</code>.
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="alerta alerta--error">
+      {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  {% for campo in form %}
+    <div class="campo">
+      <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+      {{ campo }}
+      {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+      {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+    </div>
+  {% endfor %}
+
+  {% if editar %}
+    <p class="texto-suave texto-chico">
+      Para la contraseña de esta cuenta, que la cambie ella desde
+      «Mi perfil» → «Cambiar mi contraseña».
+    </p>
+  {% endif %}
+
+  <button class="boton boton--ancho" type="submit">
+    {% if editar %}Guardar cambios{% else %}Crear cuenta{% endif %}
+  </button>
+</form>
+{% endblock %}

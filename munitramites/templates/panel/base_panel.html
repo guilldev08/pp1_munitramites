@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{# =========================================================================
+   Base de TODAS las páginas del panel (/panel/…).
+
+   Reutiliza base.html (marca, header, mensajes, pie y CSS propio) y le
+   agrega el título de sección, la barra de pestañas y el bloque donde
+   cada vista pinta su contenido.
+   ========================================================================= #}
+
+{% block titulo %}Panel de administración · Munitramites{% endblock %}
+
+{% block contenido %}
+<section class="seccion seccion--panel">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Panel de administración
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>{% block panel_titulo %}Panel de administración{% endblock %}</h2>
+        <p>{% block panel_bajada %}Gestión de trámites, consultas y cuentas.{% endblock %}</p>
+      </div>
+      <div class="acciones">{% block panel_acciones %}{% endblock %}</div>
+    </div>
+
+    {# Barra de secciones: el activo se deduce de la URL actual #}
+    <nav class="pestanas" aria-label="Secciones del panel">
+      <a href="{% url 'panel' %}"
+         {% if request.resolver_match.url_name == 'panel' %}class="activo"{% endif %}>Resumen</a>
+      <a href="{% url 'panel_tramites' %}"
+         {% if 'panel_tramite' in request.resolver_match.url_name %}class="activo"{% endif %}>Centro de Trámites</a>
+      <a href="{% url 'panel_consultas' %}"
+         {% if 'panel_consulta' in request.resolver_match.url_name %}class="activo"{% endif %}>Centro de Consultas</a>
+      <a href="{% url 'panel_usuarios' %}"
+         {% if 'panel_usuario' in request.resolver_match.url_name %}class="activo"{% endif %}>Usuarios</a>
+      <a href="{% url 'panel_temas' %}"
+         {% if request.resolver_match.url_name == 'panel_temas' %}class="activo"{% endif %}>Temas</a>
+    </nav>
+
+    {% block panel_contenido %}{% endblock %}
+  </div>
+</section>
+{% endblock %}

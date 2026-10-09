@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from munitramites.models import Enlace, Requisito, Tema
 
-from .base import TestCase, administrador, municipio, organismo, tramite
+from .base import TestCase, administrador, ciudadano, municipio, organismo, tramite
 
 
 class PortadaTests(TestCase):
@@ -143,7 +143,7 @@ class FichaTests(TestCase):
 
 
 class AdminTramitesTests(TestCase):
-    """RF-07: el administrador gestiona los trámites."""
+    """RF-07: el administrador gestiona los trámites desde /panel/."""
 
     def test_el_admin_puede_editar_requisitos_y_enlaces(self):
         admin = administrador()
@@ -151,22 +151,24 @@ class AdminTramitesTests(TestCase):
 
         self.client.force_login(admin)
         r = self.client.get(
-            reverse('admin:munitramites_tramite_change', args=[t.pk])
+            reverse('panel_tramite_editar', args=[t.pk])
         )
 
         self.assertEqual(r.status_code, 200)
-        # Los inlines del admin: requisitos y enlaces oficiales
-        self.assertContains(r, 'Requisito')
-        self.assertContains(r, 'Enlace oficial')
+        # Los inlines del panel: requisitos y enlaces oficiales
+        self.assertContains(r, 'Requisitos')
+        self.assertContains(r, 'Enlaces oficiales')
 
     def test_sin_staff_no_entra_al_panel(self):
-        ciudadano = administrador(username='comun')
-        ciudadano.is_staff = False
-        ciudadano.save()
+        comun = ciudadano(username='comun')
 
-        self.client.force_login(ciudadano)
+        self.client.force_login(comun)
+        r = self.client.get(reverse('panel'))
+
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r['Location'], reverse('inicio'))
+        # y el /admin/ de Django sigue respondiéndole con el login
         r = self.client.get(reverse('admin:index'))
-
         self.assertEqual(r.status_code, 302)
         self.assertIn('/admin/login/', r['Location'])
 

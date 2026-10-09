@@ -66,6 +66,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # DESPUÉS de messages (usa messages.warning) y de auth (lee request.user):
+    # /admin/ es solo del superusuario; a un administrador lo manda a /panel/.
+    'munitramites.middleware.AdminSoloSuperusuario',
 ]
 
 ROOT_URLCONF = 'munitramites.urls'

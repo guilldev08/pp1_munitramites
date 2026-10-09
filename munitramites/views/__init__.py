@@ -23,6 +23,12 @@ from .chatbot import buscador_api, chatbot, chatbot_api, chatbot_limpiar
 from .consultas import consulta_detalle, consulta_nueva, consultas
 from .cuenta import perfil, registro
 from .pagina import inicio
+from .panel import (
+    panel, panel_consulta, panel_consultas, panel_temas,
+    panel_tramite_editar, panel_tramite_estado, panel_tramite_nuevo,
+    panel_tramites, panel_usuario_editar, panel_usuario_eliminar,
+    panel_usuario_nuevo, panel_usuarios,
+)
 from .soporte import PREFIJO_SOPORTE, soporte
 from .tramites import tramite_detalle, tramites
 
@@ -37,6 +43,18 @@ __all__ = [
     'consulta_nueva',
     'consultas',
     'inicio',
+    'panel',
+    'panel_consulta',
+    'panel_consultas',
+    'panel_temas',
+    'panel_tramite_editar',
+    'panel_tramite_estado',
+    'panel_tramite_nuevo',
+    'panel_tramites',
+    'panel_usuario_editar',
+    'panel_usuario_eliminar',
+    'panel_usuario_nuevo',
+    'panel_usuarios',
     'perfil',
     'registro',
     'soporte',

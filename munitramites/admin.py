@@ -2,6 +2,12 @@
 Registro de modelos en /admin/. >>> ACÁ SE HACEN VISIBLES <<<
 Solo aparece en el panel lo que esté registrado acá.
 
+OJO: desde la feature del panel propio, /admin/ es EXCLUSIVO del
+superusuario (lo corta `middleware.AdminSoloSuperusuario`); los
+administradores (is_staff) trabajan en /panel/, que tiene sus propias
+vistas y plantillas. Este archivo sigue siendo la puerta a todas las
+tablas —organismos, municipios, grupos, perfiles— para el superusuario.
+
 Además del registro a secas, este archivo define tres cosas:
 
 1) **La cara del panel.** `site_header` / `site_title` / `index_title` son la
@@ -18,25 +24,26 @@ Además del registro a secas, este archivo define tres cosas:
    ┌────────────────────┬─────────────────────┬──────────────────────┐
    │ Módulo             │ Editor (is_staff)   │ Superusuario         │
    ├────────────────────┼─────────────────────┼──────────────────────┤
-   │ Trámites, Requisi- │ alta y edición      │ + borrado            │
-   │ tos, Enlaces,      │                     │                      │
-   │ Municipios,        │                     │                      │
-   │ Organismos,        │                     │                      │
-   │ Temas,             │                     │                      │
-   │ Consultas          │                     │                      │
-   │ Usuarios, Grupos   │ no aparece (403)    │ sí                   │
-   │ (roles), Perfiles  │                     │                      │
-   │ (DNI)              │                     │                      │
+   │ Trámites, Requisi- │ lo gestiona desde   │ alta, edición,       │
+   │ tos, Enlaces,      │ /panel/ (no pasa   │ borrado y TODO el    │
+   │ Temas, Consultas   │ por /admin/)        │ /admin/              │
+   │ Municipios,        │ no llega (middleware│ sí                   │
+   │ Organismos,        │ lo manda a /panel/) │                      │
+   │ Usuarios, Grupos,  │ —                   │ sí                   │
+   │ Perfiles           │                     │                      │
    └────────────────────┴─────────────────────┴──────────────────────┘
 
    Reglas de cuenta: nadie edita ni borra su propia fila (para no quedar
-   afuera del sistema ni auto-bajarse), y el borrado de cualquier modelo del
-   negocio es exclusivo del superusuario (`BaseAdmin.has_delete_permission`).
+   afuera del sistema ni auto-bajarse), el borrado de cualquier modelo del
+   negocio es exclusivo del superusuario (`BaseAdmin.has_delete_permission`)
+   y solo puede existir UN superusuario (la regla la corta `senales.py`;
+   `UserAdmin.save_model` evita el 500 si alguien lo intenta desde acá).
 """
 
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
+from django.core.exceptions import ValidationError
 from django.db.models import Count
 from django.utils.html import format_html
 
@@ -386,6 +393,11 @@ class UserAdmin(SinAutogestion, SoloSuperusuario, BaseUserAdmin):
 
     Para cambiar la contraseña propia se usa «Cambiar mi contraseña» del
     panel, que es el flujo de Django (y no se puede tocar desde la lista).
+
+    `save_model` además atrapa la regla de `senales.py` (un solo
+    superusuario): si alguien intenta elevar una cuenta o crear un segundo
+    superusuario desde acá, el formulario avisa con un mensaje en lugar de
+    tirar un 500.
     """
 
     inlines = [PerfilInline]
@@ -395,12 +407,18 @@ class UserAdmin(SinAutogestion, SoloSuperusuario, BaseUserAdmin):
     list_select_related = True
     ordering = ['username']
 
+    def save_model(self, request, obj, form, change):
+        try:
+            super().save_model(request, obj, form, change)
+        except ValidationError as exc:
+            messages.error(request, ' '.join(exc.messages))
+
     @admin.display(description='Rol', ordering='is_superuser')
     def rol(self, obj):
         if obj.is_superuser:
             return pildora('Superusuario', 'morado')
         if obj.is_staff:
-            return pildora('Editor', 'azul')
+            return pildora('Administrador', 'azul')
         return pildora('Ciudadano', 'gris')
 
 

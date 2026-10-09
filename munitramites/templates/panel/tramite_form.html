@@ -1,0 +1,111 @@
+{% extends "panel/base_panel.html" %}
+
+{% block panel_titulo %}{% if tramite.pk %}Editar trámite{% else %}Nuevo trámite{% endif %}{% endblock %}
+{% block panel_bajada %}
+  {% if tramite.pk %}
+    Editando «{{ tramite.titulo }}». Los requisitos y enlaces se cargan abajo.
+  {% else %}
+    Completá los datos; requisitos y enlaces oficiales se cargan en la misma página.
+  {% endif %}
+{% endblock %}
+{% block panel_acciones %}
+  <a class="boton boton--secundario" href="{% url 'panel_tramites' %}">← Volver al listado</a>
+{% endblock %}
+
+{% block panel_contenido %}
+<form class="formulario" method="post" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alerta alerta--error">
+      {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="dos-columnas">
+    {# --- Columna 1: los datos del trámite --- #}
+    <div class="panel">
+      <h3 class="mt-0">Datos del trámite</h3>
+
+      {% for campo in form %}
+        {% if not campo.field.widget.is_hidden %}
+          <div class="campo">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            {{ campo }}
+            {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+            {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+          </div>
+        {% else %}
+          {{ campo }}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {# --- Columna 2: los dos inlines (formsets de Django) --- #}
+    <div>
+      <div class="panel">
+        <h3 class="mt-0">Requisitos</h3>
+        <p class="texto-suave texto-chico">Uno por fila, en orden. La casilla «Borrar» quita un requisito.</p>
+
+        {{ requisitos.management_form }}
+        {% if requisitos.non_form_errors %}
+          <div class="alerta alerta--error">
+            {% for e in requisitos.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        {% for rf in requisitos %}
+          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                <div class="campo">
+                  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                  {{ campo }}
+                  {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                </div>
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="panel">
+        <h3 class="mt-0">Enlaces oficiales</h3>
+        <p class="texto-suave texto-chico">Botones que se ven en la ficha, ej.: «Pedir turno» → https://…</p>
+
+        {{ enlaces.management_form }}
+        {% if enlaces.non_form_errors %}
+          <div class="alerta alerta--error">
+            {% for e in enlaces.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        {% for rf in enlaces %}
+          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                <div class="campo">
+                  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                  {{ campo }}
+                  {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                </div>
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="acciones" style="margin-top: 22px">
+    <button class="boton" type="submit">
+      {% if tramite.pk %}Guardar cambios{% else %}Crear trámite{% endif %}
+    </button>
+    <a class="boton boton--secundario" href="{% url 'panel_tramites' %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

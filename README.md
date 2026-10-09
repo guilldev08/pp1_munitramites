@@ -16,10 +16,11 @@ Qué hace el sistema, en corto:
 
 - **Registro con DNI**, inicio y cierre de sesión, y **recuperación de
   contraseña por correo** (RF-15).
-- **Dos roles en el sitio**: Usuario (ciudadano) y Administrador (panel
-  `/admin/`). Dentro del panel, además, la escalera de dos peldaños que
-  describe [Quién puede qué](#quién-puede-qué-dentro-del-panel): el *editor*
-  no toca usuarios ni borra, y solo el *superusuario* administra cuentas.
+- **Dos roles en el sitio**: Usuario (ciudadano) y Administrador, con un
+  **panel propio** en `/panel/` (Centro de Trámites, Centro de Consultas,
+  usuarios y temas). El `/admin/` de Django queda **reservado al
+  superusuario**, y hay UNO solo: una regla que impone el código. Ver
+  [Quién puede qué](#quién-puede-qué-dentro-del-panel).
 - **Buscador de trámites** con filtros (texto, tema, municipio, modalidad)
   y fichas que muestran requisitos, organismo responsable y enlaces
   oficiales; los temas se cargan desde el panel, no son opciones fijas.
@@ -52,7 +53,8 @@ docker compose up -d --build
 | http://localhost:8000/chatbot/ | Asistente virtual (página completa) |
 | http://localhost:8000/perfil/ | Datos personales (pide iniciar sesión) |
 | http://localhost:8000/soporte/ | Soporte (pide iniciar sesión) |
-| http://localhost:8000/admin/ | **Panel de administración** (marca Munitramites + resumen) |
+| http://localhost:8000/panel/ | **Panel de administración** (Centro de Trámites, Centro de Consultas, usuarios y temas) |
+| http://localhost:8000/admin/ | Admin de Django (solo superusuario: marca Munitramites + resumen) |
 | http://localhost:8000/api/tramites/ | API JSON |
 | Firebird | puerto 3050 |
 
@@ -72,7 +74,8 @@ Es **idempotente**: se puede correr las veces que haga falta sin duplicar nada.
 
 | Sitio | URL | Quién entra |
 |---|---|---|
-| Administración | `/admin/` | Solo usuarios con `is_staff` |
+| Panel de administración | `/panel/` | `is_staff` (Administrador) o superusuario |
+| Admin de Django | `/admin/` | Solo el superusuario (a un administrador lo manda a `/panel/` con un aviso) |
 | Consultas, soporte, perfil | `/login/` | Cualquier usuario registrado |
 
 ### Roles
@@ -82,7 +85,8 @@ El documento define dos roles y así están modelados:
 | Rol | En Django | Qué puede hacer |
 |---|---|---|
 | **Usuario** (ciudadano) | usuario normal | registrarse, ver trámites, preguntarle al asistente, enviar consultas/sugerencias, pedir soporte, ver y editar **sus** datos |
-| **Administrador** | `is_staff` (+ `is_superuser`) | todo lo anterior **más** el panel `/admin/`: trámites, requisitos, enlaces, organismos, municipios, consultas, sugerencias y usuarios |
+| **Administrador** | `is_staff` (sin `is_superuser`) | todo lo anterior **más** el panel `/panel/`: trámites (con requisitos y enlaces), consultas, usuarios y temas |
+| **Superusuario** | `is_superuser` | todo lo anterior **más** el `/admin/` de Django: organismos, municipios, grupos, perfiles y borrados. **Solo puede haber UNO** |
 
 Cada registro lleva un **perfil** con el DNI (dato personal que pide el
 documento), visible también en `/admin/` → Usuarios.
@@ -91,15 +95,33 @@ documento), visible también en `/admin/` → Usuarios.
 
 | Usuario | Contraseña | Rol |
 |---|---|---|
-| `guilldev08` | `Munitra2026!` | Superusuario (entra a `/admin/`) |
+| `guilldev08` | `Munitra2026!` | Superusuario (entra a `/admin/` y a `/panel/`) |
 
-Crear otro superusuario:
+### Crear cuentas
+
+**Superusuario (uno solo).** Se da de alta desde la terminal:
 
 ```powershell
 docker compose exec web python manage.py createsuperuser
 ```
 
-Crear un usuario normal desde la terminal:
+La regla está impuesta por código (`munitramites/senales.py`): cualquier
+intento de crear —o de elevar a— un segundo superusuario corta con un
+`ValidationError`, salga por donde salga (admin, shell o script). Por eso
+**este comando solo anda si todavía no hay ningún superusuario**; después
+no hace falta: el día a día es del panel.
+
+**Administradores y usuarios comunes.** Se crean y se editan desde el
+panel, sin terminal:
+
+1. Entrar con cualquier cuenta administrativa a `http://localhost:8000/panel/`
+2. Ir a **Usuarios** → **Nuevo usuario**
+3. Completar los datos y elegir el rol: «Administrador» (entra al panel) o
+   «Usuario» (solo usa el sitio)
+4. Guardar. El rol se cambia después con **Editar**; el panel **nunca**
+   ofrece ser superusuario ni deja tocar la cuenta del superusuario.
+
+También se puede crear una cuenta desde la terminal:
 
 ```powershell
 docker compose exec web python manage.py shell -c "from django.contrib.auth import get_user_model as U; U().objects.create_user('nombre', 'mail@x.com', 'clave')"
@@ -114,10 +136,44 @@ docker compose exec web python manage.py shell -c "from django.contrib.auth impo
 > **Nota:** la contraseña de Firebird (`SYSDBA` / `masterkey`) es la de la base de
 > datos, no tiene nada que ver con los usuarios de Django.
 
-## El panel (`/admin/`)
+## El panel propio (`/panel/`)
 
-No es el Django pelado: tiene la marca del sitio, un resumen del día y un
-candado de permisos. Tres piezas lo componen:
+El día a día NO pasa por `/admin/`: el rol Administrador trabaja en un
+panel propio, con la misma marca, el mismo CSS (`app.css`) y los mismos
+mensajes que el resto del sitio. Tres piezas lo componen:
+
+| Pieza | Archivo | Qué aporta |
+|---|---|---|
+| Vistas y permisos | `munitramites/views/panel.py` + `munitramites/middleware.py` | decorador `solo_administrador`, dashboard con accesos, CRUD de trámites, centro de consultas, usuarios y temas; el middleware manda a `/panel/` a todo administrador que pise `/admin/` |
+| Formularios | `munitramites/forms.py` | `TramitePanelForm` con los inlines `RequisitoFormSet` / `EnlaceFormSet`, `UsuarioPanelForm` y `UsuarioRolForm` (con campo `rol`, **sin** `is_superuser`), `RespuestaConsultaForm`, `TemaForm` |
+| Plantillas y estilos | `munitramites/templates/panel/` + `static/css/app.css` (sección «PANEL DE ADMINISTRACIÓN») | `base_panel.html` con la barra de pestañas y una plantilla por sección; pestañas, filtros, filas de inlines y etiquetas de rol heredando los dos temas |
+
+### Qué se hace desde `/panel/`
+
+| Sección | URL | Qué permite |
+|---|---|---|
+| Resumen | `/panel/` | tarjetas con los números del día y atajos (los de `/admin/` solo los ve el superusuario) |
+| Centro de Trámites | `/panel/tramites/` | listar todos/activos/inactivos, alta y edición con requisitos y enlaces, activar / desactivar / destacar |
+| Centro de Consultas | `/panel/consultas/` | ver las de todos los ciudadanos, filtrar por estado y responder (RF-10) |
+| Usuarios | `/panel/usuarios/` | buscar, crear cuentas con rol «Usuario» o «Administrador», cambiar roles, suspender y eliminar (RF-11) |
+| Temas | `/panel/temas/` | alta de temas con el conteo de trámites de cada uno (RF-07) |
+
+Lo que el panel **no** hace, a propósito:
+
+- **No crea ni edita superusuarios.** El formulario de alta ni siquiera
+  tiene el campo; la única cuenta se hace con `manage.py createsuperuser`
+  y la regla la vigila `munitramites/senales.py`.
+- **No deja tocar la propia cuenta** (para eso están «Mi perfil» y
+  «Cambiar mi contraseña») **ni la del superusuario**.
+- **No gestiona organismos ni municipios**: esas tablas viven en
+  `/admin/`, reservado al superusuario.
+
+### El admin de Django (`/admin/`)
+
+Sigue siendo el Django con marca propia, resumen y candado — pero ahora
+**solo lo ve el superusuario** (lo corta `middleware.AdminSoloSuperusuario`;
+un administrador que pise `/admin/` recibe un aviso y termina en
+`/panel/`). Tres piezas lo componen:
 
 | Pieza | Archivo | Qué aporta |
 |---|---|---|
@@ -142,17 +198,17 @@ Detalles pensados para el día a día:
 
 ### Quién puede qué dentro del panel
 
-`is_staff` por sí solo no alcanza: hay una escalera de dos peldaños.
-
-| En `/admin/` | Editor (`is_staff`, sin superusuario) | Superusuario |
+| En Django | Administrador (`is_staff`, sin superusuario) | Superusuario |
 |---|---|---|
-| Trámites, Requisitos, Enlaces, Municipios, Organismos, Temas, Consultas | alta y edición | **+ borrado** |
-| Usuarios, Grupos (los roles) y Perfiles (DNI) | no aparece en el índice y responde **403** por URL directa | sí |
-| La propia fila de usuario | — | se abre en modo lectura: **nadie se edita ni se borra a sí mismo** |
-| Sacar un requisito o enlace de la ficha de un trámite | sí (es editar el trámite) | sí |
+| `/panel/`: trámites, consultas, usuarios y temas | sí | sí |
+| `/admin/`: organismos, municipios, grupos, perfiles, borrados | no pasa: aviso y redirección a `/panel/` (middleware) | sí |
+| Crear un superusuario | no (el panel ni lo ofrece) | solo puede haber **UNO**: `senales.py` corta el segundo |
+| La propia fila de cuenta | no se edita ni se elimina desde el panel | se abre en modo lectura en `/admin/`: **nadie se edita ni se borra a sí mismo** |
 
-Todo eso vive en `admin.py` (`SoloSuperusuario`, `SinAutogestion`,
-`BaseAdmin`) y está cubierto por `tests/test_admin.py`.
+Todo eso vive en `views/panel.py` (`solo_administrador`, `_cuenta_protegida`),
+`middleware.py`, `senales.py` y `admin.py` (`SoloSuperusuario`,
+`SinAutogestion`, `BaseAdmin`), y está cubierto por `tests/test_panel.py`,
+`tests/test_roles.py` y `tests/test_admin.py`.
 
 ## Rutas
 
@@ -174,8 +230,13 @@ Todo eso vive en `admin.py` (`SoloSuperusuario`, `SinAutogestion`,
 | `/password/reset/` · `/done/` · `/<uid>/<token>/` · `/complete/` | Recuperar la contraseña olvidada (RF-15) | público |
 | `/password/change/` · `/done/` | Cambio de contraseña estando adentro (página propia del sitio) | sesión |
 | `/consultas/<id>/` | Detalle de la consulta y respuesta del administrador (RF-10) | sesión |
-| `/admin/` | Administración de Django | `is_staff` |
-| `/admin/login/` | Login del panel | — |
+| `/panel/` | Panel propio: resumen y accesos | `is_staff` o superusuario |
+| `/panel/tramites/` · `/nuevo/` · `/<id>/editar/` · `/<id>/estado/` | Centro de Trámites: CRUD + publicar/destacar | ídem |
+| `/panel/consultas/` · `/panel/consultas/<id>/` | Centro de Consultas: ver todas y responder | ídem |
+| `/panel/usuarios/` · `/nuevo/` · `/<id>/editar/` · `/<id>/eliminar/` | Cuentas y roles (nunca superusuarios) | ídem |
+| `/panel/temas/` | Alta de temas (RF-07) | ídem |
+| `/admin/` | Administración de Django | **solo superusuario** (los administradores quedan en `/panel/`) |
+| `/admin/login/` | Login del admin | — |
 | `/api/tramites/` | JSON con los trámites | público |
 
 ### Piezas del layout
@@ -232,6 +293,8 @@ munitramites/
     ├── models.py                   #    las tablas de Firebird
     ├── forms.py                    #    validación en el servidor
     ├── admin.py                    #    marca, permisos y qué se ve en /admin/
+    ├── senales.py                  #    regla: UN solo superusuario (pre_save)
+    ├── middleware.py                #    /admin/ reservado al superusuario
     ├── context_processors.py       #    form de registro para el modal
     ├── apps.py                     #    identidad de la app + índice del chat
     ├── views/                      #    vistas: UN ARCHIVO POR MÓDULO
@@ -240,6 +303,7 @@ munitramites/
     │   ├── tramites.py             #    listado y ficha
     │   ├── chatbot.py              #    asistente (la lógica está en services/)
     │   ├── consultas.py            #    consultas, sugerencias y detalle
+    │   ├── panel.py                #    panel /panel/: trámites, consultas, usuarios, temas
     │   ├── soporte.py              #    soporte
     │   ├── cuenta.py               #    registro y perfil
     │   └── api.py                  #    API JSON
@@ -249,16 +313,17 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (135)
+    ├── tests/                      #    tests de aceptación (183)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
     │   ├── test_chatbot.py         #    asistente: RAG y privacidad
     │   ├── test_consultas.py       #    RF-08/09/10
-    │   ├── test_roles.py           #    ESP-02 · RF-03/11/13
+    │   ├── test_roles.py           #    ESP-02 · RF-03/11/13 (acceso al panel)
+    │   ├── test_panel.py           #    panel /panel/: matriz de aceptación
     │   ├── test_rnf.py             #    RNF-03 rendimiento · RNF-05 integridad
     │   ├── test_tema.py            #    tema claro/oscuro + contraste WCAG
-    │   └── test_admin.py           #    cara del panel + candado de permisos
+    │   └── test_admin.py           #    cara del /admin/ + candado + un solo super
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
     │   └── cargar_datos.py         #    semilla de datos
@@ -285,6 +350,16 @@ munitramites/
         │   ├── lista.html          #    mis consultas
         │   ├── nueva.html          #    formulario
         │   └── detalle.html        #    consulta + respuesta (RF-10)
+        ├── panel/
+        │   ├── base_panel.html     #    base del panel: título + pestañas
+        │   ├── dashboard.html      #    resumen y accesos (/panel/)
+        │   ├── tramites_lista.html #    Centro de Trámites
+        │   ├── tramite_form.html   #    alta/edición + requisitos y enlaces
+        │   ├── consultas_lista.html#    Centro de Consultas
+        │   ├── consulta_detalle.html #  ver y responder (RF-10)
+        │   ├── usuarios_lista.html #    cuentas con roles (RF-11)
+        │   ├── usuario_form.html   #    alta/edición de cuentas
+        │   └── temas.html          #    alta de temas (RF-07)
         ├── cuenta/
         │   └── perfil.html         #    nombre, apellido, correo y DNI
         └── registration/
@@ -358,7 +433,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 135 tests
+docker compose exec web python manage.py test --noinput         # correr los 183 tests
 ```
 
 ### Ejecutar código desde el host
@@ -420,27 +495,28 @@ escrito acá**: es lo que hace verificable el documento.
 **Códigos sin fila en la tabla**: ESP-03, RF-04 y RF-06 no tienen requisito
 propio en este sistema. **RF-05** (*Gestionar organismos*) sí existe y está en
 el código (`admin.py`, sección *Organismos*); lo cubren
-`test_roles.AdministradorTests` (alta con el área de acción) y `test_tramites`
-(la ficha los muestra), por eso se cita en el archivo y no en esta tabla.
+`test_admin.SuperusuarioTests` (alta con el área de acción, desde `/admin/`)
+y `test_tramites` (la ficha los muestra), por eso se cita en el archivo y no
+en esta tabla.
 
 | Documento | Dónde está en el código | Test |
 |---|---|---|
 | **ESP-01** Autenticación | `forms.py`, `views/cuenta.py`, `templates/registration/` | `test_auth` |
-| **ESP-02** Roles | `admin.py`, permisos `is_staff` de Django | `test_roles` · `test_admin` |
-| **ESP-04** Administración | `/admin/` (`admin.py`) | `test_roles` · `test_tramites` · `test_admin` |
+| **ESP-02** Roles | `views/panel.py` (decorador `solo_administrador`), `middleware.py`, permisos `is_staff` de Django | `test_roles` · `test_panel` · `test_admin` |
+| **ESP-04** Administración | `/panel/` (`views/panel.py`) + `/admin/` (`admin.py`) | `test_panel` · `test_roles` · `test_tramites` · `test_admin` |
 | **ESP-05** Consultas | `views/consultas.py`, `models.Consulta` | `test_consultas` |
 | **ESP-06** Base de datos | Firebird + `models.py` + `migrations/` | todos (corren sobre Firebird) |
-| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_admin` · `test_tema` · `test_tramites.ApiTests` |
+| **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_panel.DisenoTests` · `test_tema` · `test_tramites.ApiTests` |
 | **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` · `test_auth.PerfilTests` (editar sus datos) |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
-| **RF-03** Gestión de roles | `is_staff` / `is_superuser` | `test_roles` · `test_admin` |
-| **RF-07** Administrar trámites | `/admin/` → Trámites (con Requisitos y Enlaces) | `test_roles` · `test_tramites` · `test_admin` |
+| **RF-03** Gestión de roles | `is_staff` / `is_superuser` + `forms.UsuarioRolForm` | `test_roles` · `test_panel.UsuariosTests` · `test_admin` |
+| **RF-07** Administrar trámites | `/panel/tramites/` (con Requisitos y Enlaces) | `test_panel.CentroDeTramitesTests` · `test_tramites` · `test_roles` |
 | **RF-08** Enviar consultas | `views/consultas.py::consulta_nueva` | `test_consultas` |
 | **RF-09** Enviar sugerencias | mismo formulario, `tipo = sugerencia` | `test_consultas` |
-| **RF-10** Gestionar consultas | `/consultas/<id>/` (respuesta del staff) | `test_consultas.GestionDelAdminTests` |
-| **RF-11** Gestionar usuarios | `/admin/` → Usuarios + inline de Perfil (DNI) | `test_roles.AdministradorTests` · `test_admin` |
+| **RF-10** Gestionar consultas | `/panel/consultas/<id>/` + `/consultas/<id>/` | `test_panel.CentroDeConsultasTests` · `test_consultas.GestionDelAdminTests` |
+| **RF-11** Gestionar usuarios | `/panel/usuarios/` (roles, sin tocar superusuarios) | `test_panel.UsuariosTests` · `test_roles.AdministradorTests` |
 | **RF-12** Almacenamiento de datos | Firebird vía ORM | todos |
-| **RF-13** Control de acceso | `LoginRequired` en cada vista privada | `test_roles.AnonimoTests` · `test_auth.SesionTests` · `test_consultas` · `test_admin.CandadoDelEditorTests` |
+| **RF-13** Control de acceso | `LoginRequired` + `solo_administrador` + `middleware.AdminSoloSuperusuario` + `senales.py` | `test_roles.AnonimoTests` · `test_panel.AccesoTests` · `test_auth.SesionTests` · `test_admin.EditorRedirigidoTests` · `test_admin.UnSoloSuperusuarioTests` |
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
 | **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` · `test_auth.PerfilTests` (cambio estando adentro) |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |

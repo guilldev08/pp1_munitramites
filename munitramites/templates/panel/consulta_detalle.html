@@ -1,0 +1,62 @@
+{% extends "panel/base_panel.html" %}
+{% load hora %}
+
+{% block panel_titulo %}{{ consulta.asunto }}{% endblock %}
+{% block panel_bajada %}
+  Consulta #{{ consulta.pk }} · {{ consulta.get_tipo_display }}
+  de {{ consulta.usuario.username|default:"sin usuario" }} ·
+  {{ consulta.fecha|hora_local|date:"d/m/Y H:i" }}
+{% endblock %}
+{% block panel_acciones %}
+  <a class="boton boton--secundario" href="{% url 'panel_consultas' %}">← Volver al listado</a>
+{% endblock %}
+
+{% block panel_contenido %}
+<div class="dos-columnas">
+  <div class="panel">
+    <h3 class="mt-0">Consulta recibida</h3>
+
+    <p class="texto-suave texto-chico">
+      {% if consulta.tramite %}
+        Trámite: <a href="{% url 'tramite_detalle' consulta.tramite.pk %}">{{ consulta.tramite.titulo }}</a>
+      {% else %}
+        Sin trámite asociado
+      {% endif %}
+      · <span class="etiqueta etiqueta--{{ consulta.estado }}">{{ consulta.get_estado_display }}</span>
+    </p>
+
+    <p class="texto-con">{{ consulta.contenido }}</p>
+
+    {% if consulta.respuesta %}
+      <h3>Respuesta enviada</h3>
+      <div class="alerta alerta--ok">{{ consulta.respuesta|linebreaksbr }}</div>
+    {% endif %}
+  </div>
+
+  <aside>
+    <form class="formulario" method="post">
+      <h3 class="mt-0">
+        {% if consulta.respuesta %}Actualizar respuesta{% else %}Responder al ciudadano{% endif %}
+      </h3>
+      {% csrf_token %}
+
+      {% for campo in form %}
+        <div class="campo">
+          <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {{ campo }}
+          {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+          {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+      {% endfor %}
+
+      <button class="boton boton--ancho" type="submit">
+        {% if consulta.respuesta %}Actualizar respuesta{% else %}Enviar respuesta{% endif %}
+      </button>
+
+      <p class="texto-suave texto-chico mb-0" style="margin-top:10px">
+        El ciudadano la ve al instante en «Mis consultas» y en esta ficha.
+      </p>
+    </form>
+  </aside>
+</div>
+{% endblock %}

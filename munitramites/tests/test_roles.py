@@ -1,9 +1,9 @@
 """ESP-02 / RF-03, RF-07, RF-11, RF-13 — Roles y permisos.
 
 El documento define dos roles: **Usuario** (ciudadano) y **Administrador**.
-En Django ese rol se materializa con `is_staff` (y con los grupos, si
-hiciera falta un tercer rol): quien no lo tiene no llega a las funciones
-de gestión.
+En Django ese rol se materializa con `is_staff`: quien no lo tiene no llega
+a las funciones de gestión. El panel propio vive en `/panel/` y el
+`/admin/` de Django queda reservado al superusuario (middleware.py).
 
 Criterio de aceptación: «Los usuarios solo pueden acceder a las funciones
 permitidas según su rol».
@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 
 from django.urls import reverse
 
-from munitramites.models import Organismo, Tema, Tramite
+from munitramites.models import Consulta, Tema, Tramite
 
 from .base import TestCase, administrador, ciudadano, municipio, organismo
 
@@ -46,32 +46,61 @@ class CiudadanoTests(TestCase):
             self.assertEqual(r.status_code, 302, url)
             self.assertIn('/admin/login/', r['Location'])
 
+    def test_no_entra_al_panel_propio(self):
+        """/panel/ también es territorio de administradores (RF-13)."""
+        for url in (reverse('panel'), reverse('panel_tramites'),
+                    reverse('panel_consultas'), reverse('panel_usuarios')):
+            r = self.client.get(url)
+
+            self.assertEqual(r.status_code, 302, url)
+            self.assertEqual(r['Location'], reverse('inicio'), url)
+
+    def test_le_avisa_por_que_no_pasa(self):
+        r = self.client.get(reverse('panel'), follow=True)
+
+        self.assertContains(r, 'solo para administradores')
+
 
 class AdministradorTests(TestCase):
-    """Permisos del rol Administrador."""
+    """Permisos del rol Administrador: se ejercen desde /panel/."""
 
     def setUp(self):
         self.admin = administrador()
         self.client.force_login(self.admin)
 
     def test_entra_al_panel(self):
-        self.assertEqual(self.client.get(reverse('admin:index')).status_code, 200)
+        r = self.client.get(reverse('panel'))
 
-    def test_ve_las_tablas_del_sistema(self):
-        """RF-12: usuarios, trámites, consultas, organismos, perfiles…"""
-        r = self.client.get(reverse('admin:index'))
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Centro de Trámites')
+        self.assertContains(r, 'Centro de Consultas')
+        self.assertContains(r, 'Resumen general')
 
-        for ruta in ('/admin/munitramites/tramite/',
-                     '/admin/munitramites/consulta/',
-                     '/admin/munitramites/organismo/',
-                     '/admin/munitramites/tema/',
-                     '/admin/munitramites/perfil/',
-                     '/admin/auth/user/'):
-            self.assertContains(r, ruta)
+    def test_entra_a_los_dos_centros(self):
+        for url in (reverse('panel_tramites'), reverse('panel_consultas'),
+                    reverse('panel_usuarios'), reverse('panel_temas')):
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_no_pasa_por_el_admin_de_django(self):
+        """/admin/ es del superusuario: al administrador lo manda a /panel/."""
+        for url in (reverse('admin:index'),
+                    reverse('admin:munitramites_tramite_changelist'),
+                    reverse('admin:auth_user_changelist')):
+            r = self.client.get(url)
+
+            self.assertEqual(r.status_code, 302, url)
+            self.assertEqual(r['Location'], reverse('panel'), url)
+
+    def test_al_redirigido_le_avisa_el_motivo(self):
+        r = self.client.get(reverse('admin:index'), follow=True)
+
+        self.assertContains(r, 'solo para el superusuario')
+        # y ya está parado en el panel, con sus dos centros a la vista
+        self.assertContains(r, 'Centro de Trámites')
 
     def test_puede_cargar_temas_personalizados(self):
         """RF-07: los temas se cargan desde el panel (antes: choices)."""
-        r = self.client.post(reverse('admin:munitramites_tema_add'),
+        r = self.client.post(reverse('panel_temas'),
                              {'nombre': 'Medio Ambiente'})
 
         self.assertEqual(r.status_code, 302)
@@ -83,14 +112,42 @@ class AdministradorTests(TestCase):
         """RF-11: consultar y administrar los usuarios registrados."""
         ciudadano(username='ana')
 
-        r = self.client.get(reverse('admin:auth_user_changelist'))
+        r = self.client.get(reverse('panel_usuarios'))
 
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'ana')
 
+    def test_puede_crear_un_administrador_desde_el_panel(self):
+        r = self.client.post(reverse('panel_usuario_nuevo'), {
+            'username': 'nuevo_admin',
+            'email': 'nuevo@munitramites.test',
+            'first_name': 'Nuevo', 'last_name': 'Admin',
+            'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
+            'rol': 'administrador', 'dni': '',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = User.objects.get(username='nuevo_admin')
+        self.assertTrue(nuevo.is_staff)
+        self.assertFalse(nuevo.is_superuser)
+
+    def test_puede_crear_un_usuario_comun(self):
+        r = self.client.post(reverse('panel_usuario_nuevo'), {
+            'username': 'ciudadana',
+            'email': 'ciudadana@munitramites.test',
+            'first_name': 'Ciu', 'last_name': 'Dana',
+            'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
+            'rol': 'usuario', 'dni': '',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = User.objects.get(username='ciudadana')
+        self.assertFalse(nuevo.is_staff)
+        self.assertFalse(nuevo.is_superuser)
+
     def test_puede_gestionar_tramites(self):
         """RF-07: crear y editar trámites desde el panel."""
-        r = self.client.post(reverse('admin:munitramites_tramite_add'), {
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
             'titulo': 'Certificado de residencia',
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'virtual',
@@ -110,17 +167,36 @@ class AdministradorTests(TestCase):
             Tramite.objects.filter(titulo='Certificado de residencia').exists()
         )
 
-    def test_puede_cargar_un_organismo_con_su_area_de_accion(self):
-        r = self.client.post(reverse('admin:munitramites_organismo_add'), {
-            'nombre': 'Direccion de Catastro',
-            'direccion': 'Calle San Martin 321',
-            'ocupacion': 'Bienes raices',
-        })
+    def test_las_consultas_se_gestionan_desde_el_centro_de_consultas(self):
+        """RF-10: ve las consultas de todos y responde desde el panel."""
+        autor = ciudadano(username='ana')
+        consulta = Consulta.objects.create(
+            usuario=autor, asunto='Duda de Ana',
+            contenido='¿Que documentos necesito?',
+        )
+
+        r = self.client.get(reverse('panel_consultas'))
+        self.assertContains(r, 'Duda de Ana')
+
+        r = self.client.post(
+            reverse('panel_consulta', args=[consulta.pk]),
+            {'respuesta': 'Necesitás el DNI vigente y el formulario.'},
+        )
 
         self.assertEqual(r.status_code, 302)
-        self.assertTrue(Organismo.objects.filter(
-            nombre='Direccion de Catastro', ocupacion='Bienes raices'
-        ).exists())
+        consulta.refresh_from_db()
+        self.assertEqual(consulta.estado, 'respondido')
+        self.assertIn('DNI vigente', consulta.respuesta)
+
+    def test_los_organismos_quedan_para_el_superusuario(self):
+        """Ese atajo del dashboard no aparece para un mero administrador."""
+        r = self.client.get(reverse('panel'))
+
+        self.assertNotContains(r, 'Django admin')
+        # y el /admin/ sigue cerrado para él
+        self.assertEqual(
+            self.client.get(reverse('admin:index')).status_code, 302
+        )
 
 
 class AnonimoTests(TestCase):
@@ -128,7 +204,8 @@ class AnonimoTests(TestCase):
 
     def test_las_paginas_privadas_redirigen_al_login(self):
         for url in (reverse('perfil'), reverse('consultas'),
-                    reverse('consulta_nueva'), reverse('soporte')):
+                    reverse('consulta_nueva'), reverse('soporte'),
+                    reverse('panel'), reverse('panel_tramites')):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 302, url)
             self.assertIn(reverse('login'), r['Location'])

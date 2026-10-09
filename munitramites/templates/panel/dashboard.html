@@ -1,0 +1,63 @@
+{% extends "panel/base_panel.html" %}
+
+{% block panel_titulo %}Resumen general{% endblock %}
+{% block panel_bajada %}
+  Hola {{ user.get_full_name|default:user.username }}, esto es lo que hay hoy en el sitio.
+{% endblock %}
+
+{% block panel_contenido %}
+<div class="rejilla">
+  <div class="tarjeta">
+    <h3><a href="{% url 'panel_tramites' %}">Centro de Trámites</a></h3>
+    <p>Creá, editá, publicá y destacá los trámites que ven los ciudadanos.</p>
+    <div class="tarjeta__meta">
+      <span class="etiqueta etiqueta--activo">{{ tramites_activos }} activos</span>
+      <span>de {{ tramites_total }} cargados</span>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <h3><a href="{% url 'panel_consultas' %}">Centro de Consultas</a></h3>
+    <p>Mirá lo que preguntan los ciudadanos y contestá desde acá.</p>
+    <div class="tarjeta__meta">
+      <span class="etiqueta etiqueta--pendiente">{{ pendientes }} sin responder</span>
+      <span>de {{ consultas_total }} recibidas</span>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <h3><a href="{% url 'panel_usuarios' %}">Usuarios</a></h3>
+    <p>Creá cuentas y definí quiénes entran al panel como administradores.</p>
+    <div class="tarjeta__meta">
+      <span>{{ usuarios }} cuentas activas</span>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <h3><a href="{% url 'panel_temas' %}">Temas</a></h3>
+    <p>Los temas con los que se agrupan los trámites del catálogo.</p>
+    <div class="tarjeta__meta">
+      <span>{{ temas }} temas cargados</span>
+    </div>
+  </div>
+</div>
+
+<div class="acciones" style="margin-top: 22px">
+  <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
+  <a class="boton boton--secundario" href="{% url 'panel_usuario_nuevo' %}">Nuevo usuario</a>
+  <a class="boton boton--secundario" href="{% url 'consultas' %}">Ver consultas como ciudadano</a>
+  {% if es_superusuario %}
+    <a class="boton boton--secundario" href="{% url 'admin:index' %}">Django admin (/admin/)</a>
+  {% endif %}
+</div>
+
+<p class="texto-suave texto-chico" style="margin-top: 18px">
+  {% if es_superusuario %}
+    Como superusuario también entrás al /admin/ de Django, donde se gestionan
+    organismos, municipios, grupos y perfiles (DNI).
+  {% else %}
+    Organismos y municipios se cargan desde el /admin/ de Django, que es
+    exclusivo del superusuario.
+  {% endif %}
+</p>
+{% endblock %}

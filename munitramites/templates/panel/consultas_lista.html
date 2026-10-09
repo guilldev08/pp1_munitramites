@@ -1,0 +1,81 @@
+{% extends "panel/base_panel.html" %}
+{% load hora %}
+
+{% block panel_titulo %}Centro de Consultas{% endblock %}
+{% block panel_bajada %}Consultas, sugerencias y reclamos que mandan los ciudadanos.{% endblock %}
+
+{% block panel_contenido %}
+<nav class="subfiltros" aria-label="Filtrar por estado">
+  <a href="?" {% if not estado %}class="activo"{% endif %}>Todas</a>
+  <a href="?estado=pendiente" {% if estado == 'pendiente' %}class="activo"{% endif %}>Pendientes</a>
+  <a href="?estado=respondido" {% if estado == 'respondido' %}class="activo"{% endif %}>Respondidas</a>
+  <a href="?estado=cerrado" {% if estado == 'cerrado' %}class="activo"{% endif %}>Cerradas</a>
+</nav>
+
+{% if pagina.object_list %}
+  <div class="tabla-wrap">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Tipo</th>
+          <th>Asunto</th>
+          <th>Trámite</th>
+          <th>Ciudadano</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in pagina %}
+          <tr>
+            <td><a href="{% url 'panel_consulta' c.pk %}">#{{ c.pk }}</a></td>
+            <td>{{ c.get_tipo_display }}</td>
+            <td>
+              <strong><a href="{% url 'panel_consulta' c.pk %}">{{ c.asunto }}</a></strong>
+              <div class="texto-suave texto-chico">{{ c.contenido|truncatewords:16 }}</div>
+              {% if c.respuesta %}
+                <div class="alerta alerta--ok" style="margin-top:8px; margin-bottom:0">
+                  <strong>Respuesta:</strong> {{ c.respuesta|truncatewords:20 }}
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              {% if c.tramite %}
+                <a href="{% url 'tramite_detalle' c.tramite.pk %}">{{ c.tramite.titulo }}</a>
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ c.usuario.username|default:"—" }}</td>
+            <td><span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
+            <td class="texto-chico">{{ c.fecha|hora_local|date:"d/m/Y H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagina.paginator.num_pages > 1 %}
+    <nav class="paginacion">
+      {% if pagina.has_previous %}
+        <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">← Anterior</a>
+      {% else %}<span class="inactivo">← Anterior</span>{% endif %}
+
+      {% for n in pagina.paginator.page_range %}
+        {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+        {% else %}<a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ n }}">{{ n }}</a>{% endif %}
+      {% endfor %}
+
+      {% if pagina.has_next %}
+        <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente →</a>
+      {% else %}<span class="inactivo">Siguiente →</span>{% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+  <div class="vacio">
+    <div class="vacio__icono">💬</div>
+    <h3>No hay consultas{% if estado %} con ese estado{% endif %}</h3>
+    <p>Cuando un ciudadano mande una consulta, aparece acá para que la respondas.</p>
+  </div>
+{% endif %}
+{% endblock %}

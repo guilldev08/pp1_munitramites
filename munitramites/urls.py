@@ -7,11 +7,15 @@ en `views/` (una carpeta por modulo: pagina, tramites, chatbot, …).
 Orden importa. Django recorre la lista de arriba hacia abajo y se queda con
 la primera que coincida:
 
-  1. Admin nativo de Django (/admin) — CRUD completo de todas las tablas
+  1. Admin nativo de Django (/admin) — SOLO superusuario (lo vigila
+     munitramites.middleware.AdminSoloSuperusuario; los administradores
+     terminan en /panel/)
   2. Autenticacion de ciudadanos (login, clave olvidada, registro, perfil)
   3. Paginas del sitio (portada, tramites, chatbot, consultas, soporte)
-  4. API liviana
-  5. Estaticos en desarrollo
+  4. Panel propio de administracion (/panel/ — trámites, consultas,
+     usuarios y temas; rol Administrador y superusuario)
+  5. API liviana
+  6. Estaticos en desarrollo
 
 NO hay catch-all: una URL inexistente devuelve el 404 de Django.
 Si agregas una ruta nueva, ponla antes de la que empiece con <int:...>.
@@ -26,8 +30,10 @@ from . import views
 
 urlpatterns = [
     # 1. Admin nativo de Django -------------------------------------------
-    # CRUD de Municipio, Organismo, Tramite, Requisito, Consulta, Enlace,
-    # Perfil y usuarios. Login propio en /admin/login/.
+    # CRUD de TODAS las tablas (Municipio, Organismo, Tramite, Consulta,
+    # usuarios, grupos, perfiles…). EXCLUSIVO del superusuario: un
+    # administrador que pise /admin/ queda redirigido a /panel/
+    # (ver munitramites/middleware.py). Login propio en /admin/login/.
     path('admin/', admin.site.urls),
 
     # 2. Autenticacion de ciudadanos --------------------------------------
@@ -103,7 +109,46 @@ urlpatterns = [
     path('consultas/nueva/', views.consulta_nueva, name='consulta_nueva'),
     path('consultas/<int:pk>/', views.consulta_detalle, name='consulta_detalle'),
 
-    # 4. API ----------------------------------------------------------------
+    # 4. Panel propio de administración (rol Administrador y superusuario) --
+    # /admin/ de Django queda reservado al superusuario (ver middleware.py):
+    # el día a día se maneja acá, con vistas y plantillas propias.
+    path('panel/', views.panel, name='panel'),
+    path('panel/tramites/', views.panel_tramites, name='panel_tramites'),
+    path(
+        'panel/tramites/nuevo/', views.panel_tramite_nuevo,
+        name='panel_tramite_nuevo',
+    ),
+    path(
+        'panel/tramites/<int:pk>/editar/', views.panel_tramite_editar,
+        name='panel_tramite_editar',
+    ),
+    path(
+        'panel/tramites/<int:pk>/estado/', views.panel_tramite_estado,
+        name='panel_tramite_estado',
+    ),
+    path(
+        'panel/consultas/', views.panel_consultas, name='panel_consultas'
+    ),
+    path(
+        'panel/consultas/<int:pk>/', views.panel_consulta,
+        name='panel_consulta',
+    ),
+    path('panel/usuarios/', views.panel_usuarios, name='panel_usuarios'),
+    path(
+        'panel/usuarios/nuevo/', views.panel_usuario_nuevo,
+        name='panel_usuario_nuevo',
+    ),
+    path(
+        'panel/usuarios/<int:pk>/editar/', views.panel_usuario_editar,
+        name='panel_usuario_editar',
+    ),
+    path(
+        'panel/usuarios/<int:pk>/eliminar/', views.panel_usuario_eliminar,
+        name='panel_usuario_eliminar',
+    ),
+    path('panel/temas/', views.panel_temas, name='panel_temas'),
+
+    # 5. API ----------------------------------------------------------------
     path('api/tramites/', views.api_tramites, name='api_tramites'),
 ]
 

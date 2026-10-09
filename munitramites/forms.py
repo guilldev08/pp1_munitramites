@@ -9,8 +9,11 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.forms import inlineformset_factory
 
-from .models import Consulta, Municipio, Perfil, Tema, Tramite
+from .models import (
+    Consulta, Enlace, Municipio, Perfil, Requisito, Tema, Tramite,
+)
 
 
 class RegistroForm(UserCreationForm):
@@ -224,3 +227,219 @@ class TramiteFiltroForm(forms.Form):
         if datos['modalidad']:
             queryset = queryset.filter(modalidad=datos['modalidad'])
         return queryset
+
+
+# =============================================================================
+# Panel de administración (/panel/) — Centro de Trámites, Centro de Consultas,
+# gestión de usuarios y temas. Mismo estilo de validación que el resto:
+# >>> ACÁ SE VALIDAN LOS DATOS <<< y nada llega a la base si no cierran.
+# =============================================================================
+
+
+class TemaForm(forms.ModelForm):
+    """Alta de temas desde el panel (RF-07): sin tocar código."""
+
+    class Meta:
+        model = Tema
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'placeholder': 'Ej.: Medio Ambiente',
+                'autocomplete': 'off',
+            }),
+        }
+
+
+class TramitePanelForm(forms.ModelForm):
+    """Alta y edición de trámites desde el Centro de Trámites.
+
+    Los requisitos y los enlaces oficiales no viajan en este form: se
+    cargan con los formsets de acá abajo (`RequisitoFormSet` y
+    `EnlaceFormSet`), que se validan y se guardan juntos con el trámite.
+    """
+
+    class Meta:
+        model = Tramite
+        fields = [
+            'titulo', 'tema', 'modalidad', 'municipio', 'organismo',
+            'descripcion', 'destacado', 'activo',
+            'enlace_turnos', 'enlace_oficial',
+        ]
+        widgets = {
+            'titulo': forms.TextInput(attrs={
+                'placeholder': 'Ej.: Renovación del DNI',
+            }),
+            'descripcion': forms.Textarea(attrs={
+                'rows': 5,
+                'placeholder': 'Qué se hace, dónde, cuándo y a quién acudir…',
+            }),
+            'enlace_turnos': forms.URLInput(attrs={
+                'placeholder': 'https://… (opcional)',
+            }),
+            'enlace_oficial': forms.URLInput(attrs={
+                'placeholder': 'https://… (opcional)',
+            }),
+        }
+
+
+# Inlines del Centro de Trámites: mismos campos que los del /admin/.
+RequisitoFormSet = inlineformset_factory(
+    Tramite, Requisito,
+    fields=['descripcion', 'orden'],
+    extra=1,
+    can_delete=True,
+)
+
+EnlaceFormSet = inlineformset_factory(
+    Tramite, Enlace,
+    fields=['nombre', 'url', 'orden'],
+    extra=1,
+    can_delete=True,
+)
+
+
+class RespuestaConsultaForm(forms.Form):
+    """Respuesta que el administrador le da a una consulta (RF-10)."""
+
+    respuesta = forms.CharField(
+        label='Respuesta',
+        min_length=5,
+        widget=forms.Textarea(attrs={
+            'rows': 5,
+            'placeholder': 'Escribí la respuesta para el ciudadano…',
+            'minlength': 5,
+        }),
+        help_text='Mínimo 5 caracteres. El ciudadano la ve en «Mis consultas».',
+    )
+
+
+class UsuarioPanelForm(UserCreationForm):
+    """Alta de cuentas desde el panel: usuario común o administrador.
+
+    Tiene un campo `rol` propio (nunca `is_superuser`): desde el panel NO
+    se puede crear un superusuario — esa cuenta única se hace con
+    `manage.py createsuperuser` y la regla la vigila `senales.py`.
+    """
+
+    email = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={
+            'placeholder': 'nombre@correo.com',
+            'autocomplete': 'email',
+        }),
+    )
+    rol = forms.ChoiceField(
+        label='Rol',
+        choices=[
+            ('usuario', 'Usuario'),
+            ('administrador', 'Administrador'),
+        ],
+        initial='usuario',
+        help_text='«Administrador» entra al panel de gestión; '
+                  '«Usuario» solo usa el sitio.',
+    )
+    dni = forms.CharField(
+        label='DNI',
+        max_length=12,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Sin puntos, ej.: 12345678',
+            'inputmode': 'numeric',
+        }),
+        help_text='Opcional. Entre 7 y 8 dígitos, sin puntos.',
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']
+        labels = {
+            'username': 'Usuario',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+        }
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'tu_usuario'}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
+            'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
+        }
+
+    def clean_dni(self):
+        dni = self.cleaned_data.get('dni', '').strip()
+        if not dni:
+            return ''
+        return validar_dni(dni)
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('Ya existe una cuenta con ese correo.')
+        return email
+
+    def save(self, commit=True):
+        # `is_superuser` ni aparece en el form: queda en False siempre.
+        user = super().save(commit)
+        user.is_staff = self.cleaned_data['rol'] == 'administrador'
+        if commit:
+            user.save()
+            Perfil.objects.create(user=user, dni=self.cleaned_data.get('dni', ''))
+        return user
+
+
+class UsuarioRolForm(forms.ModelForm):
+    """Edición de una cuenta ajena desde el panel: datos, rol y actividad.
+
+    Es un `ModelForm` sobre `User` pero SIN `is_superuser` en `fields`:
+    el panel puede pasar alguien de «Usuario» a «Administrador» (gestión
+    de roles), pero nunca elevarlo a superusuario. El rol viaja en un
+    campo propio y se traduce a `is_staff` al guardar.
+    """
+
+    rol = forms.ChoiceField(
+        label='Rol',
+        choices=[
+            ('usuario', 'Usuario'),
+            ('administrador', 'Administrador'),
+        ],
+        help_text='«Administrador» entra al panel de gestión.',
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name', 'is_active']
+        labels = {
+            'username': 'Usuario',
+            'first_name': 'Nombre',
+            'last_name': 'Apellido',
+            'is_active': 'Cuenta activa',
+        }
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'tu_usuario'}),
+            'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
+            'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # El combo arranca con el rol actual de la cuenta
+        if self.instance and self.instance.pk:
+            self.fields['rol'].initial = (
+                'administrador' if self.instance.is_staff else 'usuario'
+            )
+        self.fields['is_active'].help_text = (
+            'Sin marca: la cuenta queda suspendida y no puede ingresar.'
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data['email'].lower()
+        if User.objects.filter(email__iexact=email).exclude(
+            pk=self.instance.pk
+        ).exists():
+            raise forms.ValidationError('Ya existe una cuenta con ese correo.')
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_staff = self.cleaned_data['rol'] == 'administrador'
+        if commit:
+            user.save()
+        return user

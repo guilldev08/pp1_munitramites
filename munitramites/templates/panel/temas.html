@@ -1,0 +1,56 @@
+{% extends "panel/base_panel.html" %}
+
+{% block panel_titulo %}Temas{% endblock %}
+{% block panel_bajada %}Los temas con los que se agrupan los trámites (RF-07).{% endblock %}
+
+{% block panel_contenido %}
+<div class="dos-columnas">
+  <div class="panel">
+    <h3 class="mt-0">Nuevo tema</h3>
+    <p class="texto-suave texto-chico">
+      Aparece al instante en el combo «Tema» del formulario de trámites
+      y en los filtros del listado público.
+    </p>
+
+    <form class="formulario" method="post" novalidate>
+      {% csrf_token %}
+      {% for campo in form %}
+        <div class="campo">
+          <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {{ campo }}
+          {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+          {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="boton boton--ancho" type="submit">Crear tema</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h3 class="mt-0">Temas cargados</h3>
+
+    {% if temas %}
+      <div class="tabla-wrap">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Tema</th>
+              <th>Trámites</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tema in temas %}
+              <tr>
+                <td><span class="etiqueta etiqueta--tema">{{ tema.nombre }}</span></td>
+                <td>{{ tema.cantidad }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="texto-suave texto-chico mb-0">Todavía no hay temas cargados.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -45,8 +45,9 @@
            {% if request.resolver_match.url_name == 'consultas' or request.resolver_match.url_name == 'consulta_nueva' or request.resolver_match.url_name == 'consulta_detalle' %}class="activo"{% endif %}>Mis consultas</a>
 
         <span class="nav__sesion">
-          {% if user.is_staff %}
-            <a href="{% url 'admin:index' %}">Panel</a>
+          {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'panel' %}"
+               {% if 'panel' in request.resolver_match.url_name %}class="activo"{% endif %}>Panel</a>
           {% endif %}
           <a href="{% url 'perfil' %}"
              {% if request.resolver_match.url_name == 'perfil' %}class="activo"{% endif %}>Mi perfil</a>
@@ -96,9 +97,10 @@
       <a href="{% url 'tramites' %}">Trámites</a> ·
       <a href="{% url 'soporte' %}">Soporte</a> ·
       <a href="{% url 'chatbot' %}" data-abrir="modal-chat">Chatbot</a> ·
-      <a href="{% url 'api_tramites' %}">API</a> ·
-      <a href="{% url 'admin:index' %}">Administración
-      </a>
+      <a href="{% url 'api_tramites' %}">API</a>
+      {% if user.is_staff or user.is_superuser %}
+        · <a href="{% url 'panel' %}">Administración</a>
+      {% endif %}
     </div>
   </div>
 </footer>

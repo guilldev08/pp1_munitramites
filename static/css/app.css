@@ -653,7 +653,7 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
 }
 .tema-boton:hover { background: var(--gris-100); }
 
-/* --- Barra del chatbot (dentro del hero) ------------------------------- */
+/* --- Barra del asistente (arriba de /tramites/) -------------------------- */
 .barra-chat {
   display: flex;
   align-items: center;
@@ -662,6 +662,7 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
   border-radius: 12px;
   padding: 8px;
   max-width: 640px;
+  margin-bottom: 22px;
   box-shadow: 0 10px 30px rgba(15, 23, 42, .25);
 }
 .barra-chat input {
@@ -675,9 +676,6 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
   font-family: inherit;
   color: var(--gris-900);
 }
-.hero .barra-chat .boton { background: var(--azul); color: #fff; }
-.hero .barra-chat .boton:hover { background: var(--azul-oscuro); }
-.barra-chat__acciones { margin-top: 20px; }
 @media (max-width: 560px) {
   .barra-chat { flex-direction: column; align-items: stretch; }
   .barra-chat .boton { width: 100%; }

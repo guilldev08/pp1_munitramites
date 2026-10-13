@@ -24,6 +24,9 @@
 </head>
 <body>
 
+{# La barra superior vive en un bloque: la landing la vacía para quedar
+   como portada a pantalla completa (ver inicio.html). #}
+{% block encabezado %}
 <header class="header">
   <div class="contenedor header__fila">
     <a class="marca" href="{% url 'inicio' %}">
@@ -72,6 +75,7 @@
     </nav>
   </div>
 </header>
+{% endblock %}
 
 {% if messages %}
   <div class="contenedor mensajes" style="margin-top:18px">

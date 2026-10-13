@@ -39,6 +39,14 @@ class LandingTests(TestCase):
         self.assertNotContains(r, 'barra-chat')
         self.assertNotContains(r, 'Renovacion de DNI')
 
+    def test_no_muestra_la_barra_superior(self):
+        """ESP-07 — la portada es a pantalla completa: sin header ni
+        interruptor de tema; esos viven en el resto de las páginas."""
+        r = self.client.get(reverse('inicio'))
+
+        self.assertNotContains(r, '<header class="header">')
+        self.assertNotContains(r, 'id="cambiar-tema"')
+
     def test_muestra_los_tres_pasos_listos_para_aparecer(self):
         r = self.client.get(reverse('inicio'))
 
@@ -69,6 +77,19 @@ class LandingTests(TestCase):
 
 
 class ListadoTests(TestCase):
+
+    def test_abre_con_la_barra_del_asistente(self):
+        """La chatbar queda arriba de todo: después de la miga y antes
+        del título de la sección. Sin JS hace POST a /chatbot/."""
+        r = self.client.get(reverse('tramites'))
+
+        html = r.content.decode()
+        self.assertIn('id="barra-chat"', html)
+        self.assertContains(r, 'action="%s"' % reverse('chatbot'))
+        self.assertLess(
+            html.index('id="barra-chat"'),
+            html.index('Trámites disponibles'),
+        )
 
     def test_lista_los_tramites_activos(self):
         tramite()

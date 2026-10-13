@@ -68,10 +68,15 @@ def _bloque(selector):
 
 
 class InterruptorTest(TestCase):
-    """El botón de tema se pinta en todas las páginas (hereda base.html)."""
+    """El botón de tema se pinta en las páginas con barra superior.
+
+    La landing oculta la barra (es una portada a pantalla completa), así
+    que ahí no hay interruptor: la elección de tema queda guardada igual
+    en localStorage desde cualquier otra página.
+    """
 
     def test_las_paginas_traen_el_interruptor(self):
-        for nombre in ('inicio', 'tramites', 'chatbot', 'login'):
+        for nombre in ('tramites', 'chatbot', 'login'):
             with self.subTest(vista=nombre):
                 r = self.client.get(reverse(nombre))
                 self.assertContains(r, 'id="cambiar-tema"')

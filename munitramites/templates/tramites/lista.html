@@ -9,6 +9,18 @@
       <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Trámites
     </div>
 
+    {# --- Barra del asistente: preguntar sin salir del listado ------------- #}
+    {# Sin JavaScript hace POST a /chatbot/ y se responde en la página del
+       chat; con JavaScript app.js abre el modal y manda la pregunta. #}
+    <form class="barra-chat" id="barra-chat" method="post"
+          action="{% url 'chatbot' %}" autocomplete="off">
+      {% csrf_token %}
+      <input type="text" name="mensaje" maxlength="300" required
+             placeholder="Preguntale al asistente… (ej.: «¿cómo renuevo el DNI?»)"
+             aria-label="Pregunta al asistente">
+      <button class="boton" type="submit">Preguntar</button>
+    </form>
+
     <div class="titulo-seccion">
       <div>
         <h2>Trámites disponibles</h2>

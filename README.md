@@ -48,7 +48,7 @@ docker compose up -d --build
 
 | URL | Qué es |
 |---|---|
-| http://localhost:8000/ | Landing pública: bienvenida, ingreso (con sesión o sin cuenta) y «¿Cómo funciona?» |
+| http://localhost:8000/ | Landing pública a pantalla completa (sin barra superior): bienvenida, ingreso (con sesión o sin cuenta) y «¿Cómo funciona?» |
 | http://localhost:8000/tramites/ | Buscador de trámites |
 | http://localhost:8000/chatbot/ | Asistente virtual (página completa) |
 | http://localhost:8000/perfil/ | Datos personales (pide iniciar sesión) |
@@ -214,8 +214,8 @@ Todo eso vive en `views/panel.py` (`solo_administrador`, `_cuenta_protegida`),
 
 | URL | Vista | Acceso |
 |---|---|---|
-| `/` | Landing: hero con «Iniciar sesión» / «Continuar sin sesión» y «¿Cómo funciona?» (aparece al bajar) | público |
-| `/tramites/` | Listado con filtros y paginación | público |
+| `/` | Landing a pantalla completa (sin barra superior): hero con «Iniciar sesión» / «Continuar sin sesión» y «¿Cómo funciona?» (aparece al bajar) | público |
+| `/tramites/` | Listado con filtros y paginación; arriba de todo, la chatbar del asistente | público |
 | `/tramites/<id>/` | Ficha con requisitos, organismo y botones de enlaces | público |
 | `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
 | `/chatbot/` | Asistente (página completa, alternativa sin JS) | público |
@@ -242,7 +242,10 @@ Todo eso vive en `views/panel.py` (`solo_administrador`, `_cuenta_protegida`),
 ### Piezas del layout
 
 `base.html` lleva la barra (Inicio · Trámites · Soporte + Ingresar) y **dos
-pestañas emergentes** que se usan desde cualquier página:
+pestañas emergentes** que se usan desde cualquier página. La barra vive en el
+bloque `encabezado`: la landing la vacía (`inicio.html`) para quedar como
+portada a pantalla completa —con los ingresos en el propio hero y la
+navegación en el pie— y el resto del sitio la muestra normal:
 
 | Modal | Contenido | Se abre |
 |---|---|---|
@@ -313,7 +316,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (186)
+    ├── tests/                      #    tests de aceptación (188)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -336,7 +339,7 @@ munitramites/
         │   ├── base_site.html      #    base de todo el panel: carga admin.css
         │   ├── index.html          #    saludo + tarjetas + atajos
         │   └── panel_resumen.html  #    las tarjetas (las arma panel_admin)
-        ├── inicio.html             #    landing (hero + botones + cómo funciona)
+        ├── inicio.html             #    landing (hero + botones + cómo funciona, sin barra)
         ├── registro.html           #    deja el modal de alta abierto
         ├── soporte.html            #    soporte (solo con sesión)
         ├── chatbot.html            #    asistente en página completa
@@ -433,7 +436,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 186 tests
+docker compose exec web python manage.py test --noinput         # correr los 188 tests
 ```
 
 ### Ejecutar código desde el host
@@ -549,8 +552,10 @@ Tres etapas, tres archivos, todas en `services/chatbot/`.
 | 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados usando `PlantillaLocal` (plantillas con varias variantes, sin dependencias ni costo); una pregunta por monto que no está indexada se contesta con «no dispongo» antes de redactar |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, lo dice citando lo que se preguntó —nunca dos consultas distintas con la misma frase— sin inventar nada |
 
-**Se le puede preguntar desde tres lugares**: el modal 💬 (desde cualquier
-página), la página `/chatbot/` (con su alternativa sin JS: `/chatbot/?q=…`)
+**Se le puede preguntar desde cuatro lugares**: el modal 💬 (desde cualquier
+página), la **chatbar de `/tramites/`** (arriba de todo en el listado: abre
+el mismo modal y manda la pregunta), la página `/chatbot/` (con su
+alternativa sin JS: `/chatbot/?q=…`)
 y la **barra de búsqueda del sitio**: lo que se escriba en «Buscar» filtra
 la lista y, arriba de los resultados, un panel con el mismo pipeline
 redacta la respuesta (`parciales/lista_tramites.html` + `app.js`). Ese

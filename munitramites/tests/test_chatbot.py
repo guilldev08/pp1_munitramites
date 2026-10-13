@@ -233,10 +233,11 @@ class BuscadorTests(TestCase):
         # Sin JavaScript: enlace al chat con la misma consulta
         self.assertContains(r, reverse('chatbot') + '?q=')
 
-        # El panel vive en el parcial compartido: anda en la portada también
-        r_portada = self.client.get(reverse('inicio'),
+        # El panel vive en el parcial compartido, pero la landing no lo
+        # repite: el listado vive solo en /tramites/
+        r_landing = self.client.get(reverse('inicio'),
                                     {'q': 'renovacion de DNI'})
-        self.assertContains(r_portada, 'id="respuesta-ia"')
+        self.assertNotContains(r_landing, 'id="respuesta-ia"')
 
     def test_sin_texto_en_la_barra_no_aparece_el_panel(self):
         tramite()

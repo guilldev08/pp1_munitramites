@@ -3,34 +3,34 @@
 {% block titulo %}Inicio{% endblock %}
 
 {% block contenido %}
-{# --- Hero: presentación + barra de ingreso de texto del chatbot --------- #}
+{# --- Landing: presentación y las dos puertas de entrada ------------------ #}
 <section class="hero">
   <div class="contenedor">
     <h1>Todos los trámites públicos de Misiones, en un solo lugar.</h1>
     <p>
       Requisitos, organismos responsables, modalidades y enlaces oficiales.
-      Preguntale al asistente o filtrá la lista de acá abajo.
+      Buscá el tuyo y seguí los tres pasos de acá abajo.
     </p>
 
-    {# Sin JavaScript: manda la pregunta a /chatbot/ y se responde en la pagina #}
-    <form class="barra-chat" id="barra-chat" method="post"
-          action="{% url 'chatbot' %}" autocomplete="off">
-      {% csrf_token %}
-      <input type="text" name="mensaje" maxlength="300" required
-             placeholder="Preguntale al asistente… (ej.: «¿cómo renuevo el DNI?»)"
-             aria-label="Pregunta al asistente">
-      <button class="boton" type="submit">Preguntar</button>
-    </form>
-
-    <div class="acciones barra-chat__acciones">
-      <a class="boton" href="{% url 'tramites' %}">Ver trámites</a>
-      <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">Abrir el chat</a>
+    <div class="acciones hero__acciones">
+      {% if user.is_authenticated %}
+        {# Ya tiene sesión: no tiene sentido ofrecerle entrar de nuevo #}
+        <a class="boton" href="{% url 'tramites' %}">Ver trámites</a>
+        {% if user.is_staff or user.is_superuser %}
+          <a class="boton boton--secundario" href="{% url 'panel' %}">Ir al panel</a>
+        {% endif %}
+      {% else %}
+        {# Sin JS el enlace lleva a /login/, que deja el modal abierto solo #}
+        <a class="boton" href="{% url 'login' %}"
+           data-abrir="modal-auth" data-tab="login">Iniciar sesión</a>
+        <a class="boton boton--secundario" href="{% url 'tramites' %}">Continuar sin sesión</a>
+      {% endif %}
     </div>
   </div>
 </section>
 
-{# --- Los tres pasos, apenas termina el hero ------------------------------ #}
-<section class="seccion">
+{# --- Los tres pasos: aparecen solos cuando el visitante baja un poco ----- #}
+<section class="seccion revelar">
   <div class="contenedor">
     <div class="titulo-seccion">
       <div>
@@ -43,7 +43,7 @@
       <div class="paso">
         <div class="paso__num">1</div>
         <h3>Buscá</h3>
-        <p>Filtrá por tema, municipio o modalidad, o preguntale al asistente con la barra de arriba.</p>
+        <p>Filtrá por tema, municipio o modalidad en la lista de trámites.</p>
       </div>
       <div class="paso">
         <div class="paso__num">2</div>
@@ -58,25 +58,34 @@
     </div>
   </div>
 </section>
+{% endblock %}
 
-{# --- Trámites: la lista con filtros vive en la portada ------------------- #}
-<section class="seccion">
-  <div class="contenedor">
-    <div class="titulo-seccion">
-      <div>
-        <h2>Trámites disponibles</h2>
-        <p>
-          {% if pagina.paginator.count %}{{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}{% if hay_filtros %} con los filtros aplicados{% endif %}.
-          {% else %}Sin resultados.{% endif %}
-        </p>
-      </div>
-      <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">
-        ¿No lo encontrás? Preguntá
-      </a>
-    </div>
+{% block extra_js %}
+<script>
+  /* «¿Cómo funciona?» aparece recién cuando el visitante baja un poco.
+     Sin IntersectionObserver, con JavaScript apagado o con
+     prefers-reduced-motion, la sección queda visible de entrada: nadie se
+     queda esperando una animación que no va a venir. */
+  (function () {
+    if (!('IntersectionObserver' in window)) { return; }
+    if (window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return; }
 
-    {% include "parciales/lista_tramites.html" %}
-  </div>
-</section>
+    var secciones = document.querySelectorAll('.revelar');
+    if (!secciones.length) { return; }
 
+    document.documentElement.classList.add('revelar-activo');
+
+    var observador = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (entrada) {
+        if (entrada.isIntersecting) {
+          entrada.target.classList.add('visible');
+          observador.unobserve(entrada.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    secciones.forEach(function (seccion) { observador.observe(seccion); });
+  })();
+</script>
 {% endblock %}

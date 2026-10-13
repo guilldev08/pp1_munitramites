@@ -14,29 +14,58 @@ from munitramites.models import Enlace, Requisito, Tema
 from .base import TestCase, administrador, ciudadano, municipio, organismo, tramite
 
 
-class PortadaTests(TestCase):
+class LandingTests(TestCase):
+    """La landing es la puerta de entrada: hero, dos botones y los pasos."""
 
-    def test_portada_es_publica_y_trae_la_barra_del_chat(self):
-        """ESP-07: portada con la barra de ingreso del asistente."""
+    def test_es_publica_y_ofrece_las_dos_puertas(self):
+        """ESP-07 — sin sesión: entrar o continuar sin cuenta."""
+        r = self.client.get(reverse('inicio'))
+
+        self.assertEqual(r.status_code, 200)
+        # «Iniciar sesión» abre el modal de auth en la misma landing
+        self.assertContains(
+            r, 'data-abrir="modal-auth" data-tab="login">Iniciar sesión</a>')
+        self.assertContains(r, 'Continuar sin sesión')
+        self.assertContains(r, reverse('tramites'))
+        self.assertContains(r, 'modal-chat')   # el asistente sigue al alcance
+
+    def test_no_trae_ni_la_barra_del_chat_ni_el_listado(self):
+        """La landing es liviana: la chatbar se retira y el listado vive
+        recién en /tramites/."""
         tramite()
 
         r = self.client.get(reverse('inicio'))
 
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'barra-chat')
-        self.assertContains(r, 'modal-auth')   # modal de login/registro
-        self.assertContains(r, 'modal-chat')   # modal del chatbot
-        self.assertContains(r, 'Renovacion de DNI')
-
-    def test_portada_contiene_los_filtros(self):
-        tramite(tema='Comercio', modalidad='virtual',
-                titulo='Habilitacion comercial')
-
-        r = self.client.get(reverse('inicio'), {'q': 'habilitacion'})
-
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Habilitacion comercial')
+        self.assertNotContains(r, 'barra-chat')
         self.assertNotContains(r, 'Renovacion de DNI')
+
+    def test_muestra_los_tres_pasos_listos_para_aparecer(self):
+        r = self.client.get(reverse('inicio'))
+
+        self.assertContains(r, '¿Cómo funciona?')
+        for paso in ('Buscá', 'Revisá los requisitos', 'Tramitá'):
+            self.assertContains(r, paso)
+        # la sección arranca oculta y aparece al hacer scroll (ver extra_js)
+        self.assertContains(r, 'class="seccion revelar"')
+
+    def test_al_logueado_le_cambia_los_botones(self):
+        """Con sesión no se le vuelve a ofrecer entrar: va al listado."""
+        self.client.force_login(ciudadano(username='ana'))
+
+        r = self.client.get(reverse('inicio'))
+
+        self.assertContains(r, '<a class="boton" href="%s">Ver trámites</a>'
+                            % reverse('tramites'))
+        self.assertNotContains(
+            r, 'data-abrir="modal-auth" data-tab="login">Iniciar sesión</a>')
+
+    def test_al_administrador_le_ofrece_el_panel(self):
+        self.client.force_login(administrador())
+
+        r = self.client.get(reverse('inicio'))
+
+        self.assertContains(r, 'Ir al panel')
+        self.assertContains(r, reverse('panel'))
 
 
 class ListadoTests(TestCase):

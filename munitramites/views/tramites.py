@@ -1,7 +1,7 @@
 """Vistas de tramites: listado con filtros y ficha.
 
-El listado se comparte entre la portada (`/`) y `/tramites/`, por eso el
-helper de contexto vive aca y `views/pagina.py` lo importa.
+El listado vive solo en `/tramites/`: la landing (`/`) ya no lo muestra,
+asi que el helper de contexto se usa exclusivamente desde aca.
 """
 
 from django.core.paginator import Paginator
@@ -17,8 +17,8 @@ POR_PAGINA = 6
 def contexto_lista_tramites(request):
     """Filtros + paginacion de la lista de tramites.
 
-    El form de filtros y los links del paginador son RELATIVOS, asi el mismo
-    bloque anda igual en la portada (/) que en /tramites/.
+    El form de filtros y los links del paginador son RELATIVOS, asi el
+    bloque anda igual de bien en cualquier página que lo incluya.
     """
     filtros = TramiteFiltroForm(request.GET or None)
     queryset = (

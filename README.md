@@ -48,7 +48,7 @@ docker compose up -d --build
 
 | URL | Qué es |
 |---|---|
-| http://localhost:8000/ | Sitio público (portada + buscador de trámites) |
+| http://localhost:8000/ | Landing pública: bienvenida, ingreso (con sesión o sin cuenta) y «¿Cómo funciona?» |
 | http://localhost:8000/tramites/ | Buscador de trámites |
 | http://localhost:8000/chatbot/ | Asistente virtual (página completa) |
 | http://localhost:8000/perfil/ | Datos personales (pide iniciar sesión) |
@@ -214,7 +214,7 @@ Todo eso vive en `views/panel.py` (`solo_administrador`, `_cuenta_protegida`),
 
 | URL | Vista | Acceso |
 |---|---|---|
-| `/` | Portada: barra del chatbot + lista de trámites con filtros | público |
+| `/` | Landing: hero con «Iniciar sesión» / «Continuar sin sesión» y «¿Cómo funciona?» (aparece al bajar) | público |
 | `/tramites/` | Listado con filtros y paginación | público |
 | `/tramites/<id>/` | Ficha con requisitos, organismo y botones de enlaces | público |
 | `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
@@ -247,7 +247,7 @@ pestañas emergentes** que se usan desde cualquier página:
 | Modal | Contenido | Se abre |
 |---|---|---|
 | `#modal-auth` | Pestañas **Ingresar** / **Crear cuenta** | clic en la barra, o solo al llegar a `/login/` y `/registro/` |
-| `#modal-chat` | Chat con el asistente | barra de la portada, botón 💬 flotante, o link con `data-abrir="modal-chat"` |
+| `#modal-chat` | Chat con el asistente | botón 💬 flotante, o link con `data-abrir="modal-chat"` |
 
 Sin JavaScript todo sigue funcionando: los enlaces caen en `/login/` y
 `/registro/` (que abren el mismo modal del lado del servidor) y la barra del
@@ -299,7 +299,7 @@ munitramites/
     ├── apps.py                     #    identidad de la app + índice del chat
     ├── views/                      #    vistas: UN ARCHIVO POR MÓDULO
     │   ├── __init__.py             #    reexporta todo → las URL no cambian
-    │   ├── pagina.py               #    portada
+    │   ├── pagina.py               #    landing
     │   ├── tramites.py             #    listado y ficha
     │   ├── chatbot.py              #    asistente (la lógica está en services/)
     │   ├── consultas.py            #    consultas, sugerencias y detalle
@@ -313,7 +313,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (183)
+    ├── tests/                      #    tests de aceptación (186)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -336,7 +336,7 @@ munitramites/
         │   ├── base_site.html      #    base de todo el panel: carga admin.css
         │   ├── index.html          #    saludo + tarjetas + atajos
         │   └── panel_resumen.html  #    las tarjetas (las arma panel_admin)
-        ├── inicio.html             #    portada (chat + lista con filtros)
+        ├── inicio.html             #    landing (hero + botones + cómo funciona)
         ├── registro.html           #    deja el modal de alta abierto
         ├── soporte.html            #    soporte (solo con sesión)
         ├── chatbot.html            #    asistente en página completa
@@ -433,7 +433,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 183 tests
+docker compose exec web python manage.py test --noinput         # correr los 186 tests
 ```
 
 ### Ejecutar código desde el host
@@ -525,7 +525,7 @@ en esta tabla.
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
 | **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), DNI validado y único, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
-| **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en la portada, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
+| **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en `/tramites/`, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
 | **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página (`views/tramites.py::POR_PAGINA`) e índice BM25 en memoria | `test_rnf.RendimientoTests` (sin N+1 y caché del índice) · `test_tramites.ListadoTests.test_paga_de_a_seis_por_pagina` |
 | **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
 | **RNF-05** Integridad | `unique` (Municipio/Organismo), `unique_together` (Requisitos), `PROTECT`/`CASCADE` en las claves foráneas | `test_rnf.IntegridadTests` · `test_auth` |

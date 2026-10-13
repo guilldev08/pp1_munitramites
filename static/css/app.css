@@ -586,6 +586,21 @@ img { max-width: 100%; }
 .paso h3 { margin: 0 0 6px; font-size: .98rem; }
 .paso p { margin: 0; font-size: .88rem; color: var(--gris-500); }
 
+/* --- Landing: botones del hero + «¿Cómo funciona?» al hacer scroll ------ */
+.hero__acciones { margin-top: 26px; }
+/* Con JS activo la sección arranca fuera de pantalla y aparece al entrar en
+   la vista; sin JS (o si el observer no está) nunca se agrega la clase raíz
+   y todo queda visible de entrada. */
+html.revelar-activo .revelar {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .55s ease, transform .55s ease;
+}
+html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html.revelar-activo .revelar { opacity: 1; transform: none; transition: none; }
+}
+
 /* --- Miga de pan -------------------------------------------------------- */
 .miga { font-size: .85rem; color: var(--gris-500); margin-bottom: 16px; }
 .miga a { color: var(--gris-500); }

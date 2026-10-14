@@ -14,7 +14,8 @@ de `chatbot.html` que mantiene el historial abajo del todo.
 
 Qué hace el sistema, en corto:
 
-- **Registro con DNI**, inicio y cierre de sesión, y **recuperación de
+- **Registro simple** —usuario, correo y contraseña: el sitio no pide
+  documentos ni nombres—, inicio y cierre de sesión, y **recuperación de
   contraseña por correo** (RF-15).
 - **Tres roles acumulativos en el sitio**: Usuario corriente (ve trámites
   y envía consultas), Usuario administrativo (además responde consultas y
@@ -100,8 +101,9 @@ administrador que lo pise recibe un aviso y termina en `/panel/`
 administrativo, además, **no** ve la pestaña ni las URLs de Usuarios
 (la vigila `models.gestiona_cuentas`).
 
-Cada registro lleva un **perfil** con el DNI (dato personal que pide el
-documento) y el rol, visibles también en `/admin/` → Usuarios.
+El sitio no pide datos personales: cada cuenta es **usuario, correo y
+contraseña**. El **perfil** solo guarda el rol y se identifica con un id
+de cadena de caracteres (UUID); se ve también en `/admin/` → Perfiles.
 
 **Ya creado (base de desarrollo):**
 
@@ -246,7 +248,7 @@ Todo eso vive en `views/panel.py` (`solo_administrador`,
 | `/consultas/nueva/` | Formulario de consulta | sesión |
 | `/registro/` · `/login/` | Modal de alta y de sesión (también funciona como página) | público |
 | `/logout/` | Cierra la sesión (RF-14) | sesión |
-| `/perfil/` | Datos personales: nombre, apellido, correo y DNI | sesión |
+| `/perfil/` | Tu correo (usuario y clave no se tocan acá), más el rol y la fecha de alta | sesión |
 | `/password/reset/` · `/done/` · `/<uid>/<token>/` · `/complete/` | Recuperar la contraseña olvidada (RF-15) | público |
 | `/password/change/` · `/done/` | Cambio de contraseña estando adentro (página propia del sitio) | sesión |
 | `/consultas/<id>/` | Detalle de la consulta y respuesta del administrador (RF-10) | sesión |
@@ -336,7 +338,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (200)
+    ├── tests/                      #    tests de aceptación (198)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -384,7 +386,7 @@ munitramites/
         │   ├── usuario_form.html   #    alta/edición de cuentas
         │   └── temas.html          #    alta de temas (RF-07)
         ├── cuenta/
-        │   └── perfil.html         #    nombre, apellido, correo y DNI
+        │   └── perfil.html         #    correo editable + rol y alta de la cuenta
         └── registration/
             ├── login.html          #    deja el modal de login abierto
             ├── password_reset_form.html     # RF-15: pide el correo
@@ -415,7 +417,7 @@ munitramites/
 | Cambiar la cara del panel (tarjetas, colores, saludo) | `templates/admin/` + `static/css/admin.css` | — |
 | Ajustar quién puede qué en el panel | `admin.py` → `BaseAdmin` / `SoloSuperusuario` / `SinAutogestion` | `test_admin` |
 | Cambiar requisitos o botones de una ficha | `/admin/` → Trámites → **Requisitos** / **Enlaces oficiales** | — |
-| Cambiar datos de una cuenta (DNI, correo) | `/admin/` → Usuarios → fila → **Perfil** | — |
+| Cambiar el rol de una cuenta o el correo | `/admin/` → Usuarios → fila → **Perfil** (rol de solo lectura) | — |
 | Crear una página nueva | `templates/` + `views/<modulo>.py` + `urls.py` | — |
 | Agregar un campo a un formulario | `forms.py` | — |
 | Mejorar lo que sabe el asistente | `services/chatbot/` (ver sección siguiente) | — |
@@ -456,7 +458,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 200 tests
+docker compose exec web python manage.py test --noinput         # correr los 198 tests
 ```
 
 ### Ejecutar código desde el host
@@ -530,7 +532,7 @@ en esta tabla.
 | **ESP-05** Consultas | `views/consultas.py`, `models.Consulta` | `test_consultas` |
 | **ESP-06** Base de datos | Firebird + `models.py` + `migrations/` | todos (corren sobre Firebird) |
 | **ESP-07** Interfaz | `templates/`, `static/css/app.css`, sin JS obligatorio | `test_tramites` · `test_chatbot` · `test_panel.DisenoTests` · `test_tema` · `test_tramites.ApiTests` |
-| **RF-01** Registro de usuario | `views/cuenta.py::registro` (pide DNI) | `test_auth.RegistroTests` · `test_auth.PerfilTests` (editar sus datos) |
+| **RF-01** Registro de usuario | `views/cuenta.py::registro` (usuario, correo y clave: sin datos personales) | `test_auth.RegistroTests` · `test_auth.PerfilTests` (editar su correo) |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
 | **RF-03** Gestión de roles | `models.Perfil.rol` (corriente / administrativo / administrador) con `is_staff` sincronizado + `forms.UsuarioRolForm` | `test_roles` · `test_panel.UsuariosTests` · `test_admin` |
 | **RF-07** Administrar trámites | `/panel/tramites/` (con Requisitos y Enlaces) | `test_panel.CentroDeTramitesTests` · `test_tramites` · `test_roles` |
@@ -547,7 +549,7 @@ en esta tabla.
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
-| **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), DNI validado y único, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
+| **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), correos únicos, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
 | **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en `/tramites/`, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
 | **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página (`views/tramites.py::POR_PAGINA`) e índice BM25 en memoria | `test_rnf.RendimientoTests` (sin N+1 y caché del índice) · `test_tramites.ListadoTests.test_paga_de_a_seis_por_pagina` |
 | **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
@@ -684,7 +686,7 @@ Luego escribí SQL y cerrá con `quit;`.
 | `REQUISITO` | 32 | seed |
 | `ENLACE` | 0 con el seed | botones con nombre: se cargan en `/admin/`; la ficha muestra igual los `enlace_turnos` / `enlace_oficial` que trae el seed |
 | `CONSULTA` | 3+ | seed + formularios (incluye el prefijo `Soporte: `) |
-| `PERFIL` | 1+ | se crea con el registro (guarda el DNI) |
+| `PERFIL` | 1+ | se crea con el registro (guarda el rol; su id es un UUID) |
 | `AUTH_USER` | 2 | Django (usuarios) |
 | + 9 tablas de Django | — | auth, sessions, admin, contenttypes |
 

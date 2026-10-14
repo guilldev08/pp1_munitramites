@@ -193,9 +193,8 @@ class AdministradorTests(TestCase):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'nuevo_admin',
             'email': 'nuevo@munitramites.test',
-            'first_name': 'Nuevo', 'last_name': 'Admin',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'administrador', 'dni': '',
+            'rol': 'administrador',
         })
 
         self.assertEqual(r.status_code, 302)
@@ -207,9 +206,8 @@ class AdministradorTests(TestCase):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'ciudadana',
             'email': 'ciudadana@munitramites.test',
-            'first_name': 'Ciu', 'last_name': 'Dana',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'corriente', 'dni': '',
+            'rol': 'corriente',
         })
 
         self.assertEqual(r.status_code, 302)

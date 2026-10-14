@@ -13,7 +13,7 @@ def un_solo_superusuario(sender, instance, **kwargs):
     """Regla: UNA sola cuenta de superusuario en todo el sistema.
 
     El superusuario es la única llave a /admin/, a los usuarios, a los
-    grupos y a los perfiles (DNI): si se multiplica, el candado deja de
+    grupos y a los perfiles (rol): si se multiplica, el candado deja de
     servir. El guard corre ANTES de escribir, así que cualquier intento de
     crear —o de elevar una cuenta a— un segundo superusuario corta en el
     acto, sin importar por dónde venga (admin, shell, script, test).

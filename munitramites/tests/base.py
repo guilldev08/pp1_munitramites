@@ -61,16 +61,14 @@ def tramite(titulo='Renovacion de DNI', tema='Documentación',
     return obj
 
 
-def ciudadano(username='ana', dni='28111222', password='ClaveSegura123', **kwargs):
+def ciudadano(username='ana', password='ClaveSegura123', **kwargs):
     """Usuario común con su perfil (como si se hubiera registrado)."""
     datos = {
         'email': f'{username}@munitramites.test',
-        'first_name': 'Ana',
-        'last_name': 'Prueba',
     }
     datos.update(kwargs)
     user = User.objects.create_user(username=username, password=password, **datos)
-    Perfil.objects.create(user=user, dni=dni)
+    Perfil.objects.create(user=user)
     return user
 
 
@@ -87,7 +85,7 @@ def administrador(username='admin', password='ClaveSegura123', **kwargs):
     }
     datos.update(kwargs)
     user = User.objects.create_user(username=username, password=password, **datos)
-    Perfil.objects.create(user=user, dni='99111222', rol=Perfil.Rol.ADMINISTRADOR)
+    Perfil.objects.create(user=user, rol=Perfil.Rol.ADMINISTRADOR)
     return user
 
 
@@ -99,7 +97,7 @@ def administrativo(username='gestor', password='ClaveSegura123', **kwargs):
     }
     datos.update(kwargs)
     user = User.objects.create_user(username=username, password=password, **datos)
-    Perfil.objects.create(user=user, dni='99111223', rol=Perfil.Rol.ADMINISTRATIVO)
+    Perfil.objects.create(user=user, rol=Perfil.Rol.ADMINISTRATIVO)
     return user
 
 
@@ -113,5 +111,5 @@ def superusuario(username='jefe', password='ClaveSegura123'):
         username=username, email=f'{username}@munitramites.test',
         password=password,
     )
-    Perfil.objects.create(user=user, dni='99111222')
+    Perfil.objects.create(user=user)
     return user

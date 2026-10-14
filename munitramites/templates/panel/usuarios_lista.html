@@ -9,7 +9,7 @@
 {% block panel_contenido %}
 <form class="subfiltros subfiltros--busqueda" method="get" action="{% url 'panel_usuarios' %}">
   <input type="search" name="q" value="{{ q }}"
-         placeholder="Buscar por usuario, nombre o correo…"
+         placeholder="Buscar por usuario o correo…"
          aria-label="Buscar usuarios">
   <button class="boton boton--secundario boton--chico" type="submit">Buscar</button>
   {% if q %}<a class="boton boton--secundario boton--chico" href="{% url 'panel_usuarios' %}">Limpiar</a>{% endif %}
@@ -21,7 +21,6 @@
       <thead>
         <tr>
           <th>Usuario</th>
-          <th>Nombre</th>
           <th>Correo</th>
           <th>Rol</th>
           <th>Cuenta</th>
@@ -32,7 +31,6 @@
         {% for u in pagina %}
           <tr>
             <td><strong>{{ u.username }}</strong></td>
-            <td>{{ u.get_full_name|default:"—" }}</td>
             <td>{{ u.email|default:"—" }}</td>
             <td>
               {% if u.is_superuser %}

@@ -343,10 +343,7 @@ def panel_usuarios(request):
     busqueda = request.GET.get('q', '').strip()
     if busqueda:
         queryset = queryset.filter(
-            Q(username__icontains=busqueda)
-            | Q(email__icontains=busqueda)
-            | Q(first_name__icontains=busqueda)
-            | Q(last_name__icontains=busqueda)
+            Q(username__icontains=busqueda) | Q(email__icontains=busqueda)
         )
 
     paginador = Paginator(queryset, POR_PAGINA)

@@ -17,9 +17,6 @@ from .base import TestCase, administrador, ciudadano
 REGISTRO = {
     'username': 'nuevo',
     'email': 'nuevo@munitramites.test',
-    'first_name': 'Nuevo',
-    'last_name': 'Ciudadano',
-    'dni': '31222333',
     'password1': 'ClaveSegura123',
     'password2': 'ClaveSegura123',
 }
@@ -27,16 +24,15 @@ REGISTRO = {
 
 class RegistroTests(TestCase):
 
-    def test_registro_crea_cuenta_y_perfil_con_dni(self):
-        """RF-01: registra, queda el usuario y su DNI (dato personal)."""
+    def test_registro_crea_cuenta_y_perfil(self):
+        """RF-01: registra con lo mínimo y queda su perfil (rol corriente)."""
         r = self.client.post(reverse('registro'), REGISTRO)
 
         self.assertRedirects(r, reverse('login'))
         user = User.objects.get(username='nuevo')
         self.assertTrue(user.check_password('ClaveSegura123'))
-        self.assertEqual(user.perfil.dni, '31222333')
-        self.assertEqual(user.first_name, 'Nuevo')
         self.assertEqual(user.email, 'nuevo@munitramites.test')
+        self.assertEqual(user.perfil.rol, Perfil.Rol.CORRIENTE)
 
     def test_el_modal_de_registro_se_abre_solo(self):
         """ESP-07: al llegar a /registro/ la pestaña Crear cuenta está activa."""
@@ -47,17 +43,6 @@ class RegistroTests(TestCase):
         self.assertContains(r, 'modal--abierto')
         self.assertContains(r, 'Crear cuenta')
 
-    def test_rechaza_dni_repetido(self):
-        """Un DNI no puede pertenecer a dos cuentas."""
-        ciudadano(username='primera', dni='30333444')
-        datos = dict(REGISTRO, username='segunda', dni='30333444')
-
-        r = self.client.post(reverse('registro'), datos)
-
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Ya existe una cuenta con ese DNI')
-        self.assertFalse(User.objects.filter(username='segunda').exists())
-
     def test_rechaza_correo_repetido(self):
         existente = ciudadano(username='primera')
         datos = dict(REGISTRO, username='segunda', email=existente.email)
@@ -66,15 +51,6 @@ class RegistroTests(TestCase):
 
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Ya existe una cuenta con ese correo')
-
-    def test_rechaza_dni_invalido(self):
-        datos = dict(REGISTRO, dni='abc')
-
-        r = self.client.post(reverse('registro'), datos)
-
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, '7 u 8 d')
-        self.assertFalse(User.objects.filter(username='nuevo').exists())
 
 
 class SesionTests(TestCase):
@@ -178,46 +154,40 @@ class PerfilTests(TestCase):
     """«Consultar y modificar sus propios datos» (tipos de usuario)."""
 
     def test_muestra_los_datos(self):
-        user = ciudadano(username='ana', dni='28111222')
+        user = ciudadano(username='ana')
         self.client.force_login(user)
 
         r = self.client.get(reverse('perfil'))
 
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, '28111222')
+        self.assertContains(r, 'ana')  # el usuario, que es la identidad
         self.assertContains(r, 'ana@munitramites.test')
 
-    def test_edita_nombre_apellido_correo_y_dni(self):
-        user = ciudadano(username='ana', dni='28111222')
+    def test_edita_el_correo(self):
+        user = ciudadano(username='ana')
         self.client.force_login(user)
 
         r = self.client.post(reverse('perfil'), {
-            'first_name': 'Maria',
-            'last_name': 'Modificado',
-            'email': 'ana@munitramites.test',
-            'dni': '28999888',
+            'email': 'ana.nueva@munitramites.test',
         })
 
         self.assertRedirects(r, reverse('perfil'))
         user.refresh_from_db()
-        self.assertEqual(user.first_name, 'Maria')
-        self.assertEqual(user.last_name, 'Modificado')
-        self.assertEqual(user.perfil.dni, '28999888')
+        self.assertEqual(user.email, 'ana.nueva@munitramites.test')
 
-    def test_no_puede_tomar_el_dni_de_otro(self):
-        ciudadano(username='otra', dni='28777666')
-        user = ciudadano(username='ana', dni='28111222')
+    def test_no_puede_tomar_el_correo_de_otro(self):
+        ciudadano(username='otra')
+        user = ciudadano(username='ana')
         self.client.force_login(user)
 
         r = self.client.post(reverse('perfil'), {
-            'first_name': 'Ana', 'last_name': 'Prueba',
-            'email': 'ana@munitramites.test', 'dni': '28777666',
+            'email': 'otra@munitramites.test',
         })
 
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Ya existe una cuenta con ese DNI')
-        user.perfil.refresh_from_db()
-        self.assertEqual(user.perfil.dni, '28111222')
+        self.assertContains(r, 'Ya existe una cuenta con ese correo')
+        user.refresh_from_db()
+        self.assertEqual(user.email, 'ana@munitramites.test')
 
     def test_cambiar_clave_estando_adentro(self):
         user = ciudadano(username='ana')

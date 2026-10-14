@@ -1,7 +1,8 @@
-"""Cuenta del ciudadano: registro, perfil y datos personales.
+"""Cuenta del ciudadano: registro y perfil.
 
-RF-01 (registro) y «consultar y modificar sus propios datos» (tipos de
-usuario del documento): nombre, apellido, email y DNI.
+RF-01 (registro): el sitio pide lo mínimo —usuario, correo y
+contraseña—, sin documentos ni nombres. El perfil de cada cuenta solo
+carga el rol (ver `models.Perfil`).
 
 La clave olvidada (RF-15) no tiene vista propia: la resuelven las vistas
 de Django montadas en `urls.py`.
@@ -9,7 +10,6 @@ de Django montadas en `urls.py`.
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 from django.shortcuts import redirect, render
 
 from ..forms import PerfilForm, RegistroForm
@@ -43,25 +43,17 @@ def registro(request):
 
 @login_required
 def perfil(request):
-    """Ficha personal: nombre, apellido, correo y DNI (editable)."""
+    """Ficha de la cuenta: usuario, correo y rol (el correo es editable)."""
     perfil_obj, _ = Perfil.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
         form = PerfilForm(request.POST, instance=request.user)
         if form.is_valid():
-            with transaction.atomic():
-                user = form.save()
-                # El DNI vive en el perfil, que se crea junto a la cuenta
-                perfil_obj = user.perfil
-                perfil_obj.dni = form.cleaned_data['dni']
-                perfil_obj.save(update_fields=['dni'])
+            form.save()
             messages.success(request, 'Datos actualizados.')
             return redirect('perfil')
     else:
-        form = PerfilForm(
-            instance=request.user,
-            initial={'dni': perfil_obj.dni},
-        )
+        form = PerfilForm(instance=request.user)
 
     return render(request, 'cuenta/perfil.html', {
         'form': form,

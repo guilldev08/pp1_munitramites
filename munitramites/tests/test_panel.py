@@ -12,6 +12,8 @@ Matriz de aceptación del panel de administración:
 * **Temas**: alta desde el panel (RF-07).
 """
 
+import uuid
+
 from django.contrib.auth.models import User
 from django.urls import reverse
 
@@ -331,25 +333,23 @@ class UsuariosTests(TestCase):
     def test_crea_un_administrador(self):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'gestor', 'email': 'gestor@munitramites.test',
-            'first_name': 'Ges', 'last_name': 'Tor',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'administrador', 'dni': '30111222',
+            'rol': 'administrador',
         })
 
         self.assertEqual(r.status_code, 302)
         nuevo = User.objects.get(username='gestor')
         self.assertTrue(nuevo.is_staff)
         self.assertFalse(nuevo.is_superuser)
-        # Con su perfil (DNI) cargado y el rol guardado, como el registro
-        self.assertEqual(nuevo.perfil.dni, '30111222')
+        # El rol queda guardado en su perfil (que se identifica con un UUID)
         self.assertEqual(nuevo.perfil.rol, 'administrador')
+        self.assertIsInstance(nuevo.perfil.pk, uuid.UUID)
 
     def test_crea_un_usuario_comun(self):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'ciudadana', 'email': 'c@munitramites.test',
-            'first_name': 'Ciu', 'last_name': 'Dana',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'corriente', 'dni': '',
+            'rol': 'corriente',
         })
 
         self.assertEqual(r.status_code, 302)
@@ -366,9 +366,8 @@ class UsuariosTests(TestCase):
     def test_no_puede_crear_un_superusuario_ni_si_lo_pide_en_el_post(self):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'hacker', 'email': 'h@munitramites.test',
-            'first_name': 'Hack', 'last_name': 'Er',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'administrador', 'dni': '',
+            'rol': 'administrador',
             'is_superuser': 'on',  # el campo ni existe en el form
         })
 
@@ -383,7 +382,6 @@ class UsuariosTests(TestCase):
         r = self.client.post(
             reverse('panel_usuario_editar', args=[objetivo.pk]), {
                 'username': 'ana', 'email': 'ana@munitramites.test',
-                'first_name': 'Ana', 'last_name': 'Prueba',
                 'is_active': 'on', 'rol': 'administrador',
             },
         )
@@ -399,7 +397,6 @@ class UsuariosTests(TestCase):
         self.client.post(
             reverse('panel_usuario_editar', args=[objetivo.pk]), {
                 'username': 'ana', 'email': 'ana@munitramites.test',
-                'first_name': 'Ana', 'last_name': 'Prueba',
                 'is_active': 'on', 'rol': 'administrador',
                 'is_superuser': 'on',
             },
@@ -418,8 +415,8 @@ class UsuariosTests(TestCase):
 
         r = self.client.post(
             reverse('panel_usuario_editar', args=[self.jefe.pk]),
-            {'username': 'jefe', 'email': 'x@x.test', 'first_name': '',
-             'last_name': '', 'is_active': 'on', 'rol': 'corriente'},
+            {'username': 'jefe', 'email': 'x@x.test',
+             'is_active': 'on', 'rol': 'corriente'},
             follow=True,
         )
 
@@ -467,9 +464,8 @@ class UsuariosTests(TestCase):
     def test_crea_un_usuario_administrativo(self):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'ayudante', 'email': 'ayudante@munitramites.test',
-            'first_name': 'Ayu', 'last_name': 'Dante',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'administrativo', 'dni': '',
+            'rol': 'administrativo',
         })
 
         self.assertEqual(r.status_code, 302)
@@ -484,7 +480,6 @@ class UsuariosTests(TestCase):
         r = self.client.post(
             reverse('panel_usuario_editar', args=[objetivo.pk]), {
                 'username': 'otro', 'email': 'otro@munitramites.test',
-                'first_name': '', 'last_name': '',
                 'is_active': 'on', 'rol': 'administrativo',
             },
         )

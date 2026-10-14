@@ -12,14 +12,14 @@
     <div class="titulo-seccion">
       <div>
         <h2>Mi perfil</h2>
-        <p>Datos personales de la cuenta (Ley 25.326: se usan solo para el funcionamiento del sistema).</p>
+        <p>Tu correo y los datos de tu cuenta. El sitio no pide documentos ni nombres.</p>
       </div>
       <span class="etiqueta etiqueta--tema">@{{ request.user.username }}</span>
     </div>
 
     <div class="dos-columnas">
       <form class="formulario" method="post" novalidate>
-        <h3 class="mt-0">Datos personales</h3>
+        <h3 class="mt-0">Tu correo</h3>
 
         {% csrf_token %}
 
@@ -46,7 +46,7 @@
           <h3 class="mt-0">Cuenta</h3>
           <ul class="lista-limpia texto-chico">
             <li><strong>Usuario:</strong> {{ request.user.username }}</li>
-            <li><strong>DNI:</strong> {{ perfil.dni|default:"sin cargar" }}</li>
+            <li><strong>Rol:</strong> {{ perfil.get_rol_display }}</li>
             <li><strong>Alta:</strong> {{ request.user.date_joined|date:"d/m/Y" }}</li>
           </ul>
           <p class="texto-suave texto-chico mb-0">

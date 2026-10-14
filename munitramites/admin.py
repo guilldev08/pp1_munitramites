@@ -69,7 +69,7 @@ def pildora(texto, color='gris'):
 class SoloSuperusuario(admin.ModelAdmin):
     """Módulo reservado al superusuario.
 
-    Cuentas, grupos (= los roles del documento) y perfiles (DNI) son datos
+    Cuentas, grupos (= los roles del documento) y perfiles (rol) son datos
     sensibles: no se listan, no se abren por URL directa y no se crean. Para
     cualquier otro rol todo devuelve False y Django contesta 403.
     """
@@ -368,28 +368,34 @@ class ConsultaAdmin(BaseAdmin):
         return pildora(obj.get_estado_display(), colores.get(obj.estado, 'gris'))
 
 
-# --- Perfiles (DNI) -----------------------------------------------------------
+# --- Perfiles (rol) -----------------------------------------------------------
 @admin.register(Perfil)
 class PerfilAdmin(SoloSuperusuario):
-    """Perfil (DNI) de cada ciudadano: datos personales, solo superusuario."""
+    """El rol de cada cuenta, identificado por su id: solo superusuario."""
 
-    list_display = ['id', 'user', 'dni', 'actualizado']
-    search_fields = ['dni', 'user__username', 'user__email']
+    list_display = ['id', 'user', 'etiqueta_rol', 'actualizado']
+    search_fields = ['user__username', 'user__email']
     list_select_related = ['user']
     ordering = ['user']
+
+    @admin.display(description='Rol', ordering='rol')
+    def etiqueta_rol(self, obj):
+        return obj.get_rol_display()
 
 
 # --- Usuarios y grupos (RF-11 / ESP-02) ---------------------------------------
 class PerfilInline(admin.StackedInline):
-    """DNI del ciudadano, junto a sus datos de cuenta."""
+    """El rol de la cuenta, de solo lectura (se cambia desde /panel/)."""
 
     model = Perfil
     extra = 0
-    fields = ['dni']
+    max_num = 0
+    readonly_fields = ['rol']
+    can_delete = False
 
 
 class UserAdmin(SinAutogestion, SoloSuperusuario, BaseUserAdmin):
-    """Cuentas + DNI: solo superusuario, y nunca la fila de uno mismo.
+    """Cuentas: solo superusuario, y nunca la fila de uno mismo.
 
     Para cambiar la contraseña propia se usa «Cambiar mi contraseña» del
     panel, que es el flujo de Django (y no se puede tocar desde la lista).
@@ -401,9 +407,9 @@ class UserAdmin(SinAutogestion, SoloSuperusuario, BaseUserAdmin):
     """
 
     inlines = [PerfilInline]
-    list_display = ['username', 'email', 'last_name', 'rol', 'is_active', 'last_login']
+    list_display = ['username', 'email', 'rol', 'is_active', 'last_login']
     list_filter = ['is_staff', 'is_superuser', 'is_active', 'groups']
-    search_fields = ['username', 'first_name', 'last_name', 'email', 'perfil__dni']
+    search_fields = ['username', 'email']
     list_select_related = True
     ordering = ['username']
 
@@ -417,9 +423,19 @@ class UserAdmin(SinAutogestion, SoloSuperusuario, BaseUserAdmin):
     def rol(self, obj):
         if obj.is_superuser:
             return pildora('Superusuario', 'morado')
-        if obj.is_staff:
-            return pildora('Administrador', 'azul')
-        return pildora('Ciudadano', 'gris')
+        perfil = getattr(obj, 'perfil', None)
+        colores = {
+            Perfil.Rol.ADMINISTRADOR: 'azul',
+            Perfil.Rol.ADMINISTRATIVO: 'ambar',
+            Perfil.Rol.CORRIENTE: 'gris',
+        }
+        if perfil is not None:
+            return pildora(perfil.get_rol_display(), colores.get(perfil.rol))
+        # Cuenta vieja sin perfil: is_staff es el espejo del rol
+        return pildora(
+            'Administrativo' if obj.is_staff else 'Corriente',
+            'ambar' if obj.is_staff else 'gris',
+        )
 
 
 # Django ya registró User y Group con sus admins por defecto: hay que

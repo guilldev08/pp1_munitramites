@@ -7,13 +7,15 @@ Estructura del dominio:
                 ├──► Tramite ──► Requisito
     Organismo ──┘        ├──► Enlace  (botones de la ficha, los edita el admin)
     Tema ────────────────┘
-                          └──► Consulta ──► User ──► Perfil (DNI)
+                          └──► Consulta ──► User ──► Perfil (rol)
 
 Todas las tablas viven en Firebird. Después de tocar este archivo:
 
     docker compose exec web python manage.py makemigrations munitramites
     docker compose exec web python manage.py migrate
 """
+
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -154,18 +156,19 @@ class Enlace(models.Model):
 
 
 class Perfil(models.Model):
-    """Datos personales de la cuenta y su rol en el sitio.
+    """Lo que la cuenta tiene de «rol» en el sitio.
 
-    El documento pide almacenar nombre, apellido, DNI y email. Nombre,
-    apellido y email ya viven en `User` (se cargan en el registro); el DNI
-    vive aca, en uno a uno con la cuenta.
+    El sitio NO pide datos personales: el nombre de usuario, el correo y
+    la contraseña viven en `User` y con eso alcanza. El perfil solo
+    carga el ROL —la única fuente de verdad de quién gestiona qué— y se
+    identifica con un id de cadena de caracteres (UUID), no con ningún
+    documento.
 
-    El `rol` tambien vive acá y es la única fuente de verdad de quién
-    gestiona qué. Los tres roles son ACUMULATIVOS (el administrador puede
-    todo lo del administrativo y este, todo lo del corriente) y
-    `is_staff` se mantiene sincronizado con el rol para que las reglas de
-    acceso al /admin/ de Django sigan andando: ninguno de los tres entra
-    ahi — el /admin/ es del superusuario (ver middleware.py).
+    Los tres roles son ACUMULATIVOS (el administrador puede todo lo del
+    administrativo y este, todo lo del corriente) y `is_staff` se
+    mantiene sincronizado con el rol para que las reglas de acceso al
+    /admin/ de Django sigan andando: ninguno de los tres entra ahi — el
+    /admin/ es del superusuario (ver middleware.py).
     """
 
     class Rol(models.TextChoices):
@@ -173,15 +176,14 @@ class Perfil(models.Model):
         ADMINISTRATIVO = 'administrativo', 'Administrativo'
         ADMINISTRADOR = 'administrador', 'Administrador'
 
+    id = models.UUIDField(
+        'id',
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil'
-    )
-    dni = models.CharField(
-        'DNI',
-        max_length=12,
-        blank=True,
-        default='',
-        help_text='Sin puntos ni espacios, ej.: 12345678.',
     )
     rol = models.CharField(
         'rol',
@@ -202,7 +204,7 @@ class Perfil(models.Model):
         verbose_name_plural = 'Perfiles'
 
     def __str__(self):
-        return f'{self.user.username} — DNI {self.dni or "sin cargar"}'
+        return f'{self.user.username} — {self.get_rol_display()}'
 
 
 def gestiona_cuentas(user):

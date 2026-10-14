@@ -19,8 +19,9 @@ from .models import (
 class RegistroForm(UserCreationForm):
     """Alta de ciudadano. Hereda toda la validacion de Django.
 
-    Además de los campos de `User` pide el DNI (dato personal que exige el
-    documento) y lo guarda en `Perfil` al crear la cuenta.
+    Los datos de la cuenta son los mínimos: usuario, correo y contraseña.
+    El sitio no pide documentos ni nombres —para eso no hace falta ser
+    una página random de trámites.
     """
 
     email = forms.EmailField(
@@ -30,33 +31,16 @@ class RegistroForm(UserCreationForm):
             'autocomplete': 'email',
         }),
     )
-    dni = forms.CharField(
-        label='DNI',
-        max_length=12,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Sin puntos, ej.: 12345678',
-            'inputmode': 'numeric',
-            'autocomplete': 'off',
-        }),
-        help_text='Entre 7 y 8 dígitos, sin puntos.',
-    )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ['username', 'email']
         labels = {
             'username': 'Usuario',
-            'first_name': 'Nombre',
-            'last_name': 'Apellido',
         }
         widgets = {
             'username': forms.TextInput(attrs={'placeholder': 'tu_usuario'}),
-            'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
-            'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
         }
-
-    def clean_dni(self):
-        return validar_dni(self.cleaned_data['dni'])
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower()
@@ -67,52 +51,25 @@ class RegistroForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit)
         if commit:
-            # La cuenta y su perfil se crean juntas
-            Perfil.objects.create(user=user, dni=self.cleaned_data['dni'])
+            # La cuenta y su perfil (que solo guarda el rol) se crean juntas
+            Perfil.objects.create(user=user)
         return user
 
 
-def validar_dni(valor):
-    """7 u 8 dígitos, sin puntos, y que no esté ya registrado."""
-    dni = valor.replace('.', '').replace(' ', '').strip()
-    if not dni.isdigit() or not 7 <= len(dni) <= 8:
-        raise forms.ValidationError('El DNI debe tener 7 u 8 dígitos, sin puntos.')
-    if Perfil.objects.filter(dni=dni).exists():
-        raise forms.ValidationError('Ya existe una cuenta con ese DNI.')
-    return dni
-
-
 class PerfilForm(forms.ModelForm):
-    """Edición de los datos personales: nombre, apellido, correo y DNI."""
+    """Edición del correo de la cuenta.
 
-    dni = forms.CharField(
-        label='DNI',
-        max_length=12,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Sin puntos, ej.: 12345678',
-            'inputmode': 'numeric',
-        }),
-        help_text='Entre 7 y 8 dígitos, sin puntos.',
-    )
+    El usuario y la contraseña no se tocan desde acá: el primero es el
+    identificador y la clave tiene su propio flujo («Cambiar mi
+    contraseña» y el RF-15 de recuperación).
+    """
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = ['email']
         labels = {
-            'first_name': 'Nombre',
-            'last_name': 'Apellido',
             'email': 'Correo electrónico',
         }
-
-    def clean_dni(self):
-        dni = validar_dni(self.cleaned_data['dni'])
-        # El DNI propio no cuenta como repetido
-        if self.instance and self.instance.pk:
-            if Perfil.objects.filter(dni=dni).exclude(
-                user__pk=self.instance.pk
-            ).exists():
-                raise forms.ValidationError('Ya existe una cuenta con ese DNI.')
-        return dni
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower()
@@ -316,9 +273,11 @@ class RespuestaConsultaForm(forms.Form):
 class UsuarioPanelForm(UserCreationForm):
     """Alta de cuentas desde el panel con cualquiera de los tres roles.
 
-    Tiene un campo `rol` propio (nunca `is_superuser`): desde el panel NO
-    se puede crear un superusuario — esa cuenta única se hace con
-    `manage.py createsuperuser` y la regla la vigila `senales.py`.
+    Los datos son los mismos que en el registro —usuario, correo y
+    contraseña—, más el rol. Tiene un campo `rol` propio (nunca
+    `is_superuser`): desde el panel NO se puede crear un superusuario —
+    esa cuenta única se hace con `manage.py createsuperuser` y la regla
+    la vigila `senales.py`.
     """
 
     email = forms.EmailField(
@@ -340,36 +299,16 @@ class UsuarioPanelForm(UserCreationForm):
                   'trámites, consultas y temas; «Administrador» además '
                   'gestiona las cuentas; «Corriente» solo usa el sitio.',
     )
-    dni = forms.CharField(
-        label='DNI',
-        max_length=12,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'placeholder': 'Sin puntos, ej.: 12345678',
-            'inputmode': 'numeric',
-        }),
-        help_text='Opcional. Entre 7 y 8 dígitos, sin puntos.',
-    )
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ['username', 'email']
         labels = {
             'username': 'Usuario',
-            'first_name': 'Nombre',
-            'last_name': 'Apellido',
         }
         widgets = {
             'username': forms.TextInput(attrs={'placeholder': 'tu_usuario'}),
-            'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
-            'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
         }
-
-    def clean_dni(self):
-        dni = self.cleaned_data.get('dni', '').strip()
-        if not dni:
-            return ''
-        return validar_dni(dni)
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower()
@@ -384,11 +323,7 @@ class UsuarioPanelForm(UserCreationForm):
         user.is_staff = rol != Perfil.Rol.CORRIENTE
         if commit:
             user.save()
-            Perfil.objects.create(
-                user=user,
-                dni=self.cleaned_data.get('dni', ''),
-                rol=rol,
-            )
+            Perfil.objects.create(user=user, rol=rol)
         return user
 
 
@@ -415,17 +350,13 @@ class UsuarioRolForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'is_active']
+        fields = ['username', 'email', 'is_active']
         labels = {
             'username': 'Usuario',
-            'first_name': 'Nombre',
-            'last_name': 'Apellido',
             'is_active': 'Cuenta activa',
         }
         widgets = {
             'username': forms.TextInput(attrs={'placeholder': 'tu_usuario'}),
-            'first_name': forms.TextInput(attrs={'placeholder': 'Nombre'}),
-            'last_name': forms.TextInput(attrs={'placeholder': 'Apellido'}),
         }
 
     def __init__(self, *args, **kwargs):

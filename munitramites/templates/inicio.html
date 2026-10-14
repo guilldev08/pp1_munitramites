@@ -1,67 +1,49 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block titulo %}Inicio{% endblock %}
 
-{# La portada no lleva barra superior: hero a pantalla completa y nada más.
-   Los ingresos están en el propio hero y la navegación, en el pie. #}
+{# Portada sin barra superior (como antes): el bloque encabezado va vacío. #}
 {% block encabezado %}{% endblock %}
 
 {% block contenido %}
-{# --- Landing: presentación y las dos puertas de entrada ------------------ #}
-<section class="hero">
-  <div class="contenedor">
-    <h1>Todos los trámites públicos de Misiones, en un solo lugar.</h1>
-    <p>
-      Requisitos, organismos responsables, modalidades y enlaces oficiales.
-      Buscá el tuyo y seguí los tres pasos de acá abajo.
-    </p>
+<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+<div class="lp">
+<section class="lp-hero"><div class="lp-wrap">
+  <p class="lp-marca"><span>Muni</span><span>tra</span><span>mites</span></p>
+  <h1>Tus trámites de Misiones, sin vueltas</h1>
+  <p>Encontrá qué necesitás, cuándo, dónde y con qué papeles. Todo en un solo lugar.</p>
+  {% if user.is_authenticated %}
+  <a class="lp-btn lp-btn--fill" href="{% url 'tramites' %}">Ver trámites</a>
+  {% if user.is_staff or user.is_superuser %}<a class="lp-btn" href="{% url 'panel' %}">Ir al panel</a>{% endif %}
+{% else %}
+  <a class="lp-btn lp-btn--fill" href="{% url 'login' %}" data-abrir="modal-auth" data-tab="login">Iniciar sesión / Regístrate</a><a class="lp-btn" href="{% url 'tramites' %}">Continuar sin sesión</a>
+{% endif %}
+</div></section>
 
-    <div class="acciones hero__acciones">
-      {% if user.is_authenticated %}
-        {# Ya tiene sesión: no tiene sentido ofrecerle entrar de nuevo #}
-        <a class="boton" href="{% url 'tramites' %}">Ver trámites</a>
-        {% if user.is_staff or user.is_superuser %}
-          <a class="boton boton--secundario" href="{% url 'panel' %}">Ir al panel</a>
-        {% endif %}
-      {% else %}
-        {# Sin JS el enlace lleva a /login/, que deja el modal abierto solo #}
-        <a class="boton" href="{% url 'login' %}"
-           data-abrir="modal-auth" data-tab="login">Iniciar sesión</a>
-        <a class="boton boton--secundario" href="{% url 'tramites' %}">Continuar sin sesión</a>
-      {% endif %}
-    </div>
-  </div>
-</section>
+<nav class="lp-tabs"><a href="#como">Cómo funciona</a><a href="#tramites">Trámites</a><a href="#asistente">Asistente virtual</a><a href="#mapa">Municipios</a></nav>
 
-{# --- Los tres pasos: aparecen solos cuando el visitante baja un poco ----- #}
-<section class="seccion revelar">
-  <div class="contenedor">
-    <div class="titulo-seccion">
-      <div>
-        <h2>¿Cómo funciona?</h2>
-        <p>Tres pasos para hacer tu trámite.</p>
-      </div>
-    </div>
+<section class="lp-sec revelar" id="como"><div class="lp-wrap"><h2>Hacé tu trámite en 3 pasos</h2><div class="lp-bar"></div>
+<div class="lp-pasos">
+<div class="lp-paso" style="--c:var(--lp-azul)"><b>1</b><h3>Buscá</h3><p>Filtrá por tema, municipio o modalidad en la lista de trámites.</p></div>
+<div class="lp-paso" style="--c:var(--lp-verde)"><b>2</b><h3>Revisá los requisitos</h3><p>Cada ficha detalla los documentos necesarios y el organismo responsable.</p></div>
+<div class="lp-paso" style="--c:var(--lp-rojo)"><b>3</b><h3>Tramitá</h3><p>Seguí el enlace oficial o acercate al organismo con la lista de requisitos.</p></div>
+</div></div></section>
 
-    <div class="pasos">
-      <div class="paso">
-        <div class="paso__num">1</div>
-        <h3>Buscá</h3>
-        <p>Filtrá por tema, municipio o modalidad en la lista de trámites.</p>
-      </div>
-      <div class="paso">
-        <div class="paso__num">2</div>
-        <h3>Revisá los requisitos</h3>
-        <p>Cada ficha detalla todos los documentos necesarios y el organismo responsable.</p>
-      </div>
-      <div class="paso">
-        <div class="paso__num">3</div>
-        <h3>Tramitá</h3>
-        <p>Seguí el enlace oficial o acercate al organismo con la lista de requisitos.</p>
-      </div>
-    </div>
-  </div>
-</section>
+<section class="lp-sec lp-alt" id="tramites"><div class="lp-wrap lp-row"><div><span class="lp-tag">Buscador de trámites</span><h3>Todo lo que necesitás saber</h3>
+<p>Requisitos, organismo responsable y enlaces oficiales, siempre actualizados.</p><a class="lp-btn" href="{% url 'tramites' %}">Ver trámites ›</a></div>
+<div class="lp-card"><b>Ejemplo de ficha</b><div style="margin:8px 0"><span class="lp-chip" style="background:var(--lp-azul)">Tema</span><span class="lp-chip" style="background:var(--lp-verde)">Modalidad</span><span class="lp-chip" style="background:var(--lp-rojo)">Municipio</span></div>
+<small>Organismo responsable · requisitos · enlaces oficiales</small></div></div></section>
+
+<section class="lp-sec" id="asistente"><div class="lp-wrap lp-row"><div class="lp-card"><div class="lp-q">¿Qué necesito para este trámite?</div>
+<div class="lp-a">Te lo respondo con los requisitos de la ficha. <small>Fuente: ficha del trámite ›</small></div></div>
+<div><span class="lp-tag">Asistente virtual</span><h3>Preguntale, te responde con fuentes</h3>
+<p>Busca en los trámites reales y cita de dónde sale cada dato. Si no sabe, lo dice: no inventa.</p><a class="lp-btn" href="/chatbot/" data-abrir="modal-chat">Abrir el chat ›</a></div></div></section>
+
+<section class="lp-sec lp-alt" id="mapa"><div class="lp-wrap"><h2>Municipios de Misiones</h2><p class="lp-sub" style="margin-bottom:28px">Ubicá tu municipio en el mapa.</p>
+<div class="lp-mapa"><iframe src="https://www.google.com/maps/d/embed?mid=1s1Qeo_8gzgnNf8pmu_8oXNZ9s1_ytT4&amp;ehbc=2E312F" title="Mapa de municipios de Misiones" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+<p class="lp-mapa-link">¿No ves el mapa? <a href="https://www.google.com/maps/d/viewer?mid=1s1Qeo_8gzgnNf8pmu_8oXNZ9s1_ytT4" target="_blank" rel="noopener">Abrilo en Google Maps ›</a></p></div></section>
+</div>
 {% endblock %}
 
 {% block extra_js %}

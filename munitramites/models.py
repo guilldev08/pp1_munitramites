@@ -47,6 +47,13 @@ class Organismo(models.Model):
         default='',
         help_text='Rubro o materia que agrupa, ej.: «Registro Civil», «Tránsito».',
     )
+    sitio = models.URLField(
+        'Sitio oficial',
+        max_length=300,
+        blank=True,
+        default='',
+        help_text='Página principal del organismo, de donde salen los trámites.',
+    )
 
     class Meta:
         verbose_name = 'Organismo'

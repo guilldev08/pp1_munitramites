@@ -341,6 +341,32 @@ img { max-width: 100%; }
 .errores { margin: 6px 0 0; padding: 0; list-style: none; }
 .errores li { color: var(--rojo-txt); font-size: .82rem; margin-top: 4px; }
 
+/* --- Ver / ocultar la contraseña (el botón vive adentro del campo) ----- */
+.campo__clave { position: relative; display: block; }
+
+.campo__clave input[type="password"],
+.campo__clave input[type="text"] { padding-right: 5.6rem; }
+
+.campo__ver {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 12px;
+  border: 0;
+  border-left: 1px solid var(--gris-200);
+  border-radius: 0 7px 7px 0;
+  background: transparent;
+  color: var(--azul);
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.campo__ver:hover { background: var(--gris-100); }
+.campo__ver:focus-visible { outline: 2px solid var(--azul); outline-offset: -3px; }
+
 /* --- Alertas ------------------------------------------------------------ */
 .alerta {
   padding: 12px 16px;

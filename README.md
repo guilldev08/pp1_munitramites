@@ -17,6 +17,9 @@ Qué hace el sistema, en corto:
 - **Registro simple** —usuario, correo y contraseña: el sitio no pide
   documentos ni nombres—, inicio y cierre de sesión, y **recuperación de
   contraseña por correo** (RF-15).
+- Botón **ver/ocultar la contraseña** en el login, el registro y los
+  formularios de clave (cambio y recuperación): aparece solo, incluso en
+  forms que no lo traían en el HTML.
 - **Tres roles acumulativos en el sitio**: Usuario corriente (ve trámites
   y envía consultas), Usuario administrativo (además responde consultas y
   edita trámites y temas) y Usuario administrador (además gestiona las
@@ -338,7 +341,7 @@ munitramites/
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
     │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (198)
+    ├── tests/                      #    tests de aceptación (200)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -458,7 +461,7 @@ docker compose exec web python manage.py makemigrations         # generar migrac
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 198 tests
+docker compose exec web python manage.py test --noinput         # correr los 200 tests
 ```
 
 ### Ejecutar código desde el host

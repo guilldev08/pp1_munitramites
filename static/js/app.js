@@ -30,6 +30,56 @@
   }
 
   /* --------------------------------------------------------------------
+     Ver / ocultar la contraseña (login, registro y cualquier form de
+     clave: cambio y recuperación, alta en el panel…). El botón ya viene
+     en el HTML del modal; si un form trae un campo de clave sin botón,
+     prepararClaves() lo envuelve y le arma el suyo.
+     -------------------------------------------------------------------- */
+  function envolverClave(input) {
+    if (input.parentNode && input.parentNode.classList.contains('campo__clave')) {
+      return input.parentNode;
+    }
+    var envoltura = document.createElement('span');
+    envoltura.className = 'campo__clave';
+    input.parentNode.insertBefore(envoltura, input);
+    envoltura.appendChild(input);
+    return envoltura;
+  }
+
+  function botonClave(envoltura) {
+    var boton = envoltura.querySelector('[data-ver-clave]');
+    if (boton) return boton;
+    boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'campo__ver';
+    boton.setAttribute('data-ver-clave', '');
+    boton.setAttribute('aria-pressed', 'false');
+    boton.setAttribute('aria-label', 'Mostrar la contraseña');
+    boton.textContent = 'Mostrar';
+    envoltura.appendChild(boton);
+    return boton;
+  }
+
+  function alternarClave(boton) {
+    var envoltura = boton.closest('.campo__clave');
+    var input = envoltura && envoltura.querySelector('input');
+    if (!input) return;
+    var mostrando = input.type === 'password';   // el clic la hace visible
+    input.type = mostrando ? 'text' : 'password';
+    boton.textContent = mostrando ? 'Ocultar' : 'Mostrar';
+    boton.setAttribute('aria-pressed', mostrando ? 'true' : 'false');
+    boton.setAttribute('aria-label',
+      mostrando ? 'Ocultar la contraseña' : 'Mostrar la contraseña');
+    input.focus();
+  }
+
+  function prepararClaves() {
+    $$('input[type="password"]').forEach(function (input) {
+      botonClave(envolverClave(input));
+    });
+  }
+
+  /* --------------------------------------------------------------------
      Modales (pestañas emergentes)
      -------------------------------------------------------------------- */
   var scrollGuardado = '';
@@ -90,6 +140,12 @@
     var botonCerrar = el.closest('[data-cerrar]');
     if (botonCerrar) {
       cerrar(botonCerrar.closest('.modal'));
+      return;
+    }
+
+    var botonVer = el.closest('[data-ver-clave]');
+    if (botonVer) {
+      alternarClave(botonVer);
       return;
     }
 
@@ -353,6 +409,7 @@
       Arranque
       -------------------------------------------------------------------- */
   document.addEventListener('DOMContentLoaded', function () {
+    prepararClaves();
     var abierto = $('.modal--abierto');
     if (abierto) document.body.style.overflow = 'hidden';
     if (contChat && contChat.children.length) bajar();

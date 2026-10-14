@@ -24,8 +24,7 @@
 </head>
 <body>
 
-{# La barra superior vive en un bloque: la landing la vacía para quedar
-   como portada a pantalla completa (ver inicio.html). #}
+{# La barra superior vive en un bloque: la landing la vacía para quedar como portada a pantalla completa (ver inicio.html). #}
 {% block encabezado %}
 <header class="header">
   <div class="contenedor header__fila">
@@ -162,8 +161,12 @@
 
         <div class="campo">
           <label for="id_modal_password">Contraseña</label>
-          <input type="password" id="id_modal_password" name="password"
-                 autocomplete="current-password" required>
+          <span class="campo__clave">
+            <input type="password" id="id_modal_password" name="password"
+                   autocomplete="current-password" required>
+            <button type="button" class="campo__ver" data-ver-clave
+                    aria-pressed="false" aria-label="Mostrar la contraseña">Mostrar</button>
+          </span>
           {% for e in form.password.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
         </div>
 
@@ -200,7 +203,15 @@
         {% for campo in form_registro %}
           <div class="campo">
             <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-            {{ campo }}
+            {% if campo.field.widget.input_type == 'password' %}
+              <span class="campo__clave">
+                {{ campo }}
+                <button type="button" class="campo__ver" data-ver-clave
+                        aria-pressed="false" aria-label="Mostrar la contraseña">Mostrar</button>
+              </span>
+            {% else %}
+              {{ campo }}
+            {% endif %}
             {% if campo.help_text %}
               <span class="ayuda">{{ campo.help_text|safe }}</span>
             {% endif %}

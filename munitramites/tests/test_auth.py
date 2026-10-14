@@ -5,7 +5,10 @@ sesión y cerrar sesión correctamente» y «restablecer su contraseña en caso
 de olvido, mediante un mecanismo de verificación (ej. email)».
 """
 
+from pathlib import Path
+
 from django.contrib.auth.models import User
+from django.contrib.staticfiles import finders
 from django.core import mail
 
 from django.urls import reverse
@@ -188,6 +191,23 @@ class PerfilTests(TestCase):
         self.assertContains(r, 'Ya existe una cuenta con ese correo')
         user.refresh_from_db()
         self.assertEqual(user.email, 'ana@munitramites.test')
+
+
+class VerClaveTests(TestCase):
+    """«Ver / ocultar la contraseña» mientras se escribe (login y registro)."""
+
+    def test_el_modal_del_login_y_el_registro_traen_el_boton(self):
+        """La página de login trae 3 campos de clave, cada uno con su botón."""
+        r = self.client.get(reverse('login'))
+
+        self.assertContains(r, 'id_modal_password')
+        self.assertContains(r, 'data-ver-clave', count=3)
+
+    def test_el_js_sabe_alternar_entre_mostrar_y_ocultar(self):
+        codigo = Path(finders.find('js/app.js')).read_text(encoding='utf-8')
+
+        self.assertIn('data-ver-clave', codigo)
+        self.assertIn("'Ocultar'", codigo)
 
     def test_cambiar_clave_estando_adentro(self):
         user = ciudadano(username='ana')

@@ -154,12 +154,24 @@ class Enlace(models.Model):
 
 
 class Perfil(models.Model):
-    """Datos personales de la cuenta que no entran en auth.User.
+    """Datos personales de la cuenta y su rol en el sitio.
 
     El documento pide almacenar nombre, apellido, DNI y email. Nombre,
     apellido y email ya viven en `User` (se cargan en el registro); el DNI
     vive aca, en uno a uno con la cuenta.
+
+    El `rol` tambien vive acá y es la única fuente de verdad de quién
+    gestiona qué. Los tres roles son ACUMULATIVOS (el administrador puede
+    todo lo del administrativo y este, todo lo del corriente) y
+    `is_staff` se mantiene sincronizado con el rol para que las reglas de
+    acceso al /admin/ de Django sigan andando: ninguno de los tres entra
+    ahi — el /admin/ es del superusuario (ver middleware.py).
     """
+
+    class Rol(models.TextChoices):
+        CORRIENTE = 'corriente', 'Corriente'
+        ADMINISTRATIVO = 'administrativo', 'Administrativo'
+        ADMINISTRADOR = 'administrador', 'Administrador'
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='perfil'
@@ -171,6 +183,17 @@ class Perfil(models.Model):
         default='',
         help_text='Sin puntos ni espacios, ej.: 12345678.',
     )
+    rol = models.CharField(
+        'rol',
+        max_length=20,
+        choices=Rol.choices,
+        default=Rol.CORRIENTE,
+        help_text=(
+            'Corriente: ve trámites y envía consultas. '
+            'Administrativo: además responde consultas y edita trámites y temas. '
+            'Administrador: además gestiona las cuentas.'
+        ),
+    )
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 
@@ -180,6 +203,23 @@ class Perfil(models.Model):
 
     def __str__(self):
         return f'{self.user.username} — DNI {self.dni or "sin cargar"}'
+
+
+def gestiona_cuentas(user):
+    """¿Esta cuenta puede gestionar cuentas ajenas (/panel/usuarios/)?
+
+    Solo el rol «administrador» y el superusuario, que está fuera de los
+    tres roles: es la única cuenta que entra al /admin/ de Django.
+    """
+    if user is None or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    if not user.is_staff:
+        # Corriente: corto acá para no pegar una consulta por perfil
+        return False
+    perfil = getattr(user, 'perfil', None)
+    return perfil is not None and perfil.rol == Perfil.Rol.ADMINISTRADOR
 
 
 class Consulta(models.Model):

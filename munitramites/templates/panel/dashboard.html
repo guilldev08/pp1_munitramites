@@ -25,6 +25,7 @@
     </div>
   </div>
 
+  {% if gestiona_cuentas %}
   <div class="tarjeta">
     <h3><a href="{% url 'panel_usuarios' %}">Usuarios</a></h3>
     <p>Creá cuentas y definí quiénes entran al panel como administradores.</p>
@@ -32,6 +33,7 @@
       <span>{{ usuarios }} cuentas activas</span>
     </div>
   </div>
+  {% endif %}
 
   <div class="tarjeta">
     <h3><a href="{% url 'panel_temas' %}">Temas</a></h3>
@@ -44,7 +46,9 @@
 
 <div class="acciones" style="margin-top: 22px">
   <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
-  <a class="boton boton--secundario" href="{% url 'panel_usuario_nuevo' %}">Nuevo usuario</a>
+  {% if gestiona_cuentas %}
+    <a class="boton boton--secundario" href="{% url 'panel_usuario_nuevo' %}">Nuevo usuario</a>
+  {% endif %}
   <a class="boton boton--secundario" href="{% url 'consultas' %}">Ver consultas como ciudadano</a>
   {% if es_superusuario %}
     <a class="boton boton--secundario" href="{% url 'admin:index' %}">Django admin (/admin/)</a>

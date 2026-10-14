@@ -75,12 +75,11 @@ def ciudadano(username='ana', dni='28111222', password='ClaveSegura123', **kwarg
 
 
 def administrador(username='admin', password='ClaveSegura123', **kwargs):
-    """Rol Administrador del documento: entra a /panel/ y gestiona todo.
+    """Rol «Usuario administrador»: gestiona TODO el panel, cuentas incluidas.
 
-    En Django eso es `is_staff=True` SIN `is_superuser` (el /admin/ de
-    Django queda para el superusuario; ver middleware.py). Los permisos de
-    cada tabla, si algún día hacen falta, vienen por grupos
-    (`User.user_permissions`).
+    En Django es `is_staff=True` SIN `is_superuser` (el /admin/ de Django
+    queda para el superusuario; ver middleware.py) y el rol vive en
+    `Perfil.rol`, que se mantiene sincronizado con `is_staff`.
     """
     datos = {
         'email': f'{username}@munitramites.test',
@@ -88,7 +87,19 @@ def administrador(username='admin', password='ClaveSegura123', **kwargs):
     }
     datos.update(kwargs)
     user = User.objects.create_user(username=username, password=password, **datos)
-    Perfil.objects.create(user=user, dni='99111222')
+    Perfil.objects.create(user=user, dni='99111222', rol=Perfil.Rol.ADMINISTRADOR)
+    return user
+
+
+def administrativo(username='gestor', password='ClaveSegura123', **kwargs):
+    """Rol «Usuario administrativo»: trámites, consultas y temas; NO cuentas."""
+    datos = {
+        'email': f'{username}@munitramites.test',
+        'is_staff': True,
+    }
+    datos.update(kwargs)
+    user = User.objects.create_user(username=username, password=password, **datos)
+    Perfil.objects.create(user=user, dni='99111223', rol=Perfil.Rol.ADMINISTRATIVO)
     return user
 
 

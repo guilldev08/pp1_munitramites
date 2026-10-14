@@ -2,9 +2,11 @@
 
 El sitio tiene dos puertas distintas:
 
-* **`/panel/`** — este módulo. El rol *Administrador* (`is_staff`) y el
-  superusuario trabajan acá: Centro de Trámites, Centro de Consultas,
-  usuarios y temas. Es el reemplazo amigable del /admin/ de Django.
+* **`/panel/`** — este módulo. Los roles de gestión trabajan acá: el
+  *administrativo* con Centro de Trámites, Centro de Consultas y temas;
+  el *administrador* hace todo eso y además las cuentas de usuarios; el
+  superusuario entra a todo. Los roles son acumulativos (ver
+  `models.Perfil.Rol`). Es el reemplazo amigable del /admin/ de Django.
 * **`/admin/`** — Django a pelo, RESERVADO al superusuario (lo vigila
   `middleware.AdminSoloSuperusuario`). Sirve para lo que el panel no hace:
   organismos, municipios, grupos, perfiles y el resto de las tablas.
@@ -13,6 +15,8 @@ Reglas de este módulo (ESP-02 / RF-13):
 
 * nadie entra sin sesión (lo manda `@login_required` al login),
 * un ciudadano no pasa (mensaje claro y vuelta a la portada),
+* la gestión de cuentas (/panel/usuarios/…) es solo del rol
+  administrador y del superusuario (la vigila `solo_gestor_de_cuentas`),
 * el panel NUNCA expone `is_superuser`: no se crean superusuarios desde
   acá ni se edita ni se elimina al superusuario (la regla de la única
   cuenta la corta `senales.py`),
@@ -34,7 +38,7 @@ from ..forms import (
     EnlaceFormSet, RespuestaConsultaForm, RequisitoFormSet, TemaForm,
     TramitePanelForm, UsuarioPanelForm, UsuarioRolForm,
 )
-from ..models import Consulta, Tema, Tramite
+from ..models import Consulta, Tema, Tramite, gestiona_cuentas
 
 # Filas por página de los listados del panel
 POR_PAGINA = 10
@@ -58,6 +62,28 @@ def solo_administrador(vista):
                 'Si necesitás acceso, pedile al administrador de la cuenta.',
             )
             return redirect('inicio')
+        return vista(request, *args, **kwargs)
+
+    return envuelta
+
+
+def solo_gestor_de_cuentas(vista):
+    """Decorador de /panel/usuarios/…: rol administrador o superusuario.
+
+    El administrativo entra al panel pero no a las cuentas: ni la pestaña
+    «Usuarios» se le muestra ni las URLs de esa sección le responden.
+    """
+
+    @login_required
+    @wraps(vista)
+    def envuelta(request, *args, **kwargs):
+        if not gestiona_cuentas(request.user):
+            messages.error(
+                request,
+                'La gestión de cuentas es solo para usuarios administradores '
+                'del sitio. Si necesitás acceso, pedile al administrador.',
+            )
+            return redirect('panel')
         return vista(request, *args, **kwargs)
 
     return envuelta
@@ -272,12 +298,17 @@ def panel_consulta(request, pk):
 
 
 def _rol(user):
-    """Etiqueta del rol para la lista (nunca se tilda el superusuario)."""
+    """Etiqueta corta del rol para los mensajes del panel.
+
+    Nunca se tilda el superusuario: está fuera de los tres roles.
+    """
     if user.is_superuser:
-        return 'superusuario'
-    if user.is_staff:
-        return 'administrador'
-    return 'usuario'
+        return 'Superusuario'
+    perfil = getattr(user, 'perfil', None)
+    if perfil is not None:
+        return perfil.get_rol_display()
+    # Cuenta vieja sin perfil: is_staff es el espejo del rol
+    return 'Administrativo' if user.is_staff else 'Corriente'
 
 
 def _cuenta_protegida(request, objetivo):
@@ -304,9 +335,10 @@ def _cuenta_protegida(request, objetivo):
 
 
 @solo_administrador
+@solo_gestor_de_cuentas
 def panel_usuarios(request):
-    """Listado de cuentas con búsqueda y acciones de rol."""
-    queryset = User.objects.all().order_by('username')
+    """Listado de cuentas con búsqueda (rol administrador o super)."""
+    queryset = User.objects.select_related('perfil').order_by('username')
 
     busqueda = request.GET.get('q', '').strip()
     if busqueda:
@@ -326,21 +358,24 @@ def panel_usuarios(request):
 
 
 @solo_administrador
+@solo_gestor_de_cuentas
 def panel_usuario_nuevo(request):
-    """Alta de cuentas: usuario común o administrador. Nunca superusuario."""
+    """Alta de cuentas con cualquiera de los tres roles. Nunca superuser."""
     if request.method == 'POST':
         form = UsuarioPanelForm(request.POST)
         if form.is_valid():
             user = form.save()
+            rol = user.perfil.get_rol_display()
             if user.is_staff:
                 messages.success(
                     request,
-                    f'Cuenta «{user.username}» creada con rol Administrador: '
+                    f'Cuenta «{user.username}» creada con rol {rol}: '
                     'ya puede entrar al panel.',
                 )
             else:
                 messages.success(
-                    request, f'Cuenta «{user.username}» creada (rol Usuario).'
+                    request,
+                    f'Cuenta «{user.username}» creada (rol {rol}).',
                 )
             return redirect('panel_usuarios')
     else:
@@ -354,6 +389,7 @@ def panel_usuario_nuevo(request):
 
 
 @solo_administrador
+@solo_gestor_de_cuentas
 def panel_usuario_editar(request, pk):
     """Edición de una cuenta ajena: datos, rol y actividad."""
     objetivo = get_object_or_404(User, pk=pk)
@@ -367,8 +403,7 @@ def panel_usuario_editar(request, pk):
             user = form.save()
             messages.success(
                 request,
-                f'Cuenta «{user.username}» actualizada: rol '
-                f'{_rol(user).capitalize()}.',
+                f'Cuenta «{user.username}» actualizada: rol {_rol(user)}.',
             )
             return redirect('panel_usuarios')
     else:
@@ -382,6 +417,7 @@ def panel_usuario_editar(request, pk):
 
 
 @solo_administrador
+@solo_gestor_de_cuentas
 @require_POST
 def panel_usuario_eliminar(request, pk):
     """Baja de una cuenta ajena (el perfil y las consultas la siguen)."""

@@ -37,10 +37,12 @@
             <td>
               {% if u.is_superuser %}
                 <span class="etiqueta etiqueta--superusuario">Superusuario</span>
-              {% elif u.is_staff %}
+              {% elif u.perfil.rol == 'administrador' %}
                 <span class="etiqueta etiqueta--administrador">Administrador</span>
+              {% elif u.perfil.rol == 'administrativo' %}
+                <span class="etiqueta etiqueta--administrativo">Administrativo</span>
               {% else %}
-                <span class="etiqueta etiqueta--usuario">Usuario</span>
+                <span class="etiqueta etiqueta--usuario">Corriente</span>
               {% endif %}
             </td>
             <td>

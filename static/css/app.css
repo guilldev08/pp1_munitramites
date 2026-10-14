@@ -911,6 +911,7 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
 .etiqueta--inactivo { background: var(--gris-100); color: var(--gris-500); }
 .etiqueta--superusuario { background: var(--violeta-bg); color: var(--violeta-txt); }
 .etiqueta--administrador { background: var(--azul-claro); color: var(--azul-txt); }
+.etiqueta--administrativo { background: var(--ambar-claro); color: var(--ambar); }
 .etiqueta--usuario { background: var(--gris-100); color: var(--gris-700); }
 
 @media (max-width: 820px) {

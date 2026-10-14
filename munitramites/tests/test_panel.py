@@ -18,8 +18,8 @@ from django.urls import reverse
 from munitramites.models import Consulta, Perfil, Requisito, Tema, Tramite
 
 from .base import (
-    TestCase, administrador, ciudadano, municipio, organismo, superusuario,
-    tramite,
+    TestCase, administrador, administrativo, ciudadano, municipio,
+    organismo, superusuario, tramite,
 )
 
 # URLs del panel, para barrer el acceso en un solo test
@@ -58,6 +58,21 @@ class AccesoTests(TestCase):
             self.assertEqual(
                 self.client.get(reverse(nombre)).status_code, 200, nombre
             )
+
+    def test_al_administrativo_le_faltan_solo_las_cuentas(self):
+        self.client.force_login(administrativo())
+
+        for nombre in ('panel', 'panel_tramites', 'panel_tramite_nuevo',
+                       'panel_consultas', 'panel_temas'):
+            self.assertEqual(
+                self.client.get(reverse(nombre)).status_code, 200, nombre
+            )
+
+        for nombre in ('panel_usuarios', 'panel_usuario_nuevo'):
+            r = self.client.get(reverse(nombre))
+
+            self.assertEqual(r.status_code, 302, nombre)
+            self.assertEqual(r['Location'], reverse('panel'), nombre)
 
     def test_al_superusuario_tambien(self):
         self.client.force_login(superusuario())
@@ -325,21 +340,23 @@ class UsuariosTests(TestCase):
         nuevo = User.objects.get(username='gestor')
         self.assertTrue(nuevo.is_staff)
         self.assertFalse(nuevo.is_superuser)
-        # Con su perfil (DNI) cargado, como el registro común
+        # Con su perfil (DNI) cargado y el rol guardado, como el registro
         self.assertEqual(nuevo.perfil.dni, '30111222')
+        self.assertEqual(nuevo.perfil.rol, 'administrador')
 
     def test_crea_un_usuario_comun(self):
         r = self.client.post(reverse('panel_usuario_nuevo'), {
             'username': 'ciudadana', 'email': 'c@munitramites.test',
             'first_name': 'Ciu', 'last_name': 'Dana',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'usuario', 'dni': '',
+            'rol': 'corriente', 'dni': '',
         })
 
         self.assertEqual(r.status_code, 302)
         nuevo = User.objects.get(username='ciudadana')
         self.assertFalse(nuevo.is_staff)
         self.assertFalse(nuevo.is_superuser)
+        self.assertEqual(nuevo.perfil.rol, 'corriente')
 
     def test_el_form_de_alta_nunca_ofrece_ser_superusuario(self):
         r = self.client.get(reverse('panel_usuario_nuevo'))
@@ -402,7 +419,7 @@ class UsuariosTests(TestCase):
         r = self.client.post(
             reverse('panel_usuario_editar', args=[self.jefe.pk]),
             {'username': 'jefe', 'email': 'x@x.test', 'first_name': '',
-             'last_name': '', 'is_active': 'on', 'rol': 'usuario'},
+             'last_name': '', 'is_active': 'on', 'rol': 'corriente'},
             follow=True,
         )
 
@@ -446,6 +463,47 @@ class UsuariosTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertFalse(User.objects.filter(username='ana').exists())
         self.assertFalse(Perfil.objects.filter(pk=clave_perfil).exists())
+
+    def test_crea_un_usuario_administrativo(self):
+        r = self.client.post(reverse('panel_usuario_nuevo'), {
+            'username': 'ayudante', 'email': 'ayudante@munitramites.test',
+            'first_name': 'Ayu', 'last_name': 'Dante',
+            'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
+            'rol': 'administrativo', 'dni': '',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = User.objects.get(username='ayudante')
+        self.assertTrue(nuevo.is_staff)   # entra al panel…
+        self.assertEqual(nuevo.perfil.rol, 'administrativo')
+        self.assertFalse(nuevo.is_superuser)  # …pero jamás el super
+
+    def test_mover_a_administrativo_no_pierde_el_panel(self):
+        objetivo = administrador(username='otro')
+
+        r = self.client.post(
+            reverse('panel_usuario_editar', args=[objetivo.pk]), {
+                'username': 'otro', 'email': 'otro@munitramites.test',
+                'first_name': '', 'last_name': '',
+                'is_active': 'on', 'rol': 'administrativo',
+            },
+        )
+
+        self.assertEqual(r.status_code, 302)
+        objetivo.refresh_from_db()
+        self.assertTrue(objetivo.is_staff)
+        self.assertEqual(objetivo.perfil.rol, 'administrativo')
+
+    def test_la_lista_muestra_los_tres_roles(self):
+        ciudadano(username='ana')
+        administrativo(username='jorge')
+
+        r = self.client.get(reverse('panel_usuarios'))
+
+        self.assertContains(r, 'etiqueta--administrador')
+        self.assertContains(r, 'etiqueta--administrativo')
+        self.assertContains(r, 'etiqueta--usuario')   # corriente
+        self.assertContains(r, 'etiqueta--superusuario')
 
 
 class TemasTests(TestCase):
@@ -496,6 +554,17 @@ class DisenoTests(TestCase):
             self.assertContains(r, 'class="pestanas"', msg_prefix=nombre)
             self.assertContains(r, 'Centro de Trámites', msg_prefix=nombre)
             self.assertContains(r, 'Centro de Consultas', msg_prefix=nombre)
+
+    def test_la_pestana_de_usuarios_solo_la_ve_el_administrador(self):
+        self.client.force_login(administrativo())
+        r = self.client.get(reverse('panel'))
+        self.assertNotContains(r, reverse('panel_usuarios'))
+        self.assertNotContains(r, 'Nuevo usuario')
+
+        # la cuenta que ya creó setUp (rol administrador)
+        self.client.force_login(User.objects.get(username='admin'))
+        r = self.client.get(reverse('panel'))
+        self.assertContains(r, reverse('panel_usuarios'))
 
     def test_las_pestanas_marcan_la_seccion_actual(self):
         r = self.client.get(reverse('panel_consultas'))

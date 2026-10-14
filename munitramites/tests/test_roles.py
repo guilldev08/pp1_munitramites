@@ -1,9 +1,12 @@
 """ESP-02 / RF-03, RF-07, RF-11, RF-13 — Roles y permisos.
 
-El documento define dos roles: **Usuario** (ciudadano) y **Administrador**.
-En Django ese rol se materializa con `is_staff`: quien no lo tiene no llega
-a las funciones de gestión. El panel propio vive en `/panel/` y el
-`/admin/` de Django queda reservado al superusuario (middleware.py).
+El documento define tres roles ACUMULATIVOS: **Usuario corriente** (ve
+trámites y envía consultas), **Usuario administrativo** (además responde
+consultas y edita trámites y temas) y **Usuario administrador** (además
+gestiona las cuentas del sistema). El rol vive en `Perfil.rol` y
+`is_staff` queda sincronizado con él: quien no es gestión no llega a
+/panel/. El `/admin/` de Django queda reservado al superusuario
+(middleware.py), que está fuera de los tres roles.
 
 Criterio de aceptación: «Los usuarios solo pueden acceder a las funciones
 permitidas según su rol».
@@ -13,9 +16,12 @@ from django.contrib.auth.models import User
 
 from django.urls import reverse
 
-from munitramites.models import Consulta, Tema, Tramite
+from munitramites.models import Consulta, Tema, Tramite, gestiona_cuentas
 
-from .base import TestCase, administrador, ciudadano, municipio, organismo
+from .base import (
+    TestCase, administrador, administrativo, ciudadano, municipio,
+    organismo, superusuario, tramite,
+)
 
 
 class CiudadanoTests(TestCase):
@@ -59,6 +65,72 @@ class CiudadanoTests(TestCase):
         r = self.client.get(reverse('panel'), follow=True)
 
         self.assertContains(r, 'solo para administradores')
+
+
+class AdministrativoTests(TestCase):
+    """Rol Usuario administrativo: el día a día del sitio, menos las cuentas."""
+
+    def setUp(self):
+        self.gestor = administrativo()
+        self.client.force_login(self.gestor)
+
+    def test_entra_a_la_gestion_del_dia_a_dia(self):
+        for url in (reverse('panel'), reverse('panel_tramites'),
+                    reverse('panel_tramite_nuevo'), reverse('panel_consultas'),
+                    reverse('panel_temas')):
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_no_llega_a_la_gestion_de_cuentas(self):
+        for url in (reverse('panel_usuarios'), reverse('panel_usuario_nuevo')):
+            r = self.client.get(url)
+
+            self.assertEqual(r.status_code, 302, url)
+            self.assertEqual(r['Location'], reverse('panel'), url)
+
+        r = self.client.get(reverse('panel'), follow=True)
+        self.assertContains(r, 'solo para usuarios administradores')
+
+    def test_no_ve_ni_la_pestana_ni_las_tarjetas_de_usuarios(self):
+        r = self.client.get(reverse('panel'))
+
+        self.assertNotContains(r, reverse('panel_usuarios'))
+        self.assertNotContains(r, 'Nuevo usuario')
+
+    def test_edita_tramites(self):
+        t = tramite()
+
+        r = self.client.get(reverse('panel_tramite_editar', args=[t.pk]))
+
+        self.assertEqual(r.status_code, 200)
+
+    def test_responde_consultas_de_otros(self):
+        autor = ciudadano(username='ana')
+        consulta = Consulta.objects.create(
+            usuario=autor, asunto='Duda de Ana',
+            contenido='¿Qué documentos necesito?',
+        )
+
+        r = self.client.post(
+            reverse('panel_consulta', args=[consulta.pk]),
+            {'respuesta': 'El DNI vigente y el formulario.'},
+        )
+
+        self.assertEqual(r.status_code, 302)
+        consulta.refresh_from_db()
+        self.assertEqual(consulta.estado, 'respondido')
+
+    def test_no_pasa_por_el_admin_de_django(self):
+        """/admin/ es del superusuario: al administrativo lo manda a /panel/."""
+        r = self.client.get(reverse('admin:index'))
+
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r['Location'], reverse('panel'))
+
+    def test_solo_el_administrador_y_el_super_gestionan_cuentas(self):
+        self.assertFalse(gestiona_cuentas(ciudadano(username='ana')))
+        self.assertFalse(gestiona_cuentas(self.gestor))
+        self.assertTrue(gestiona_cuentas(administrador()))
+        self.assertTrue(gestiona_cuentas(superusuario()))
 
 
 class AdministradorTests(TestCase):
@@ -137,7 +209,7 @@ class AdministradorTests(TestCase):
             'email': 'ciudadana@munitramites.test',
             'first_name': 'Ciu', 'last_name': 'Dana',
             'password1': 'ClaveSegura123x', 'password2': 'ClaveSegura123x',
-            'rol': 'usuario', 'dni': '',
+            'rol': 'corriente', 'dni': '',
         })
 
         self.assertEqual(r.status_code, 302)

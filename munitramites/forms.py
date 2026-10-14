@@ -314,7 +314,7 @@ class RespuestaConsultaForm(forms.Form):
 
 
 class UsuarioPanelForm(UserCreationForm):
-    """Alta de cuentas desde el panel: usuario común o administrador.
+    """Alta de cuentas desde el panel con cualquiera de los tres roles.
 
     Tiene un campo `rol` propio (nunca `is_superuser`): desde el panel NO
     se puede crear un superusuario — esa cuenta única se hace con
@@ -331,12 +331,14 @@ class UsuarioPanelForm(UserCreationForm):
     rol = forms.ChoiceField(
         label='Rol',
         choices=[
-            ('usuario', 'Usuario'),
-            ('administrador', 'Administrador'),
+            ('corriente', 'Usuario corriente'),
+            ('administrativo', 'Usuario administrativo'),
+            ('administrador', 'Usuario administrador'),
         ],
-        initial='usuario',
-        help_text='«Administrador» entra al panel de gestión; '
-                  '«Usuario» solo usa el sitio.',
+        initial='corriente',
+        help_text='Los roles se acumulan: «Administrativo» gestiona '
+                  'trámites, consultas y temas; «Administrador» además '
+                  'gestiona las cuentas; «Corriente» solo usa el sitio.',
     )
     dni = forms.CharField(
         label='DNI',
@@ -378,10 +380,15 @@ class UsuarioPanelForm(UserCreationForm):
     def save(self, commit=True):
         # `is_superuser` ni aparece en el form: queda en False siempre.
         user = super().save(commit)
-        user.is_staff = self.cleaned_data['rol'] == 'administrador'
+        rol = self.cleaned_data['rol']
+        user.is_staff = rol != Perfil.Rol.CORRIENTE
         if commit:
             user.save()
-            Perfil.objects.create(user=user, dni=self.cleaned_data.get('dni', ''))
+            Perfil.objects.create(
+                user=user,
+                dni=self.cleaned_data.get('dni', ''),
+                rol=rol,
+            )
         return user
 
 
@@ -389,18 +396,21 @@ class UsuarioRolForm(forms.ModelForm):
     """Edición de una cuenta ajena desde el panel: datos, rol y actividad.
 
     Es un `ModelForm` sobre `User` pero SIN `is_superuser` en `fields`:
-    el panel puede pasar alguien de «Usuario» a «Administrador» (gestión
-    de roles), pero nunca elevarlo a superusuario. El rol viaja en un
-    campo propio y se traduce a `is_staff` al guardar.
+    el panel puede mover una cuenta entre los tres roles (gestión de
+    roles), pero nunca elevarla a superusuario. El rol viaja en un campo
+    propio, se guarda en `Perfil.rol` y deja `is_staff` sincronizado.
     """
 
     rol = forms.ChoiceField(
         label='Rol',
         choices=[
-            ('usuario', 'Usuario'),
-            ('administrador', 'Administrador'),
+            ('corriente', 'Usuario corriente'),
+            ('administrativo', 'Usuario administrativo'),
+            ('administrador', 'Usuario administrador'),
         ],
-        help_text='«Administrador» entra al panel de gestión.',
+        help_text='Los roles se acumulan: «Administrativo» gestiona '
+                  'trámites, consultas y temas; «Administrador» además '
+                  'gestiona las cuentas; «Corriente» solo usa el sitio.',
     )
 
     class Meta:
@@ -420,11 +430,17 @@ class UsuarioRolForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # El combo arranca con el rol actual de la cuenta
+        # El combo arranca con el rol actual de la cuenta. El perfil puede
+        # no existir en cuentas viejas: ahí se mira is_staff (que es el
+        # espejo del rol) y no se pierde la edición.
         if self.instance and self.instance.pk:
-            self.fields['rol'].initial = (
-                'administrador' if self.instance.is_staff else 'usuario'
-            )
+            perfil = getattr(self.instance, 'perfil', None)
+            if perfil is not None:
+                self.fields['rol'].initial = perfil.rol
+            else:
+                self.fields['rol'].initial = (
+                    'administrativo' if self.instance.is_staff else 'corriente'
+                )
         self.fields['is_active'].help_text = (
             'Sin marca: la cuenta queda suspendida y no puede ingresar.'
         )
@@ -439,7 +455,11 @@ class UsuarioRolForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.is_staff = self.cleaned_data['rol'] == 'administrador'
+        rol = self.cleaned_data['rol']
+        user.is_staff = rol != Perfil.Rol.CORRIENTE
         if commit:
             user.save()
+            perfil, _ = Perfil.objects.get_or_create(user=user)
+            perfil.rol = rol
+            perfil.save()
         return user

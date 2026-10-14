@@ -33,8 +33,11 @@
          {% if 'panel_tramite' in request.resolver_match.url_name %}class="activo"{% endif %}>Centro de Trámites</a>
       <a href="{% url 'panel_consultas' %}"
          {% if 'panel_consulta' in request.resolver_match.url_name %}class="activo"{% endif %}>Centro de Consultas</a>
+      {# Usuarios es para el rol administrador (y el superusuario) #}
+      {% if gestiona_cuentas %}
       <a href="{% url 'panel_usuarios' %}"
          {% if 'panel_usuario' in request.resolver_match.url_name %}class="activo"{% endif %}>Usuarios</a>
+      {% endif %}
       <a href="{% url 'panel_temas' %}"
          {% if request.resolver_match.url_name == 'panel_temas' %}class="activo"{% endif %}>Temas</a>
     </nav>

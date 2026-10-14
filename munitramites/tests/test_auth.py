@@ -45,6 +45,8 @@ class RegistroTests(TestCase):
         self.assertTrue(r.context['form'].__class__.__name__ == 'RegistroForm')
         self.assertContains(r, 'modal--abierto')
         self.assertContains(r, 'Crear cuenta')
+        # Detrás del modal queda el sitio, no una página en blanco
+        self.assertContains(r, 'Continuar sin sesión')
 
     def test_rechaza_correo_repetido(self):
         existente = ciudadano(username='primera')
@@ -83,6 +85,41 @@ class SesionTests(TestCase):
 
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, 'Munitramites')
+
+    def test_detras_del_modal_de_login_queda_el_sitio(self):
+        """El login no deja un vacío: detrás del modal está la landing.
+
+        Pasó en vivo: /login/?next=/panel/ se cerraba y quedaba una
+        página en blanco. Ahora cerrar el modal deja al visitante en el
+        sitio, y el botón de atrás del navegador no lo manda al vacío.
+        """
+        r = self.client.get(reverse('login'), {'next': '/panel/'})
+
+        self.assertContains(r, 'modal--abierto')
+        self.assertContains(r, 'Continuar sin sesión')
+
+    def test_el_login_con_sesion_no_entra_en_bucle_con_next(self):
+        """Alguien ya entrado que cae en /login/?next=/panel/ no puede
+        quedar rebotando con @login_required: el GET con sesión vuelve
+        al sitio, no a una página a la que su rol no entra."""
+        self.client.force_login(ciudadano(username='ana'))
+
+        r = self.client.get(reverse('login'), {'next': '/panel/'})
+
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r['Location'], '/')
+
+    def test_tras_iniciar_sesion_vuelve_a_la_pagina_que_pidio(self):
+        """El POST del login respeta «next» (hacia una página pública)."""
+        ciudadano(username='ana', password='ClaveSegura123')
+
+        r = self.client.post(reverse('login'), {
+            'username': 'ana',
+            'password': 'ClaveSegura123',
+            'next': '/tramites/',
+        })
+
+        self.assertRedirects(r, '/tramites/')
 
     def test_sin_sesion_manda_al_login(self):
         """RF-13: sin sesión no se entra a las páginas privadas."""

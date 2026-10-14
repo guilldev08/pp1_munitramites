@@ -8,12 +8,36 @@ La clave olvidada (RF-15) no tiene vista propia: la resuelven las vistas
 de Django montadas en `urls.py`.
 """
 
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, resolve_url
 
 from ..forms import PerfilForm, RegistroForm
 from ..models import Perfil
+
+
+class LoginDeSitio(auth_views.LoginView):
+    """El login del sitio: no tiene página propia.
+
+    Renderiza la landing y base.html abre el modal solo (la vista manda
+    `form`), así cerrar el modal deja al visitante en el sitio y no en
+    una pantalla en blanco.
+
+    El GET de alguien que ya tiene sesión vuelve al sitio
+    (LOGIN_REDIRECT_URL) y no a «next»: redirigirlo a una página a la
+    que su rol no entra —por ejemplo /panel/ siendo corriente— cerraba
+    en bucle con @login_required. El POST del login sigue respetando
+    «next», así quien inicia sesión vuelve a la página que estaba viendo.
+    """
+    template_name = 'inicio.html'
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        if self.request.method != 'POST':
+            return resolve_url(settings.LOGIN_REDIRECT_URL)
+        return super().get_success_url()
 
 
 def registro(request):
@@ -33,9 +57,11 @@ def registro(request):
     else:
         form = RegistroForm()
 
-    # form_registro es lo que pinta la pestaña «Crear cuenta» del modal:
-    # si el POST vino con errores, manda el form validoado para que se vea.
-    return render(request, 'registro.html', {
+    # Igual que /login/: no hay página propia. La vista manda `form` con
+    # password1/password2 y base.html abre el modal «Crear cuenta» solo,
+    # encima de la landing. Si el POST vino con errores, el form validado
+    # hace que el modal se vea con ellos.
+    return render(request, 'inicio.html', {
         'form': form,
         'form_registro': form,
     })

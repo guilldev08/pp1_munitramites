@@ -76,7 +76,9 @@ class InterruptorTest(TestCase):
     """
 
     def test_las_paginas_traen_el_interruptor(self):
-        for nombre in ('tramites', 'chatbot', 'login'):
+        # /chatbot/ ahora exige sesión y /login/ es la landing (que va sin
+        # barra superior por diseño): las dos se prueban en su contexto.
+        for nombre in ('tramites', 'password_reset'):
             with self.subTest(vista=nombre):
                 r = self.client.get(reverse(nombre))
                 self.assertContains(r, 'id="cambiar-tema"')

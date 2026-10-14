@@ -4,9 +4,10 @@
 
    Todo lo que se rompe sin JavaScript tiene alternativa:
      · «Ingresar» / «Crear cuenta» → caen en /login/ y /registro/, que
-       abren el mismo modal server-side.
+       abren el mismo modal server-side (con el sitio detrás).
      · La barra del chat y el form del modal → mandan POST a /chatbot/
-       y la charla se ve en la página completa.
+       y la charla se ve en la página completa. Sin sesión, el intento
+       de escribir abre el modal de login en lugar de fallar.
 
    Al enviar se pinta la pregunta y un «Escribiendo…» con aria-live;
    al llegar la respuesta, pintar() repinta el historial real que
@@ -87,6 +88,13 @@
   function abrir(id, pestana) {
     var modal = document.getElementById(id);
     if (!modal) return;
+
+    // Un modal por vez: si ya hay otro abierto (el del chat, por
+    // ejemplo), se cierra antes de mostrar éste. Sin esto, abrir el de
+    // login desde el asistente dejaría los dos apilados.
+    $$('.modal--abierto').forEach(function (otro) {
+      if (otro !== modal) cerrar(otro);
+    });
 
     modal.classList.add('modal--abierto');
     modal.removeAttribute('hidden');
@@ -250,7 +258,13 @@
       credentials: 'same-origin',
       headers: { 'X-CSRFToken': csrf($('form.chat__entrada')) }
     }).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) {
+        // El status viaja en el error: el catch distingue el 403
+        // (sesión caída) de cualquier otra falla.
+        var error = new Error('HTTP ' + r.status);
+        error.status = r.status;
+        throw error;
+      }
       return r.json();
     });
   }
@@ -260,6 +274,14 @@
     var boton = form.querySelector('button[type=submit]');
     var texto = (entrada.value || '').trim();
     if (!texto) return;
+
+    // Sin cuenta no se charla: en vez de mandar un POST que va a doler,
+    // se abre el modal de login sobre la página en la que estás parado
+    // (con «next» a la página actual, así se vuelve después de entrar).
+    if (!window.MT.sesionIniciada) {
+      abrir('modal-auth', 'login');
+      return;
+    }
 
     var datos = new FormData();
     datos.append('mensaje', texto);
@@ -288,7 +310,17 @@
         var campo = $('#chat-form input[name=mensaje]');
         if (campo) campo.focus();
       })
-      .catch(function () {
+      .catch(function (err) {
+        if (err && err.status === 403) {  // la sesión se cayó en el medio
+          abrir('modal-auth', 'login');
+          if (contChat) {
+            contChat.appendChild(burbuja(
+              'Se cerró la sesión: entrá de nuevo para seguir charlando.', 'bot'
+            ));
+            bajar();
+          }
+          return;
+        }
         abrir('modal-chat');
         if (contChat) {
           contChat.appendChild(burbuja(

@@ -37,11 +37,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # 2. Autenticacion de ciudadanos --------------------------------------
-    path(
-        'login/',
-        auth_views.LoginView.as_view(redirect_authenticated_user=True),
-        name='login',
-    ),
+    # El login no tiene página propia: se pone encima de la landing
+    # (base.html abre el modal solo cuando la vista manda `form`).
+    # Cerrar el modal deja al visitante en el sitio, no en un vacío.
+    path('login/', views.LoginDeSitio.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
     # RF-15: restablecer la clave olvidada (token por correo)

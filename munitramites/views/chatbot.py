@@ -73,11 +73,15 @@ def _historial_para_json(request):
     return salida
 
 
+@login_required
 def chatbot(request):
     """Asistente. El POST pregunta al pipeline y guarda la charla en sesión.
 
-    Es publico (cualquiera puede preguntar), pero la charla queda en la
-    sesion de quien pregunta: no se almacena en Firebird.
+    Requiere sesión: sin cuenta no se charla. El modal del asistente lo
+    sabe (su JavaScript abre el de login en vez de mandar el POST) y
+    quien llegue sin sesión a esta página cae en /login/?next=/chatbot/.
+    La charla queda en la sesion de quien pregunta: no se almacena en
+    Firebird.
 
     Acepta GET ?q=… como alternativa sin JavaScript: la pregunta se responde
     aca mismo y se muestra en la pagina.
@@ -97,8 +101,18 @@ def chatbot_api(request):
 
     GET  → devuelve la charla guardada en la sesión
     POST → agrega un mensaje (o `accion=limpiar` para vaciarla)
+
+    Sin sesión el POST contesta 403 (y no un redirect, que el fetch
+    seguiría hasta devolver HTML): el JavaScript del modal aprovecha ese
+    403 para abrir el de login en lugar de pintar un error.
     """
     if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {'error': 'Iniciá sesión para usar el asistente.'},
+                status=403,
+            )
+
         if request.POST.get('accion') == 'limpiar':
             request.session['chatbot'] = []
         else:

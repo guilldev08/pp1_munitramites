@@ -276,7 +276,8 @@
     buscadorApi: "{% url 'buscador_api' %}",
     urlChat: "{% url 'chatbot' %}",
     urlLogin: "{% url 'login' %}",
-    urlRegistro: "{% url 'registro' %}"
+    urlRegistro: "{% url 'registro' %}",
+    sesionIniciada: {% if user.is_authenticated %}true{% else %}false{% endif %}
   };
 </script>
 <script src="{% static 'js/app.js' %}" defer></script>

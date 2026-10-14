@@ -275,6 +275,7 @@ class AnonimoTests(TestCase):
     def test_las_paginas_privadas_redirigen_al_login(self):
         for url in (reverse('perfil'), reverse('consultas'),
                     reverse('consulta_nueva'), reverse('soporte'),
+                    reverse('chatbot'),
                     reverse('panel'), reverse('panel_tramites')):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 302, url)
@@ -282,7 +283,7 @@ class AnonimoTests(TestCase):
 
     def test_las_paginas_publicas_son_publicas(self):
         for url in (reverse('inicio'), reverse('tramites'),
-                    reverse('chatbot'), reverse('password_reset')):
+                    reverse('password_reset')):
             self.assertEqual(self.client.get(url).status_code, 200, url)
 
     def test_no_hay_nadie_registrado(self):

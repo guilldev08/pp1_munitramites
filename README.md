@@ -243,13 +243,13 @@ Todo eso vive en `views/panel.py` (`solo_administrador`,
 | `/tramites/` | Listado con filtros y paginación; arriba de todo, la chatbar del asistente | público |
 | `/tramites/<id>/` | Ficha con requisitos, organismo y botones de enlaces | público |
 | `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
-| `/chatbot/` | Asistente (página completa, alternativa sin JS) | público |
-| `/chatbot/api/` | JSON que usa la pestaña emergente del chat | público |
+| `/chatbot/` | Asistente (página completa, alternativa sin JS) | sesión (sin cuenta, el intento abre el modal de login) |
+| `/chatbot/api/` | JSON que usa la pestaña emergente del chat | sesión (el POST sin sesión contesta 403) |
 | `/buscador/api/` | JSON del asistente para la barra «Buscar» (no guarda la charla) | público |
 | `/chatbot/limpiar/` | Vacía la charla de la sesión | sesión (el botón solo se muestra si hay sesión) |
 | `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
 | `/consultas/nueva/` | Formulario de consulta | sesión |
-| `/registro/` · `/login/` | Modal de alta y de sesión (también funciona como página) | público |
+| `/registro/` · `/login/` | Modal de alta y de sesión, con la landing quedando detrás (también funciona como página) | público |
 | `/logout/` | Cierra la sesión (RF-14) | sesión |
 | `/perfil/` | Tu correo (usuario y clave no se tocan acá), más el rol y la fecha de alta | sesión |
 | `/password/reset/` · `/done/` · `/<uid>/<token>/` · `/complete/` | Recuperar la contraseña olvidada (RF-15) | público |
@@ -364,8 +364,7 @@ munitramites/
         │   ├── base_site.html      #    base de todo el panel: carga admin.css
         │   ├── index.html          #    saludo + tarjetas + atajos
         │   └── panel_resumen.html  #    las tarjetas (las arma panel_admin)
-        ├── inicio.html             #    landing (hero + botones + cómo funciona, sin barra)
-        ├── registro.html           #    deja el modal de alta abierto
+        ├── inicio.html             #    landing (también detrás de /login/ y /registro/)
         ├── soporte.html            #    soporte (solo con sesión)
         ├── chatbot.html            #    asistente en página completa
         ├── parciales/

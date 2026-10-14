@@ -133,6 +133,7 @@ class VistasChatbotTests(TestCase):
 
     def test_el_modal_pregunta_por_json(self):
         tramite()
+        self.client.force_login(ciudadano(username='ana'))
 
         r = self.client.post(reverse('chatbot_api'),
                              {'mensaje': 'renovacion de DNI'})
@@ -147,12 +148,14 @@ class VistasChatbotTests(TestCase):
                          reverse('tramite_detalle', args=[Tramite.objects.first().pk]))
 
     def test_el_historial_se_repite_en_las_siguientes_consultas(self):
+        self.client.force_login(ciudadano(username='ana'))
         self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
         r = self.client.get(reverse('chatbot_api'))
 
         self.assertEqual(len(r.json()['historial']), 2)
 
     def test_vaciar_la_charla(self):
+        self.client.force_login(ciudadano(username='ana'))
         self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
         self.client.post(reverse('chatbot_api'), {'accion': 'limpiar'})
 
@@ -161,6 +164,7 @@ class VistasChatbotTests(TestCase):
 
     def test_pagina_del_chat_sin_javascript(self):
         tramite()
+        self.client.force_login(ciudadano(username='ana'))
 
         r = self.client.post(reverse('chatbot'), {'mensaje': 'renovacion de DNI'})
 
@@ -173,20 +177,31 @@ class VistasChatbotTests(TestCase):
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse('login'), r['Location'])
 
-    def test_el_boton_de_vaciar_no_se_muestra_sin_sesion(self):
-        """Al anónimo no se le ofrece un botón que lo manda al login."""
-        tramite()
-
-        r = self.client.post(reverse('chatbot'), {'mensaje': 'renovacion de DNI'})
-        self.assertNotContains(r, 'Vaciar chat')
-
-        self.client.force_login(ciudadano(username='ana'))
+    def test_sin_sesion_la_pagina_del_chat_manda_al_login(self):
+        """Sin cuenta no se llega al asistente: la puerta es /login/."""
         r = self.client.get(reverse('chatbot'))
+
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse('login'), r['Location'])
+
+    def test_sin_sesion_el_json_de_la_charla_devuelve_403(self):
+        """El JavaScript del modal intercepta el 403 y abre el de login."""
+        r = self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
+
+        self.assertEqual(r.status_code, 403)
+        self.assertIn('error', r.json())
+
+    def test_el_boton_de_vaciar_se_muestra_con_sesion(self):
+        self.client.force_login(ciudadano(username='ana'))
+
+        r = self.client.get(reverse('chatbot'))
+
         self.assertContains(r, 'Vaciar chat')
 
     def test_escribir_limpiar_vacia_la_charla(self):
         """La ayuda promete «limpiar» escrito a mano: tiene que funcionar."""
         tramite()
+        self.client.force_login(ciudadano(username='ana'))
         self.client.post(reverse('chatbot_api'),
                          {'mensaje': 'renovacion de DNI'})
         self.client.post(reverse('chatbot_api'), {'mensaje': 'limpiar'})
@@ -210,6 +225,7 @@ class VistasChatbotTests(TestCase):
             'munitramites.views.chatbot.responder',
             return_value={'texto': 'ok', 'tramites': [], 'fragmentos': []},
         ) as r:
+            self.client.force_login(ciudadano(username='ana'))
             self.client.post(reverse('chatbot'),
                              {'mensaje': 'renovacion de DNI'})
             self.client.post(reverse('chatbot'), {'mensaje': '¿y eso?'})
@@ -248,6 +264,7 @@ class BuscadorTests(TestCase):
 
     def test_el_enlace_sin_javascript_de_verdad_responde(self):
         tramite()
+        self.client.force_login(ciudadano(username='ana'))
 
         r = self.client.get(reverse('chatbot'), {'q': 'renovacion de DNI'})
 
@@ -287,6 +304,10 @@ class BuscadorTests(TestCase):
 
 class PrivacidadTests(TestCase):
     """«Sin almacenar el historial conversacional de forma permanente»."""
+
+    def setUp(self):
+        # La charla es de la cuenta: sin sesión ni se llega a la API
+        self.client.force_login(ciudadano(username='ana'))
 
     def test_la_charla_no_se_guarda_en_la_base(self):
         tramite()

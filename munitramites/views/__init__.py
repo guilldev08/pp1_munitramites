@@ -21,7 +21,7 @@ Para AGREGAR UNA VISTA NUEVA:
 from .api import api_tramites
 from .chatbot import buscador_api, chatbot, chatbot_api, chatbot_limpiar
 from .consultas import consulta_detalle, consulta_nueva, consultas
-from .cuenta import perfil, registro
+from .cuenta import LoginDeSitio, perfil, registro
 from .pagina import inicio
 from .panel import (
     panel, panel_consulta, panel_consultas, panel_temas,
@@ -33,6 +33,7 @@ from .soporte import PREFIJO_SOPORTE, soporte
 from .tramites import tramite_detalle, tramites
 
 __all__ = [
+    'LoginDeSitio',
     'PREFIJO_SOPORTE',
     'api_tramites',
     'buscador_api',

@@ -150,6 +150,40 @@ class ScrapingTests(TestCase):
 
         self.assertEqual(Tramite.objects.count(), 2)
 
+    def test_las_urls_largas_se_descartan_en_vez_de_reventar(self):
+        """Firebird corta en seco en 200/300: mejor no cargarlas."""
+        largo = 'https://ejemplo.gob.ar/gestion/' + 'x' * 300
+        html = (
+            '<html><body>'
+            f'<a href="{largo}">Trámite con URL larguísima</a>'
+            '<a href="/dni/corto">Solicitud de DNI</a>'
+            '</body></html>'
+        )
+        paginas = {
+            'https://ejemplo.gob.ar/': html,
+            'https://ejemplo.gob.ar/dni/corto': HTML_DNI,
+        }
+        ruta = _csv(
+            'NOMBRE,OCUPACION,LINK_SITIO_OFICIAL\n'
+            'Ejemplo de Misiones,Prueba,https://ejemplo.gob.ar/\n'
+        )
+        self.addCleanup(os.unlink, ruta)
+
+        with patch(
+            'munitramites.management.commands.scrapear_sitios._traer',
+            side_effect=lambda url: paginas.get(url),
+        ):
+            call_command(
+                'scrapear_sitios', csv=ruta, espera=0,
+                stdout=StringIO(), stderr=StringIO(),
+            )
+
+        self.assertEqual(Tramite.objects.count(), 1)
+        self.assertEqual(
+            Tramite.objects.get().enlace_oficial,
+            'https://ejemplo.gob.ar/dni/corto',
+        )
+
     def test_un_sitio_caido_no_tumba_el_comando(self):
         ruta = _csv(
             'NOMBRE,OCUPACION,LINK_SITIO_OFICIAL\n'

@@ -101,8 +101,10 @@ class Tramite(models.Model):
         Organismo, on_delete=models.PROTECT, related_name='tramites'
     )
     descripcion = models.TextField()
-    enlace_turnos = models.URLField(blank=True, default='')
-    enlace_oficial = models.URLField(blank=True, default='')
+    # 300: las URL reales de portales de trámites (con sus parámetros)
+    # pasan tranquilas de los 200 que trae el URLField por defecto.
+    enlace_turnos = models.URLField(max_length=300, blank=True, default='')
+    enlace_oficial = models.URLField(max_length=300, blank=True, default='')
     destacado = models.BooleanField(default=False)
     activo = models.BooleanField(default=True)
     creado = models.DateTimeField(auto_now_add=True)

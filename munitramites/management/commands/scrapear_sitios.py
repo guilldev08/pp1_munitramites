@@ -128,6 +128,10 @@ def _candidatos(html, base):
         url = urldefrag(urljoin(base, a['href']))[0]
         if not url.startswith('http') or len(texto) < 5 or url in vistos:
             continue
+        # El modelo admite 300; una URL más larga que eso no entra ni
+        # serviría truncada (Firebird corta en seco y tira el error).
+        if len(url) > 290:
+            continue
         bajo_url = _sin_acentos(url.lower())
         if any(p in bajo_url for p in PALABRAS_RUIDO + REDES):
             continue
@@ -150,6 +154,8 @@ def _puertas(html, base, limite=3):
         texto = re.sub(r'\s+', ' ', a.get_text(' ', strip=True))
         url = urldefrag(urljoin(base, a['href']))[0]
         if not url.startswith('http') or url in vistos or url == base:
+            continue
+        if len(url) > 290:
             continue
         bajo = _sin_acentos(f'{texto} {url}'.lower())
         if any(p in bajo for p in PALABRAS_RUIDO + REDES):
@@ -398,11 +404,19 @@ class Command(BaseCommand):
 
         creados = omitidos = 0
         for candidato in candidatos:
-            if self._ya_cargado(candidato, organismo):
-                omitidos += 1
-                continue
-            if self._crear_tramite(candidato, organismo, opciones):
-                creados += 1
+            try:
+                if self._ya_cargado(candidato, organismo):
+                    omitidos += 1
+                    continue
+                if self._crear_tramite(candidato, organismo, opciones):
+                    creados += 1
+            except Exception as error:
+                # Un link tonto no puede frenar la corrida entera: se
+                # anota y se sigue con el siguiente.
+                self.stderr.write(self.style.WARNING(
+                    f'  ! {organismo.nombre}: no se pudo cargar '
+                    f'«{candidato["texto"][:60]}» ({error})'
+                ))
         return creados, omitidos
 
     @staticmethod
@@ -411,7 +425,8 @@ class Command(BaseCommand):
         return Tramite.objects.filter(
             enlace_oficial=candidato['url']
         ).exists() or Tramite.objects.filter(
-            titulo=candidato['texto'], organismo=organismo,
+            titulo=_titulo_limpio(candidato['texto'], candidato['url']),
+            organismo=organismo,
         ).exists()
 
     def _crear_tramite(self, candidato, organismo, opciones):

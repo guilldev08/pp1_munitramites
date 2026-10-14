@@ -26,8 +26,8 @@ from .pagina import inicio
 from .panel import (
     panel, panel_consulta, panel_consultas, panel_temas,
     panel_tramite_editar, panel_tramite_estado, panel_tramite_nuevo,
-    panel_tramites, panel_usuario_editar, panel_usuario_eliminar,
-    panel_usuario_nuevo, panel_usuarios,
+    panel_tramites, panel_tramites_accion, panel_usuario_editar,
+    panel_usuario_eliminar, panel_usuario_nuevo, panel_usuarios,
 )
 from .soporte import PREFIJO_SOPORTE, soporte
 from .tramites import tramite_detalle, tramites
@@ -52,6 +52,7 @@ __all__ = [
     'panel_tramite_estado',
     'panel_tramite_nuevo',
     'panel_tramites',
+    'panel_tramites_accion',
     'panel_usuario_editar',
     'panel_usuario_eliminar',
     'panel_usuario_nuevo',

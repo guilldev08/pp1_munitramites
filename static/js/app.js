@@ -440,8 +440,46 @@
   /* --------------------------------------------------------------------
       Arranque
       -------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------
+     Filas extra de los formsets del panel (+ Agregar requisito/enlace):
+     clonan la plantilla <template data-vacio="..."> y suben TOTAL_FORMS.
+     -------------------------------------------------------------------- */
+  function prepararInlines() {
+    $$('[data-agregar-fila]').forEach(function (boton) {
+      var clave = boton.getAttribute('data-agregar-fila');
+      var filas = $('[data-filas="' + clave + '"]');
+      var plantilla = $('[data-vacio="' + clave + '"]');
+      var management = $('[name="' + clave + '-TOTAL_FORMS"]');
+      if (!filas || !plantilla || !management) return;
+      boton.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var n = parseInt(management.value, 10) || 0;
+        filas.insertAdjacentHTML(
+          'beforeend',
+          plantilla.innerHTML.replace(/__prefix__/g, String(n))
+        );
+        management.value = n + 1;
+      });
+    });
+  }
+
+  /* --------------------------------------------------------------------
+     Marcar / desmarcar todas las filas del listado del panel.
+     -------------------------------------------------------------------- */
+  function prepararMarcaTotal() {
+    var maestro = $('[data-marcar-todo]');
+    if (!maestro) return;
+    maestro.addEventListener('change', function () {
+      $$('[name="seleccion"]').forEach(function (box) {
+        box.checked = maestro.checked;
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     prepararClaves();
+    prepararInlines();
+    prepararMarcaTotal();
     var abierto = $('.modal--abierto');
     if (abierto) document.body.style.overflow = 'hidden';
     if (contChat && contChat.children.length) bajar();

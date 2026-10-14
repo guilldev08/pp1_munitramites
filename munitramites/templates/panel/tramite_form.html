@@ -32,6 +32,19 @@
           <div class="campo">
             <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
             {{ campo }}
+            {% if campo.name == 'municipio' %}
+              <input type="text" name="municipio_nuevo" id="id_municipio_nuevo"
+                     class="campo__nuevo"
+                     value="{{ form.data.municipio_nuevo|default:'' }}"
+                     placeholder="o escribí el nombre de un municipio nuevo…">
+              <span class="ayuda">Si escribís acá, se crea al guardar y se usa ese.</span>
+            {% elif campo.name == 'organismo' %}
+              <input type="text" name="organismo_nuevo" id="id_organismo_nuevo"
+                     class="campo__nuevo"
+                     value="{{ form.data.organismo_nuevo|default:'' }}"
+                     placeholder="o escribí el nombre de un organismo nuevo…">
+              <span class="ayuda">Si escribís acá, se crea al guardar y se usa ese.</span>
+            {% endif %}
             {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
             {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
           </div>
@@ -54,21 +67,43 @@
           </div>
         {% endif %}
 
-        {% for rf in requisitos %}
-          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
-            {% for campo in rf %}
-              {% if not campo.field.widget.is_hidden %}
-                <div class="campo">
-                  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        <div class="inline-filas" data-filas="requisitos">
+          {% for rf in requisitos %}
+            <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+              {% for campo in rf %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% else %}
                   {{ campo }}
-                  {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-                </div>
-              {% else %}
-                {{ campo }}
-              {% endif %}
-            {% endfor %}
-          </div>
-        {% endfor %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {# Fila vacía que clona el botón de abajo (ver app.js) #}
+        <template data-vacio="requisitos">
+          {% with rf=requisitos.empty_form %}
+            <div class="inline-fila">
+              {% for campo in rf %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                  </div>
+                {% else %}
+                  {{ campo }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endwith %}
+        </template>
+        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+                data-agregar-fila="requisitos">+ Agregar requisito</button>
       </div>
 
       <div class="panel">
@@ -82,21 +117,43 @@
           </div>
         {% endif %}
 
-        {% for rf in enlaces %}
-          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
-            {% for campo in rf %}
-              {% if not campo.field.widget.is_hidden %}
-                <div class="campo">
-                  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+        <div class="inline-filas" data-filas="enlaces">
+          {% for rf in enlaces %}
+            <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+              {% for campo in rf %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% else %}
                   {{ campo }}
-                  {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-                </div>
-              {% else %}
-                {{ campo }}
-              {% endif %}
-            {% endfor %}
-          </div>
-        {% endfor %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        {# Fila vacía que clona el botón de abajo (ver app.js) #}
+        <template data-vacio="enlaces">
+          {% with rf=enlaces.empty_form %}
+            <div class="inline-fila">
+              {% for campo in rf %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                  </div>
+                {% else %}
+                  {{ campo }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endwith %}
+        </template>
+        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+                data-agregar-fila="enlaces">+ Agregar enlace</button>
       </div>
     </div>
   </div>

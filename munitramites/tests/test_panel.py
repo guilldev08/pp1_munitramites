@@ -125,6 +125,128 @@ class CentroDeTramitesTests(TestCase):
         self.assertNotContains(r, 'Renovacion de DNI')
         self.assertContains(r, 'Trámite dado de baja')
 
+    def test_el_buscador_filtra_por_titulo_y_por_organismo(self):
+        tramite()
+        tramite(titulo='Libreta de conducir')
+
+        r = self.client.get(reverse('panel_tramites') + '?q=conducir')
+
+        self.assertContains(r, 'Libreta de conducir')
+        self.assertNotContains(r, 'Renovacion de DNI')
+
+    def test_el_filtro_lateral_por_tema_anda(self):
+        t = tramite()
+        tramite(titulo='Inscripcion escolar', tema='Educacion')
+
+        r = self.client.get(reverse('panel_tramites') + f'?tema={t.tema.pk}')
+
+        self.assertContains(r, 'Renovacion de DNI')
+        self.assertNotContains(r, 'Inscripcion escolar')
+
+    def test_las_columnas_se_pueden_ordenar(self):
+        tramite()
+        tramite(titulo='AAA al principio')
+
+        r = self.client.get(reverse('panel_tramites') + '?orden=titulo')
+
+        titulos = [t.titulo for t in r.context['pagina'].object_list]
+        self.assertEqual(titulos, sorted(titulos))
+
+    def test_las_acciones_masivas_actuan_sobre_lo_marcado(self):
+        t1 = tramite(activo=False)
+        t2 = tramite(titulo='Otro trámite', activo=False)
+
+        r = self.client.post(reverse('panel_tramites_accion'), {
+            'seleccion': [str(t1.pk)], 'accion': 'activar',
+            'siguiente': reverse('panel_tramites'),
+        })
+
+        self.assertRedirects(r, reverse('panel_tramites'))
+        t1.refresh_from_db()
+        t2.refresh_from_db()
+        self.assertTrue(t1.activo)
+        self.assertFalse(t2.activo)
+
+    def test_sin_seleccion_no_anda_nada_y_avisa(self):
+        tramite(activo=False)
+
+        r = self.client.post(reverse('panel_tramites_accion'), {
+            'accion': 'activar', 'siguiente': reverse('panel_tramites'),
+        }, follow=True)
+
+        self.assertContains(r, 'Elegí una acción y marcá al menos un trámite')
+        self.assertFalse(Tramite.objects.filter(activo=True).exists())
+
+    def test_el_boton_de_fila_actua_sobre_un_solo_tramite(self):
+        t1 = tramite(activo=False)
+        t2 = tramite(titulo='Otro trámite', activo=False)
+
+        self.client.post(reverse('panel_tramites_accion'), {
+            f'fila_{t1.pk}': 'activar',
+            'siguiente': reverse('panel_tramites'),
+        })
+
+        t1.refresh_from_db()
+        t2.refresh_from_db()
+        self.assertTrue(t1.activo)
+        self.assertFalse(t2.activo)
+
+    def test_desde_el_form_se_crea_un_organismo_nuevo(self):
+        """No hace falta irse del CRUD a cargar el organismo: se crea ahí."""
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Registro de Bicicletas',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'presencial',
+            'municipio': municipio().pk,
+            'organismo': '',
+            'organismo_nuevo': 'Direccion de Licencias de Trafico',
+            'descripcion': 'Se tramita en el municipio.',
+            'destacado': '', 'activo': 'on',
+            'enlace_turnos': '', 'enlace_oficial': '',
+            'requisitos-TOTAL_FORMS': '1', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '1', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Registro de Bicicletas')
+        self.assertEqual(
+            nuevo.organismo.nombre, 'Direccion de Licencias de Trafico'
+        )
+
+    def test_desde_el_form_se_crea_un_municipio_nuevo(self):
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Trámite de Oberá',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'presencial',
+            'municipio': '',
+            'municipio_nuevo': 'Obera',
+            'organismo': organismo().pk,
+            'organismo_nuevo': '',
+            'descripcion': 'Se tramita en la municipalidad.',
+            'destacado': '', 'activo': 'on',
+            'enlace_turnos': '', 'enlace_oficial': '',
+            'requisitos-TOTAL_FORMS': '1', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '1', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Trámite de Oberá')
+        self.assertEqual(nuevo.municipio.nombre, 'Obera')
+
+    def test_el_form_trae_filas_de_mas_y_boton_de_agregar(self):
+        """Tres filas vacías listas y un botón que clona más (requisitos y enlaces)."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r, 'requisitos-2-descripcion')
+        self.assertContains(r, 'enlaces-2-nombre')
+        self.assertContains(r, 'data-agregar-fila="requisitos"')
+        self.assertContains(r, 'data-agregar-fila="enlaces"')
+        self.assertContains(r, 'requisitos-__prefix__-descripcion')
+
     def test_crea_un_tramite_con_requisitos_y_enlaces(self):
         r = self.client.post(reverse('panel_tramite_nuevo'), {
             'titulo': 'Pasaporte argentino',

@@ -1005,3 +1005,79 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
     animation: none !important;
   }
 }
+
+/* =========================================================================
+   Centro de Trámites del panel: estructura de changelist del /admin/
+   (buscador arriba, filtros laterales, checkboxes y acciones masivas)
+   ========================================================================= */
+.listado-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.acciones-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+
+.acciones-barra label { font-size: .85rem; color: var(--gris-500); }
+
+.acciones-barra select {
+  padding: .35rem .5rem;
+  border: 1px solid var(--gris-200, #d4d4d8);
+  border-radius: 6px;
+  background: var(--gris-blanco, #fff);
+  font: inherit;
+  font-size: .85rem;
+}
+
+.tabla--check .tabla__check { width: 2.2rem; text-align: center; }
+.tabla--check thead a { color: inherit; text-decoration: none; }
+.tabla--check thead a:hover { color: var(--azul); text-decoration: underline; }
+
+.enlace-tabla { color: inherit; text-decoration: none; font-weight: 600; }
+.enlace-tabla:hover { color: var(--azul); text-decoration: underline; }
+
+.filtros-panel {
+  border: 1px solid var(--gris-100, #ececf0);
+  border-radius: 10px;
+  padding: 1rem;
+  background: var(--gris-50, #fafafc);
+}
+
+.filtros-panel h3 { margin: 0 0 .75rem; font-size: 1rem; }
+.filtros-grupo + .filtros-grupo { margin-top: 1.1rem; }
+
+.filtros-grupo h4 {
+  margin: 0 0 .4rem;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--gris-500);
+}
+
+.filtros-grupo ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .25rem;
+}
+
+.filtros-grupo a { font-size: .85rem; color: inherit; text-decoration: none; }
+.filtros-grupo a:hover { color: var(--azul); text-decoration: underline; }
+.filtros-grupo a.activo { color: var(--azul); font-weight: 700; }
+
+/* Filas extra de los formsets (+ Agregar requisito/enlace) y los campos
+   «o escribí uno nuevo» de municipio/organismo. */
+.agregar-fila { margin-top: .75rem; }
+.campo__nuevo { margin-top: .35rem; width: 100%; }
+
+@media (max-width: 900px) {
+  .listado-panel { grid-template-columns: 1fr; }
+}

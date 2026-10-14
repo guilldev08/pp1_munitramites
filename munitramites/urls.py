@@ -118,6 +118,10 @@ urlpatterns = [
         name='panel_tramite_nuevo',
     ),
     path(
+        'panel/tramites/accion/', views.panel_tramites_accion,
+        name='panel_tramites_accion',
+    ),
+    path(
         'panel/tramites/<int:pk>/editar/', views.panel_tramite_editar,
         name='panel_tramite_editar',
     ),

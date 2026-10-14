@@ -31,14 +31,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.decorators.http import require_POST
 
 from ..forms import (
     EnlaceFormSet, RespuestaConsultaForm, RequisitoFormSet, TemaForm,
     TramitePanelForm, UsuarioPanelForm, UsuarioRolForm,
 )
-from ..models import Consulta, Tema, Tramite, gestiona_cuentas
+from ..models import (
+    Consulta, Municipio, Organismo, Tema, Tramite, gestiona_cuentas,
+)
 
 # Filas por página de los listados del panel
 POR_PAGINA = 10
@@ -116,12 +118,38 @@ def panel(request):
 # =============================================================================
 
 
-@solo_administrador
-def panel_tramites(request):
-    """Listado de trámites (todos: activos e inactivos) con acciones."""
-    queryset = Tramite.objects.select_related(
-        'tema', 'municipio', 'organismo'
-    ).order_by('-activo', '-destacado', 'titulo')
+# Ordenes permitidos del listado: un whitelist, para que ?orden= no pase
+# cualquier columna a la base.
+ORDENES_TRAMITE = {
+    'titulo': 'titulo', '-titulo': '-titulo',
+    'tema': 'tema__nombre', '-tema': '-tema__nombre',
+    'modalidad': 'modalidad', '-modalidad': '-modalidad',
+    'municipio': 'municipio__nombre', '-municipio': '-municipio__nombre',
+    'destacado': 'destacado', '-destacado': '-destacado',
+    'activo': 'activo', '-activo': '-activo',
+    'creado': 'creado', '-creado': '-creado',
+}
+
+# Acciones del listado, masivas (marcando checkboxes) o de una fila
+# (los botones de la última columna). Las mismas que el /admin/.
+ACCIONES_TRAMITE = {
+    'activar': {'activo': True},
+    'desactivar': {'activo': False},
+    'destacar': {'destacado': True},
+    'quitar_destacado': {'destacado': False},
+}
+
+
+def _filtros_tramites(request, queryset):
+    """Buscador + filtros laterales del listado (?q=, ?estado=, ?tema=…)."""
+    q = request.GET.get('q', '').strip()
+    if q:
+        queryset = queryset.filter(
+            Q(titulo__icontains=q)
+            | Q(descripcion__icontains=q)
+            | Q(organismo__nombre__icontains=q)
+            | Q(municipio__nombre__icontains=q)
+        )
 
     estado = request.GET.get('estado', '')
     if estado == 'activos':
@@ -129,17 +157,133 @@ def panel_tramites(request):
     elif estado == 'inactivos':
         queryset = queryset.filter(activo=False)
 
+    for parametro, campo in (
+        ('tema', 'tema_id'), ('municipio', 'municipio_id'),
+        ('organismo', 'organismo_id'),
+    ):
+        valor = request.GET.get(parametro, '')
+        if valor.isdigit():
+            queryset = queryset.filter(**{campo: valor})
+
+    modalidad = request.GET.get('modalidad', '')
+    if modalidad in dict(Tramite.Modalidad.choices):
+        queryset = queryset.filter(modalidad=modalidad)
+
+    destacado = request.GET.get('destacado', '')
+    if destacado in ('si', 'no'):
+        queryset = queryset.filter(destacado=(destacado == 'si'))
+
+    orden = ORDENES_TRAMITE.get(request.GET.get('orden', ''))
+    if orden:
+        return queryset.order_by(orden)
+    return queryset.order_by('-destacado', 'titulo')
+
+
+@solo_administrador
+def panel_tramites(request):
+    """Listado de trámites con la estructura del changelist del /admin/.
+
+    Buscador arriba, filtros laterales (estado, tema, modalidad,
+    municipio, organismo y destacado), columnas ordenables, checkboxes
+    para marcar filas y acciones masivas. Sin dependencias de JS: todo
+    son GET y POST normales.
+    """
+    queryset = _filtros_tramites(
+        request,
+        Tramite.objects.select_related('tema', 'municipio', 'organismo'),
+    )
+
     paginador = Paginator(queryset, POR_PAGINA)
     return render(request, 'panel/tramites_lista.html', {
         'pagina': paginador.get_page(request.GET.get('pagina')),
-        'estado': estado,
+        'q': request.GET.get('q', '').strip(),
+        'estado': request.GET.get('estado', ''),
+        'tema_id': request.GET.get('tema', ''),
+        'modalidad': request.GET.get('modalidad', ''),
+        'municipio_id': request.GET.get('municipio', ''),
+        'organismo_id': request.GET.get('organismo', ''),
+        'destacado': request.GET.get('destacado', ''),
+        'orden': request.GET.get('orden', ''),
+        'hay_filtros': any(request.GET.get(c) for c in (
+            'q', 'estado', 'tema', 'modalidad', 'municipio', 'organismo',
+            'destacado', 'orden',
+        )),
+        'temas': Tema.objects.order_by('nombre'),
+        'municipios': Municipio.objects.order_by('nombre'),
+        'organismos': Organismo.objects.order_by('nombre'),
+        'modalidades': Tramite.Modalidad.choices,
     })
+
+
+@solo_administrador
+@require_POST
+def panel_tramites_accion(request):
+    """Acciones del listado: masivas (checkboxes) o de una sola fila.
+
+    Los botones de fila viajan como `fila_<pk>=<accion>` dentro del
+    MISMO formulario que los checkboxes, así la tabla no tiene
+    formularios anidados. `siguiente` es la URL de vuelta (con los
+    filtros puestos); si no confía, se vuelve al listado limpio.
+    """
+    destino = request.POST.get('siguiente', '')
+    if not destino.startswith(reverse('panel_tramites')):
+        destino = reverse('panel_tramites')
+
+    fila = next((k for k in request.POST if k.startswith('fila_')), '')
+    if fila:
+        accion = request.POST.get(fila, '')
+        try:
+            pks = [int(fila.split('_', 1)[1])]
+        except ValueError:
+            pks = []
+    else:
+        accion = request.POST.get('accion', '')
+        pks = [pk for pk in request.POST.getlist('seleccion') if pk.isdigit()]
+
+    if not (pks and accion in ACCIONES_TRAMITE):
+        messages.error(
+            request, 'Elegí una acción y marcá al menos un trámite.'
+        )
+        return redirect(destino)
+
+    actualizados = Tramite.objects.filter(pk__in=pks).update(
+        **ACCIONES_TRAMITE[accion]
+    )
+    plural = '' if actualizados == 1 else 's'
+    messages.success(
+        request, f'{actualizados} trámite{plural} actualizado{plural}.'
+    )
+    return redirect(destino)
+
+
+def _crear_relaciones_nuevas(post):
+    """Crea municipio/organismo «sobre la marcha» si el form los pide.
+
+    El formulario del Centro de Trámites trae, debajo de cada select,
+    un campo `municipio_nuevo` / `organismo_nuevo`. Si trae texto, se
+    crea (o se reusa el existente) y la FK queda seteada: no hace falta
+    salirse a cargarlo en otra pantalla. Devuelve el POST pisado.
+    """
+    data = post.copy()
+    for campo, modelo, extras in (
+        ('municipio', Municipio, {}),
+        # Organismo además pide dirección: a nivel DB acepta string
+        # vacío, pero dejamos una aclaración legible para el /admin/.
+        ('organismo', Organismo, {'direccion': 'Sin dirección informada'}),
+    ):
+        nombre = data.get(f'{campo}_nuevo', '').strip()
+        if nombre:
+            obj, _ = modelo.objects.get_or_create(nombre=nombre, defaults=extras)
+            data[campo] = obj.pk
+    return data
 
 
 def _contexto_form_tramite(request, tramite):
     """Form + inlines (requisitos y enlaces) para GET o POST."""
     if request.method == 'POST':
-        form = TramitePanelForm(request.POST, instance=tramite)
+        form = TramitePanelForm(
+            _crear_relaciones_nuevas(request.POST), instance=tramite
+        )
         requisitos = RequisitoFormSet(request.POST, instance=tramite)
         enlaces = EnlaceFormSet(request.POST, instance=tramite)
     else:

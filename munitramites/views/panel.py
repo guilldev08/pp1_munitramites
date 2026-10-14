@@ -107,7 +107,6 @@ def panel(request):
         'consultas_total': consultas.count(),
         'usuarios': User.objects.filter(is_active=True).count(),
         'temas': Tema.objects.count(),
-        'es_superusuario': request.user.is_superuser,
     }
     return render(request, 'panel/dashboard.html', contexto)
 

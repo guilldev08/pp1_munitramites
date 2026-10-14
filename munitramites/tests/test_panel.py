@@ -82,8 +82,8 @@ class AccesoTests(TestCase):
         r = self.client.get(reverse('panel'))
 
         self.assertEqual(r.status_code, 200)
-        # El atajo a /admin/ solo lo ve él
-        self.assertContains(r, 'Django admin')
+        # Ni siquiera él: el /admin/ no tiene botón, solo enlace directo
+        self.assertNotContains(r, 'Django admin')
 
     def test_las_urls_de_detalle_tambien_estan_cerradas(self):
         t = tramite()

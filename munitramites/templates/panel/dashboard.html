@@ -50,18 +50,11 @@
     <a class="boton boton--secundario" href="{% url 'panel_usuario_nuevo' %}">Nuevo usuario</a>
   {% endif %}
   <a class="boton boton--secundario" href="{% url 'consultas' %}">Ver consultas como ciudadano</a>
-  {% if es_superusuario %}
-    <a class="boton boton--secundario" href="{% url 'admin:index' %}">Django admin (/admin/)</a>
-  {% endif %}
 </div>
 
 <p class="texto-suave texto-chico" style="margin-top: 18px">
-  {% if es_superusuario %}
-    Como superusuario también entrás al /admin/ de Django, donde se gestionan
-    organismos, municipios, grupos y perfiles (DNI).
-  {% else %}
-    Organismos y municipios se cargan desde el /admin/ de Django, que es
-    exclusivo del superusuario.
-  {% endif %}
+  Organismos y municipios se cargan desde el /admin/ de Django, que es
+  exclusivo del superusuario: no hay botón, se entra escribiendo la
+  dirección (o por enlace directo).
 </p>
 {% endblock %}

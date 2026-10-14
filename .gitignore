@@ -42,3 +42,6 @@ Thumbs.db
 .ruff_cache/
 .coverage
 htmlcov/
+
+# Credenciales locales de la base dev (nunca subir)
+usuarios.txt

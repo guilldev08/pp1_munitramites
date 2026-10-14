@@ -45,7 +45,15 @@
                 <a href="{% url 'tramite_detalle' c.tramite.pk %}">{{ c.tramite.titulo }}</a>
               {% else %}—{% endif %}
             </td>
-            <td>{{ c.usuario.username|default:"—" }}</td>
+            <td>
+              {% if c.usuario %}
+                <strong>{{ c.usuario.username }}</strong>
+                <div class="texto-suave texto-chico">
+                  {{ c.usuario.email|default:"sin correo" }}<br>
+                  ID: {{ c.usuario.perfil.id|default:"—" }}
+                </div>
+              {% else %}—{% endif %}
+            </td>
             <td><span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
             <td class="texto-chico">{{ c.fecha|hora_local|date:"d/m/Y H:i" }}</td>
           </tr>

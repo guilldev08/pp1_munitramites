@@ -25,6 +25,13 @@
       · <span class="etiqueta etiqueta--{{ consulta.estado }}">{{ consulta.get_estado_display }}</span>
     </p>
 
+    <h3>Enviada por</h3>
+    <p class="texto-suave texto-chico">
+      <strong>{{ consulta.usuario.username|default:"sin usuario" }}</strong>
+      · ID {{ consulta.usuario.perfil.id|default:"—" }}<br>
+      {{ consulta.usuario.email|default:"sin correo" }}
+    </p>
+
     <p class="texto-con">{{ consulta.contenido }}</p>
 
     {% if consulta.respuesta %}

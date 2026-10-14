@@ -262,6 +262,23 @@ class CentroDeConsultasTests(TestCase):
         self.assertContains(r, 'Duda de Ana')
         self.assertContains(r, 'ana')
 
+    def test_en_la_lista_se_ve_quien_la_mando(self):
+        """Nombre, id y correo del emisor: con eso se ubica al que preguntó."""
+        r = self.client.get(reverse('panel_consultas'))
+
+        self.assertContains(r, self.autor.username)
+        self.assertContains(r, self.autor.email)
+        self.assertContains(r, str(self.autor.perfil.id))
+
+    def test_en_la_ficha_se_ve_quien_la_mando(self):
+        r = self.client.get(
+            reverse('panel_consulta', args=[self.consulta.pk])
+        )
+
+        self.assertContains(r, self.autor.username)
+        self.assertContains(r, self.autor.email)
+        self.assertContains(r, str(self.autor.perfil.id))
+
     def test_el_filtro_por_estado_anda(self):
         Consulta.objects.create(
             asunto='Ya respondida', contenido='Gracias por todo.',

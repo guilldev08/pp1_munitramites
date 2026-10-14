@@ -58,7 +58,14 @@
                   {% else %}—{% endif %}
                 </td>
                 {% if user.is_staff %}
-                  <td>{{ c.usuario.username|default:"—" }}</td>
+                  <td>
+                    {% if c.usuario %}
+                      {{ c.usuario.username }}
+                      <div class="texto-suave texto-chico">
+                        {{ c.usuario.email|default:"sin correo" }}
+                      </div>
+                    {% else %}—{% endif %}
+                  </td>
                 {% endif %}
                 <td><span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
                 <td class="texto-chico">{{ c.fecha|hora_local|date:"d/m/Y H:i" }}</td>

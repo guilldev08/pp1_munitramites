@@ -51,6 +51,11 @@
         {% if puede_responder %}
           <form class="formulario" method="post">
             <h3 class="mt-0">Responder (administrador)</h3>
+            <p class="texto-suave texto-chico mt-0 mb-2">
+              De <strong>{{ consulta.usuario.username|default:"sin usuario" }}</strong>
+              · ID {{ consulta.usuario.perfil.id|default:"—" }}<br>
+              {{ consulta.usuario.email|default:"sin correo" }}
+            </p>
             {% csrf_token %}
             <div class="campo">
               <label for="id_respuesta">Respuesta</label>

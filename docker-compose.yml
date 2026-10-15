@@ -3,6 +3,13 @@ services:
     build: .
     # Se levanta solo si Docker Desktop se reinicia o se cae la PC
     restart: unless-stopped
+    # Gemma 4 (asistente): Ollama corre en la PC, no en el contenedor,
+    # y se alcanza por host.docker.internal. Para apagar el LLM, un
+    # .env con CHATBOT_LLM= (vacío) manda.
+    environment:
+      CHATBOT_LLM: ${CHATBOT_LLM-ollama}
+      OLLAMA_URL: ${OLLAMA_URL-http://host.docker.internal:11434}
+      OLLAMA_MODELO: ${OLLAMA_MODELO-gemma4}
     ports:
       - "8000:8000"
     volumes:

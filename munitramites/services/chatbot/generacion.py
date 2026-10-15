@@ -2,9 +2,11 @@
 
 `PlantillaLocal` arma el texto con las plantillas del sitio a partir de
 los fragmentos recuperados: sin dependencias, sin costo, sin internet y
-sin modelo propio. Si algún día el asistente se conecta a un servicio
-de lenguaje aparte, el punto de conexión es `generar_respuesta`: ni la
-vista ni el RAG cambian.
+sin modelo propio. Si `CHATBOT_LLM='ollama'`, el texto lo redacta
+Gemma 4 (vía `llm.redactar`) con las MISMAS reglas metidas en el prompt
+del modelo: que use solo el contexto, que cite los trámites y que diga
+«no dispongo» cuando no alcanza. Si el modelo no está disponible o se
+cae, se vuelve a la plantilla local sin que el ciudadano se entere.
 
 La redacción cumple los criterios del documento: contestar lo que
 preguntaron (con más de una variante, para no repetir siempre la misma
@@ -15,11 +17,14 @@ manejo de alucinaciones y cita de fuentes).
 Además hay un corte ANTES de redactar: una pregunta por MONTO que el
 contexto no trae se contesta con «no dispongo» de entrada — una cifra
 que no está indexada es, por definición, una invención (pasó en vivo:
-«$50.000.000» por renovar el DNI).
+«$50.000.000» por renovar el DNI). Ese corte corre ANTES de llamar al
+modelo: es gratis, determinista y evita hasta preguntarle.
 """
 
 import re
 import zlib
+
+from . import llm
 
 __all__ = [
     'PlantillaLocal',
@@ -165,13 +170,18 @@ def _sin_dato(pregunta):
 def generar_respuesta(pregunta, fragmentos, historial=()):
     """Redacta la respuesta; nunca por encima de lo que está indexado.
 
-    Primero el corte de montos (si la pregunta pide un precio y el
-    contexto no lo trae, «no dispongo» sin redactar); después la
-    plantilla local, que sólo repite datos del índice.
+    Orden: el corte de montos (si la pregunta pide un precio y el
+    contexto no lo trae, «no dispongo» sin redactar); después el modelo
+    —Gemma 4 vía Ollama, si está configurado—; y si no hay modelo o se
+    cayó, la plantilla local, que sólo repite datos del índice.
     """
     if _PREGUNTA_MONTO.search(pregunta) and not _HAY_MONTO.search(
         _contexto(fragmentos)
     ):
         return _sin_dato(pregunta)
+
+    texto = llm.redactar(pregunta, fragmentos, historial)
+    if texto:
+        return texto
 
     return PlantillaLocal().completar(pregunta, fragmentos, historial)

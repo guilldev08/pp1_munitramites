@@ -4,207 +4,174 @@
 {% block panel_titulo %}Centro de Trámites{% endblock %}
 {% block panel_bajada %}Alta, edición y publicación de los trámites del sitio.{% endblock %}
 {% block panel_acciones %}
-  <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
+  <a class="boton" href="{% url 'panel_tramite_nuevo' %}">+ Nuevo trámite</a>
 {% endblock %}
 
 {% block panel_contenido %}
-<form class="subfiltros subfiltros--busqueda" method="get" action="{% url 'panel_tramites' %}">
+{# --- Barra de filtros: buscador y combos, todo en una fila legible -------- #}
+<form class="filtros-tramites" method="get" action="{% url 'panel_tramites' %}">
   <input type="search" name="q" value="{{ q }}"
-         placeholder="Buscar por título, descripción, organismo…"
+         placeholder="Buscar por título, organismo, municipio…"
          aria-label="Buscar trámites">
-  <button class="boton boton--secundario boton--chico" type="submit">Buscar</button>
+
+  <select name="estado" aria-label="Estado">
+    <option value="">Todos los estados</option>
+    <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Publicados</option>
+    <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+  </select>
+
+  <select name="tema" aria-label="Tema">
+    <option value="">Todos los temas</option>
+    {% for tm in temas %}
+      <option value="{{ tm.pk }}" {% if tema_id == tm.pk|stringformat:'s' %}selected{% endif %}>{{ tm.nombre }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="modalidad" aria-label="Modalidad">
+    <option value="">Todas las modalidades</option>
+    {% for valor, texto in modalidades %}
+      <option value="{{ valor }}" {% if modalidad == valor %}selected{% endif %}>{{ texto }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="municipio" aria-label="Municipio">
+    <option value="">Todos los municipios</option>
+    {% for m in municipios %}
+      <option value="{{ m.pk }}" {% if municipio_id == m.pk|stringformat:'s' %}selected{% endif %}>{{ m.nombre }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="organismo" aria-label="Organismo">
+    <option value="">Todos los organismos</option>
+    {% for o in organismos %}
+      <option value="{{ o.pk }}" {% if organismo_id == o.pk|stringformat:'s' %}selected{% endif %}>{{ o.nombre }}</option>
+    {% endfor %}
+  </select>
+
+  <select name="orden" aria-label="Ordenar por">
+    <option value="">Orden por defecto</option>
+    <option value="titulo" {% if orden == 'titulo' %}selected{% endif %}>Título (A–Z)</option>
+    <option value="-titulo" {% if orden == '-titulo' %}selected{% endif %}>Título (Z–A)</option>
+    <option value="tema" {% if orden == 'tema' %}selected{% endif %}>Tema</option>
+    <option value="municipio" {% if orden == 'municipio' %}selected{% endif %}>Municipio</option>
+    <option value="creado" {% if orden == 'creado' %}selected{% endif %}>Más antiguos</option>
+    <option value="-creado" {% if orden == '-creado' %}selected{% endif %}>Más recientes</option>
+  </select>
+
+  <button class="boton boton--secundario boton--chico" type="submit">Filtrar</button>
   {% if hay_filtros %}
     <a class="boton boton--secundario boton--chico" href="{% url 'panel_tramites' %}">Limpiar</a>
   {% endif %}
 </form>
 
-<div class="listado-panel">
-  <div>
-    <form method="post" action="{% url 'panel_tramites_accion' %}">
-      {% csrf_token %}
-      <input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
+{% if pagina.object_list %}
+  <form method="post" action="{% url 'panel_tramites_accion' %}">
+    {% csrf_token %}
+    <input type="hidden" name="siguiente" value="{{ request.get_full_path }}">
 
-      {% if pagina.object_list %}
-        <div class="acciones-barra">
-          <label for="accion-masiva">Acciones:</label>
-          <select id="accion-masiva" name="accion">
-            <option value="">Elegir una acción…</option>
-            <option value="activar">Activar los marcados</option>
-            <option value="desactivar">Desactivar los marcados</option>
-            <option value="destacar">Destacar los marcados</option>
-            <option value="quitar_destacado">Quitar destacado</option>
-          </select>
-          <button class="boton boton--secundario boton--chico" type="submit">Aplicar</button>
-        </div>
+    {# --- Acciones en lote sobre las fichas marcadas --- #}
+    <div class="acciones-barra">
+      <label class="marcar-todos">
+        <input type="checkbox" data-marcar-todo aria-label="Marcar todos los trámites">
+        Marcar todos
+      </label>
+      <select id="accion-masiva" name="accion" aria-label="Acción para los marcados">
+        <option value="">Acción en lote…</option>
+        <option value="activar">Publicar los marcados</option>
+        <option value="desactivar">Desactivar los marcados</option>
+        <option value="destacar">Destacar los marcados</option>
+        <option value="quitar_destacado">Quitar el destacado</option>
+      </select>
+      <button class="boton boton--secundario boton--chico" type="submit">Aplicar</button>
+      <span class="texto-suave texto-chico acciones-barra__conteo">
+        {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}
+      </span>
+    </div>
 
-        <div class="tabla-wrap">
-          <table class="tabla tabla--check">
-            <thead>
-              <tr>
-                <th class="tabla__check">
-                  <input type="checkbox" data-marcar-todo
-                         aria-label="Marcar todos los trámites">
-                </th>
-                <th><a href="{% qs orden='-activo' %}">Activo{% if orden == 'activo' %} ▲{% elif orden == '-activo' %} ▼{% endif %}</a></th>
-                <th><a href="{% qs orden='titulo' %}">Título{% if orden == '-titulo' %} ▲{% elif orden == 'titulo' %} ▼{% endif %}</a></th>
-                <th><a href="{% qs orden='tema' %}">Tema{% if orden == '-tema' %} ▲{% elif orden == 'tema' %} ▼{% endif %}</a></th>
-                <th><a href="{% qs orden='modalidad' %}">Modalidad{% if orden == '-modalidad' %} ▲{% elif orden == 'modalidad' %} ▼{% endif %}</a></th>
-                <th><a href="{% qs orden='municipio' %}">Municipio{% if orden == '-municipio' %} ▲{% elif orden == 'municipio' %} ▼{% endif %}</a></th>
-                <th>Organismo</th>
-                <th><a href="{% qs orden='destacado' %}">Destacado{% if orden == '-destacado' %} ▲{% elif orden == 'destacado' %} ▼{% endif %}</a></th>
-                <th><a href="{% qs orden='creado' %}">Alta{% if orden == '-creado' %} ▲{% elif orden == 'creado' %} ▼{% endif %}</a></th>
-                <th class="tabla__acciones">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for t in pagina %}
-                <tr>
-                  <td class="tabla__check">
-                    <input type="checkbox" name="seleccion" value="{{ t.pk }}"
-                           aria-label="Marcar «{{ t.titulo }}»">
-                  </td>
-                  <td>
-                    {% if t.activo %}
-                      <span class="etiqueta etiqueta--activo">✔</span>
-                    {% else %}
-                      <span class="etiqueta etiqueta--inactivo">Inactivo</span>
-                    {% endif %}
-                  </td>
-                  <td>
-                    <a class="enlace-tabla" href="{% url 'panel_tramite_editar' t.pk %}">{{ t.titulo }}</a>
-                  </td>
-                  <td><span class="etiqueta etiqueta--tema">{{ t.tema }}</span></td>
-                  <td>{{ t.get_modalidad_display }}</td>
-                  <td>{{ t.municipio }}</td>
-                  <td>{{ t.organismo }}</td>
-                  <td>
-                    {% if t.destacado %}
-                      <span class="etiqueta etiqueta--destacado">★ Sí</span>
-                    {% else %}<span class="texto-suave">—</span>{% endif %}
-                  </td>
-                  <td class="texto-suave texto-chico">{{ t.creado|date:"d/m/Y" }}</td>
-                  <td class="tabla__acciones">
-                    <div class="acciones acciones--fila">
-                      <a class="boton boton--secundario boton--chico"
-                         href="{% url 'panel_tramite_editar' t.pk %}">Editar</a>
-                      <button class="boton boton--secundario boton--chico" type="submit"
-                              name="fila_{{ t.pk }}"
-                              value="{% if t.activo %}desactivar{% else %}activar{% endif %}">
-                        {% if t.activo %}Desactivar{% else %}Activar{% endif %}
-                      </button>
-                      <button class="boton boton--secundario boton--chico" type="submit"
-                              name="fila_{{ t.pk }}"
-                              value="{% if t.destacado %}quitar_destacado{% else %}destacar{% endif %}">
-                        {% if t.destacado %}Quitar ★{% else %}Destacar{% endif %}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+    {# --- Una ficha por trámite: se lee de un vistazo --- #}
+    <ul class="fichas-tramite">
+      {% for t in pagina %}
+        <li class="ficha-tramite{% if not t.activo %} ficha-tramite--inactivo{% endif %}">
+          <label class="ficha-tramite__check">
+            <input type="checkbox" name="seleccion" value="{{ t.pk }}"
+                   aria-label="Marcar «{{ t.titulo }}»">
+          </label>
 
-        <p class="texto-suave texto-chico">
-          Mostrando {{ pagina.start_index }}–{{ pagina.end_index }}
-          de {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}.
-        </p>
+          <div class="ficha-tramite__cuerpo">
+            <div class="ficha-tramite__cabecera">
+              <a class="ficha-tramite__titulo" href="{% url 'panel_tramite_editar' t.pk %}">{{ t.titulo }}</a>
+              <span class="etiquetas">
+                {% if t.activo %}
+                  <span class="etiqueta etiqueta--activo">Publicado</span>
+                {% else %}
+                  <span class="etiqueta etiqueta--inactivo">Inactivo</span>
+                {% endif %}
+                {% if t.destacado %}
+                  <span class="etiqueta etiqueta--destacado">★ Destacado</span>
+                {% endif %}
+              </span>
+            </div>
+            <p class="ficha-tramite__meta">
+              <span class="etiqueta etiqueta--tema">{{ t.tema }}</span>
+              <span>{{ t.get_modalidad_display }}</span>
+              <span>{{ t.municipio }}</span>
+              <span>{{ t.organismo }}</span>
+              <span class="texto-suave">Alta {{ t.creado|date:"d/m/Y" }}</span>
+            </p>
+          </div>
+
+          <div class="ficha-tramite__acciones">
+            <a class="boton boton--secundario boton--chico"
+               href="{% url 'panel_tramite_editar' t.pk %}">Editar</a>
+            <button class="boton boton--secundario boton--chico" type="submit"
+                    name="fila_{{ t.pk }}"
+                    value="{% if t.activo %}desactivar{% else %}activar{% endif %}">
+              {% if t.activo %}Desactivar{% else %}Publicar{% endif %}
+            </button>
+            <button class="boton boton--secundario boton--chico" type="submit"
+                    name="fila_{{ t.pk }}"
+                    value="{% if t.destacado %}quitar_destacado{% else %}destacar{% endif %}">
+              {% if t.destacado %}Quitar ★{% else %}Destacar{% endif %}
+            </button>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <p class="texto-suave texto-chico">
+      Mostrando {{ pagina.start_index }}–{{ pagina.end_index }}
+      de {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}.
+    </p>
+
+    {% if pagina.paginator.num_pages > 1 %}
+      <nav class="paginacion">
+        {% if pagina.has_previous %}
+          <a href="{% qs pagina=pagina.previous_page_number %}">← Anterior</a>
+        {% else %}<span class="inactivo">← Anterior</span>{% endif %}
+
+        {% for n in pagina.paginator.page_range %}
+          {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+          {% else %}<a href="{% qs pagina=n %}">{{ n }}</a>{% endif %}
+        {% endfor %}
+
+        {% if pagina.has_next %}
+          <a href="{% qs pagina=pagina.next_page_number %}">Siguiente →</a>
+        {% else %}<span class="inactivo">Siguiente →</span>{% endif %}
+      </nav>
+    {% endif %}
+  </form>
+{% else %}
+  <div class="vacio">
+    <div class="vacio__icono">🗂️</div>
+    <h3>{% if hay_filtros %}No hay trámites que coincidan{% else %}No hay trámites{% endif %}</h3>
+    <p>
+      {% if hay_filtros %}
+        Probá con otros filtros o limpiá la búsqueda.
       {% else %}
-        <div class="vacio">
-          <div class="vacio__icono">🗂️</div>
-          <h3>{% if hay_filtros %}No hay trámites que coincidan{% else %}No hay trámites{% endif %}</h3>
-          <p>
-            {% if hay_filtros %}
-              Probá con otros filtros o limpiá la búsqueda.
-            {% else %}
-              Cargá el primero y los ciudadanos van a poder verlo en el sitio.
-            {% endif %}
-          </p>
-          <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
-        </div>
+        Cargá el primero y los ciudadanos van a poder verlo en el sitio.
       {% endif %}
-
-      {% if pagina.paginator.num_pages > 1 %}
-        <nav class="paginacion">
-          {% if pagina.has_previous %}
-            <a href="{% qs pagina=pagina.previous_page_number %}">← Anterior</a>
-          {% else %}<span class="inactivo">← Anterior</span>{% endif %}
-
-          {% for n in pagina.paginator.page_range %}
-            {% if n == pagina.number %}<span class="actual">{{ n }}</span>
-            {% else %}<a href="{% qs pagina=n %}">{{ n }}</a>{% endif %}
-          {% endfor %}
-
-          {% if pagina.has_next %}
-            <a href="{% qs pagina=pagina.next_page_number %}">Siguiente →</a>
-          {% else %}<span class="inactivo">Siguiente →</span>{% endif %}
-        </nav>
-      {% endif %}
-    </form>
+    </p>
+    <a class="boton" href="{% url 'panel_tramite_nuevo' %}">+ Nuevo trámite</a>
   </div>
-
-  {# --- Filtro lateral, al estilo del «Filtrar» del /admin/ --- #}
-  <aside class="filtros-panel" aria-label="Filtrar trámites">
-    <h3>Filtrar</h3>
-
-    <div class="filtros-grupo">
-      <h4>Activo</h4>
-      <ul>
-        <li><a href="{% qs estado=None %}" {% if not estado %}class="activo"{% endif %}>Todos</a></li>
-        <li><a href="{% qs estado='activos' %}" {% if estado == 'activos' %}class="activo"{% endif %}>Activos</a></li>
-        <li><a href="{% qs estado='inactivos' %}" {% if estado == 'inactivos' %}class="activo"{% endif %}>Inactivos</a></li>
-      </ul>
-    </div>
-
-    <div class="filtros-grupo">
-      <h4>Por tema</h4>
-      <ul>
-        {% for tm in temas %}
-          <li><a href="{% qs tema=tm.pk %}" {% if tema_id == tm.pk|stringformat:'s' %}class="activo"{% endif %}>{{ tm.nombre }}</a></li>
-        {% empty %}
-          <li class="texto-suave texto-chico">Sin temas cargados.</li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="filtros-grupo">
-      <h4>Por modalidad</h4>
-      <ul>
-        {% for valor, texto in modalidades %}
-          <li><a href="{% qs modalidad=valor %}" {% if modalidad == valor %}class="activo"{% endif %}>{{ texto }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="filtros-grupo">
-      <h4>Por municipio</h4>
-      <ul>
-        {% for m in municipios %}
-          <li><a href="{% qs municipio=m.pk %}" {% if municipio_id == m.pk|stringformat:'s' %}class="activo"{% endif %}>{{ m.nombre }}</a></li>
-        {% empty %}
-          <li class="texto-suave texto-chico">Sin municipios cargados.</li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="filtros-grupo">
-      <h4>Por organismo</h4>
-      <ul>
-        {% for o in organismos %}
-          <li><a href="{% qs organismo=o.pk %}" {% if organismo_id == o.pk|stringformat:'s' %}class="activo"{% endif %}>{{ o.nombre }}</a></li>
-        {% empty %}
-          <li class="texto-suave texto-chico">Sin organismos cargados.</li>
-        {% endfor %}
-      </ul>
-    </div>
-
-    <div class="filtros-grupo">
-      <h4>Por destacado</h4>
-      <ul>
-        <li><a href="{% qs destacado='si' %}" {% if destacado == 'si' %}class="activo"{% endif %}>Destacados</a></li>
-        <li><a href="{% qs destacado='no' %}" {% if destacado == 'no' %}class="activo"{% endif %}>No destacados</a></li>
-      </ul>
-    </div>
-  </aside>
-</div>
+{% endif %}
 {% endblock %}

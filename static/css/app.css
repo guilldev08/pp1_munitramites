@@ -1031,7 +1031,8 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
   padding: .35rem .5rem;
   border: 1px solid var(--gris-200, #d4d4d8);
   border-radius: 6px;
-  background: var(--gris-blanco, #fff);
+  background: var(--sup, #fff);
+  color: var(--gris-900, #0b1220);
   font: inherit;
   font-size: .85rem;
 }
@@ -1080,4 +1081,101 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
 
 @media (max-width: 900px) {
   .listado-panel { grid-template-columns: 1fr; }
+}
+
+/* =========================================================================
+   Centro de Trámites: barra de filtros y lista en fichas legibles.
+   Reemplaza la tabla ancha tipo planilla por una ficha por trámite.
+   ========================================================================= */
+.filtros-tramites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.filtros-tramites input[type="search"],
+.filtros-tramites select {
+  padding: .5rem .75rem;
+  border: 1px solid var(--gris-200);
+  border-radius: 8px;
+  font: inherit;
+  font-size: .875rem;
+  background: var(--sup);
+  color: var(--gris-900);
+}
+.filtros-tramites input[type="search"] { flex: 1 1 260px; min-width: 200px; }
+.filtros-tramites input[type="search"]:focus,
+.filtros-tramites select:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px var(--anillo);
+}
+
+.acciones-barra__conteo { margin-left: auto; }
+.marcar-todos {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .85rem;
+  color: var(--gris-500);
+}
+
+.fichas-tramite {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: .75rem;
+}
+.ficha-tramite {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--gris-100);
+  border-radius: 10px;
+  background: var(--sup);
+  box-shadow: var(--sombra);
+}
+.ficha-tramite--inactivo { opacity: .72; }
+.ficha-tramite__check { padding-top: .15rem; }
+.ficha-tramite__cuerpo { flex: 1 1 auto; min-width: 0; }
+.ficha-tramite__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .75rem;
+}
+.ficha-tramite__titulo {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: none;
+}
+.ficha-tramite__titulo:hover { color: var(--azul); text-decoration: underline; }
+.ficha-tramite__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem .75rem;
+  margin: .5rem 0 0;
+  font-size: .85rem;
+  color: var(--gris-500);
+}
+.ficha-tramite__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  flex: 0 0 auto;
+  min-width: 8.5rem;
+}
+
+@media (max-width: 700px) {
+  .ficha-tramite { flex-wrap: wrap; }
+  .ficha-tramite__acciones {
+    flex-direction: row;
+    width: 100%;
+    min-width: 0;
+  }
 }

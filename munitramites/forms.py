@@ -239,38 +239,23 @@ class TramitePanelForm(forms.ModelForm):
         }
 
 
-# Inlines del Centro de Trámites: mismos campos que los del /admin/.
-# `extra=3` deja tres filas vacías listas para escribir; para seguir
-# cargando hay un botón «+ Agregar» que clona una fila nueva (app.js,
-# prepararInlines()).
-def _campo_orden(model_field, **kwargs):
-    """`orden` sin initial en los inlines.
-
-    El default del modelo (0) llegaba como initial al form y, con las
-    versiones nuevas de Django, hacía que una fila VACÍA contara como
-    «modificada»: se perdía el pase de `empty_permitted` y la fila vacía
-    rompía el guardado con «Este campo es obligatorio». Sin initial, la
-    fila vacía se ignora sola.
-    """
-    if model_field.name == 'orden':
-        kwargs['initial'] = None
-    return model_field.formfield(**kwargs)
-
-
+# Inlines del Centro de Trámites: el usuario NO escribe el «orden». Lo
+# numera el panel solo, por la posición de la fila (ver views/panel.py),
+# así no hay ningún campo obligatorio escondido que trabe el guardado.
+# `extra=3` deja tres filas vacías listas; para seguir cargando hay un
+# botón «+ Agregar» que clona una fila nueva (app.js, prepararInlines()).
 RequisitoFormSet = inlineformset_factory(
     Tramite, Requisito,
-    fields=['descripcion', 'orden'],
+    fields=['descripcion'],
     extra=3,
     can_delete=True,
-    formfield_callback=_campo_orden,
 )
 
 EnlaceFormSet = inlineformset_factory(
     Tramite, Enlace,
-    fields=['nombre', 'url', 'orden'],
+    fields=['nombre', 'url'],
     extra=3,
     can_delete=True,
-    formfield_callback=_campo_orden,
 )
 
 

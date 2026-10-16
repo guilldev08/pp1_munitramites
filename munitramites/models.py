@@ -126,6 +126,9 @@ class Requisito(models.Model):
         Tramite, on_delete=models.CASCADE, related_name='requisitos'
     )
     descripcion = models.CharField(max_length=300)
+    # `orden` lo asigna solo el panel, por la posición de la fila: el
+    # usuario no lo escribe. La restricción única evita que dos requisitos
+    # del mismo trámite queden empatados en el orden.
     orden = models.PositiveIntegerField(default=0)
 
     class Meta:

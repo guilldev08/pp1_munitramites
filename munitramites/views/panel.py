@@ -293,6 +293,45 @@ def _contexto_form_tramite(request, tramite):
     return form, requisitos, enlaces
 
 
+# Los «orden» se renumeran pasando primero por este rango: así nunca se
+# viola la restricción única (trámite, orden) a mitad de camino.
+_ORDEN_TEMPORAL = 1_000_000
+
+
+def _guardar_inlines(formset):
+    """Guarda las filas del formset numerando «orden» por su posición.
+
+    El usuario no escribe el orden: es el de las filas, de arriba hacia
+    abajo. Se hace en dos pasos para no violar nunca la restricción única
+    (trámite, orden): primero las filas que ya existen se corren a un
+    rango temporal y recién después se numera 0, 1, 2… en el orden del
+    formulario.
+    """
+    # Crea/actualiza en memoria y junta las filas marcadas para borrar.
+    formset.save(commit=False)
+    for borrado in formset.deleted_objects:
+        borrado.delete()
+
+    filas = [
+        form for form in formset.forms
+        if not form.cleaned_data.get('DELETE')
+        and (form.instance.pk or form.has_changed())
+    ]
+
+    # Paso 1: los que ya están en la base pasan al rango temporal.
+    for i, form in enumerate(filas):
+        obj = form.instance
+        if obj.pk:
+            obj.orden = _ORDEN_TEMPORAL + i
+            obj.save()
+
+    # Paso 2: numeración definitiva por posición (acá se crean los nuevos).
+    for i, form in enumerate(filas):
+        obj = form.instance
+        obj.orden = i
+        obj.save()
+
+
 def _guardar_tramite(request, tramite):
     """Valida form + formsets y guarda todo junto. True si se guardó.
 
@@ -306,9 +345,9 @@ def _guardar_tramite(request, tramite):
     tramite = form.save()
     # Los formsets apuntan al MISMO objeto: ya tiene pk al guardarlos.
     requisitos.instance = tramite
-    requisitos.save()
+    _guardar_inlines(requisitos)
     enlaces.instance = tramite
-    enlaces.save()
+    _guardar_inlines(enlaces)
     return True, form, requisitos, enlaces
 
 

@@ -1,0 +1,43 @@
+/* Landing de Munitramites. Todo va bajo .lp para no chocar con app.css.
+   Colores de marca: cambiá --lp-azul / --lp-verde / --lp-rojo por los de app.css. */
+.lp{--lp-azul:#0b5cab;--lp-verde:#1f9d55;--lp-rojo:#d62f3a;--lp-bg:#fff;--lp-bg2:#f3f6fa;--lp-txt:#1d2733;--lp-mut:#5a6878;--lp-line:#dbe3ec;--lp-noche:#12263f;
+  background:var(--lp-bg);color:var(--lp-txt);line-height:1.5}
+:root[data-tema="oscuro"] .lp{--lp-azul:#4d97e6;--lp-verde:#3cc27a;--lp-rojo:#ef6670;--lp-bg:#0f1722;--lp-bg2:#16212f;--lp-txt:#e8eef5;--lp-mut:#9fb0c3;--lp-line:#2a3a4e;--lp-noche:#0a111b}
+@media(prefers-color-scheme:dark){:root:not([data-tema]) .lp{--lp-azul:#4d97e6;--lp-verde:#3cc27a;--lp-rojo:#ef6670;--lp-bg:#0f1722;--lp-bg2:#16212f;--lp-txt:#e8eef5;--lp-mut:#9fb0c3;--lp-line:#2a3a4e;--lp-noche:#0a111b}}
+.lp *{box-sizing:border-box}
+.lp a{text-decoration:none}
+.lp-wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.lp-btn{display:inline-block;border-radius:4px;padding:11px 24px;font-weight:600;font-size:15px;border:2px solid var(--lp-azul);cursor:pointer;color:var(--lp-azul);background:transparent}
+.lp-btn--fill{background:var(--lp-azul);color:#fff}
+.lp-hero{position:relative;min-height:480px;display:flex;align-items:center;text-align:center;color:#fff;
+  background:linear-gradient(rgba(10,25,45,.55),rgba(10,25,45,.55)),url('../img/andresito.jpg') center/cover}
+.lp-marca{font-size:clamp(34px,6vw,56px);font-weight:800;letter-spacing:.5px;margin:0 0 6px}
+.lp-marca span:nth-child(1){color:#6db3f5}.lp-marca span:nth-child(2){color:#48d487}.lp-marca span:nth-child(3){color:#ff7a84}
+.lp-hero h1{font-size:clamp(24px,4vw,38px);font-weight:300;margin:0 0 12px}
+.lp-hero p{margin:0 auto 26px;max-width:560px;font-size:18px;opacity:.95}
+.lp-hero .lp-btn{color:#fff;border-color:#fff;margin:4px}
+.lp-hero .lp-btn--fill{background:var(--lp-verde);border-color:var(--lp-verde)}
+.lp-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,#0b5cab 33%,#1f9d55 33% 66%,#d62f3a 66%)}
+.lp-tabs{display:flex;justify-content:center;gap:28px;padding:16px 20px 0;border-bottom:1px solid var(--lp-line);font-size:14px;font-weight:600;overflow-x:auto}
+.lp-tabs a{padding-bottom:8px;color:var(--lp-mut);white-space:nowrap}
+.lp-tabs a:first-child{color:var(--lp-azul);border-bottom:3px solid var(--lp-azul)}
+.lp-sec{padding:64px 0}.lp-alt{background:var(--lp-bg2)}
+.lp h2{font-size:clamp(26px,3.6vw,36px);font-weight:300;text-align:center;margin:0}
+.lp-sub{text-align:center;color:var(--lp-mut);margin:6px 0 0}
+.lp-bar{width:56px;height:3px;background:var(--lp-verde);margin:16px auto 36px}
+.lp-pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.lp-paso{background:var(--lp-bg2);border-radius:8px;padding:28px 24px;text-align:center;border-top:4px solid var(--c)}
+.lp-paso b{width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;font-size:20px;display:grid;place-items:center;margin:0 auto 14px}
+.lp-paso h3{margin:0 0 6px;color:var(--c);font-size:20px}.lp-paso p{margin:0;color:var(--lp-mut);font-size:15px}
+.lp-row{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.lp-tag{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--lp-rojo)}
+.lp-row h3{font-size:30px;font-weight:300;margin:6px 0 10px}.lp-row p{color:var(--lp-mut);margin:0 0 18px}
+.lp-card{background:var(--lp-bg);border:1px solid var(--lp-line);border-radius:10px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.lp-card small{color:var(--lp-mut);display:block;margin-top:6px}
+.lp-q{background:var(--lp-azul);color:#fff;border-radius:14px 14px 4px 14px;padding:9px 13px;font-size:14px;margin-left:auto;width:fit-content;max-width:85%}
+.lp-a{background:var(--lp-bg2);border-radius:14px 14px 14px 4px;padding:9px 13px;font-size:14px;margin-top:10px;max-width:92%;border-left:3px solid var(--lp-verde)}
+.lp-chip{display:inline-block;border-radius:99px;padding:3px 11px;font-size:12px;font-weight:600;color:#fff;margin:0 6px 6px 0}
+.lp-mapa{border:1px solid var(--lp-line);border-radius:10px;overflow:hidden;background:var(--lp-bg)}
+.lp-mapa iframe{display:block;width:100%;height:460px;border:0}
+.lp-mapa-link{text-align:center;margin:14px 0 0;font-size:14px}.lp-mapa-link a{color:var(--lp-azul);font-weight:600}
+@media(max-width:760px){.lp-pasos,.lp-row{grid-template-columns:1fr}.lp-hero{min-height:420px}}

@@ -22,9 +22,10 @@ class LandingTests(TestCase):
         r = self.client.get(reverse('inicio'))
 
         self.assertEqual(r.status_code, 200)
-        # «Iniciar sesión» abre el modal de auth en la misma landing
+        # «Iniciar sesión / Regístrate» abre el modal de auth en la landing
         self.assertContains(
-            r, 'data-abrir="modal-auth" data-tab="login">Iniciar sesión</a>')
+            r, 'data-abrir="modal-auth" data-tab="login">'
+               'Iniciar sesión / Regístrate</a>')
         self.assertContains(r, 'Continuar sin sesión')
         self.assertContains(r, reverse('tramites'))
         self.assertContains(r, 'modal-chat')   # el asistente sigue al alcance
@@ -50,11 +51,11 @@ class LandingTests(TestCase):
     def test_muestra_los_tres_pasos_listos_para_aparecer(self):
         r = self.client.get(reverse('inicio'))
 
-        self.assertContains(r, '¿Cómo funciona?')
+        self.assertContains(r, 'Hacé tu trámite en 3 pasos')
         for paso in ('Buscá', 'Revisá los requisitos', 'Tramitá'):
             self.assertContains(r, paso)
         # la sección arranca oculta y aparece al hacer scroll (ver extra_js)
-        self.assertContains(r, 'class="seccion revelar"')
+        self.assertContains(r, 'class="lp-sec revelar"')
 
     def test_al_logueado_le_cambia_los_botones(self):
         """Con sesión no se le vuelve a ofrecer entrar: va al listado."""
@@ -62,8 +63,9 @@ class LandingTests(TestCase):
 
         r = self.client.get(reverse('inicio'))
 
-        self.assertContains(r, '<a class="boton" href="%s">Ver trámites</a>'
-                            % reverse('tramites'))
+        self.assertContains(
+            r, '<a class="lp-btn lp-btn--fill" href="%s">Ver trámites</a>'
+               % reverse('tramites'))
         self.assertNotContains(
             r, 'data-abrir="modal-auth" data-tab="login">Iniciar sesión</a>')
 

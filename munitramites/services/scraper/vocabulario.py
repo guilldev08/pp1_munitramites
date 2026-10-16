@@ -49,10 +49,12 @@ PALABRAS_RUIDO = (
     '.zip',
 )
 
-# Redes sociales: enlaces con URL rara pero sin texto.
+# Redes sociales y botones de «compartir»: enlaces con URL rara que no
+# llevan a ninguna parte del sitio.
 REDES = (
     'facebook.com', 'instagram.com', 'youtube.com', 'twitter.com',
     '://x.com/', 'linkedin', 'tiktok', 'whatsapp', 'wa.me', 'telegram',
+    'addtoany', 'sharethis',
 )
 
 # --- Puertas: portales de trámites del sitio -------------------------

@@ -322,6 +322,10 @@ class RelevanciaTests(TestCase):
     def test_las_noticias_y_los_pdfs_son_ruido(self):
         self.assertTrue(relevancia.es_ruido('/noticias/sumate'))
         self.assertTrue(relevancia.es_ruido('/transparencia/boletin.pdf'))
+        # Los botones de «compartir» de los sitios no son puertas.
+        self.assertTrue(relevancia.es_ruido(
+            'https://www.addtoany.com/add_to/x?linkurl=https%3A%2F%2Fmisiones'
+        ))
         self.assertFalse(relevancia.es_ruido('/dni/renovacion'))
 
     def test_un_indice_de_seccion_no_parece_ficha(self):

@@ -217,10 +217,11 @@ OLLAMA_URL = os.environ.get(
     'OLLAMA_URL', 'http://host.docker.internal:11434',
 )
 OLLAMA_MODELO = os.environ.get('OLLAMA_MODELO', 'gemma4')
-# Segundos de espera por respuesta: 300 porque la PRIMERA consulta de la
-# jornada tiene que esperar a que el modelo se cargue en RAM (hasta
-# ~2-3 minutos en una PC con poca RAM); las siguientes salen calientes
-# en ~15-30 s. Si igual no llega, la plantilla local cubre el timeout.
+# Segundos de espera por respuesta: 300 de resguardo por si el modelo
+# no está cargado (arranque sin calentar): la carga en RAM puede llevar
+# ~2-3 minutos en CPU. Con el modelo residente (ollama-init lo calienta
+# al arrancar, con keep_alive=-1) la respuesta sale en ~60-90 s. Si
+# igual no llega, la plantilla local cubre el timeout.
 OLLAMA_TIMEOUT = int(os.environ.get('OLLAMA_TIMEOUT', '300'))
 # En los tests NUNCA se habla con el modelo: la redacción vuelve a la
 # plantilla local (los tests de la capa LLM la simulan con mocks y la

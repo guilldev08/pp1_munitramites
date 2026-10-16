@@ -66,7 +66,9 @@ docker compose up -d --build
 | Firebird | puerto 3050 |
 
 La primera vez tarda unos minutos (baja imágenes e instala dependencias)
-y además baja el modelo del asistente (~6,6 GB, servicio `ollama-init`).
+y además baja **y calienta** el modelo del asistente (~6,6 GB, servicio
+`ollama-init`): el primer arranque suma ~3 minutos más y después el
+modelo queda cargado en RAM para todas las charlas.
 
 ### Cargar los datos de ejemplo
 
@@ -632,8 +634,10 @@ Tests: `test_chatbot.BuscadorTests`.
 **El modelo corre dentro del proyecto**: el servicio `ollama` del
 `docker-compose.yml` baja **Gemma 4** la primera vez (~6,6 GB, guardado
 en el volumen `ollama_data`) y `llm.py` le pasa la pregunta con los
-fragmentos del índice. En CPU la primera respuesta tarda ~1-2 minutos
-(carga del modelo en RAM) y después ~15-30 segundos por pregunta.
+fragmentos del índice. Al arrancar el stack, `ollama-init` calienta el
+modelo una vez (con `keep_alive=-1`, queda residente: ~1,9 GB) y así
+cada pregunta sale en ~60-90 s en CPU; si el modelo se descarga, la
+siguiente charla vuelve a tardar ~2-3 minutos mientras se recarga.
 
 El prompt tiene dos niveles: **los datos de trámites salen SOLO del
 CONTEXTO** (el modelo cita requisitos y montos tal como aparecen en los
@@ -759,10 +763,12 @@ Luego escribí SQL y cerrá con `quit;`.
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 
-> **RAM del asistente**: Gemma 4 ocupa ~5,7 GB en memoria. En una PC de
-> 8 GB hay que darle a la VM de Docker unos 6,5 GB (`.wslconfig` →
-> `[wsl2]` con `memory=6500MB` y `swap=8GB`); si no alcanza, el asistente
-> sigue funcionando con las plantillas locales.
+> **RAM del asistente**: la carga del modelo llega a ~5,7 GB y el uso
+> residente queda en ~1,9 GB. En una PC de 8 GB hay que darle a la VM de
+> Docker unos 6,5 GB (`.wslconfig` → `[wsl2]` con `memory=6500MB` y
+> `swap=8GB`) y cargarlo de una sola vez al arrancar (`ollama-init`, con
+> `keep_alive=-1`); si no alcanza, el asistente sigue funcionando con las
+> plantillas locales.
 
 ## Notas
 

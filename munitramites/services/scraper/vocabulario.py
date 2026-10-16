@@ -8,6 +8,10 @@ lógica. Las listas que importan:
     · PALABRAS_RUIDO     caminos que nunca son un trámite (noticias, PDF…).
     · PALABRAS_PUERTA    entradas al portal de trámites del sitio.
     · PALABRAS_REQUISITO frases de «qué hay que presentar».
+    · PALABRAS_CASCARA   texto de menú/pie que se cuela como dato.
+    · PALABRAS_RELLENO   descripciones que son la bajada del sitio.
+    · TITULOS_GENERICOS  rótulos de botón o de sección, no de trámite.
+    · PALABRAS_TURNO     links para pedir turno.
     · TEMAS_POR_PALABRA  los 7 temas del catálogo, por palabra.
 """
 
@@ -39,6 +43,8 @@ PALABRAS_RUIDO = (
     '/galeria', '/audiovisual', '/multimedia', '/transparencia',
     '/licitacion', '/concurso', '/boletin', '/mapa-del-sitio',
     '/buscar', '/login', '/ingresar', '/mi-cuenta', '/carrito',
+    # Un «tema» es un listado de servicios, no la ficha de uno.
+    '/tema/',
     '.pdf', '.doc', '.xls', '.jpg', '.jpeg', '.png', '.gif', '.mp4',
     '.zip',
 )
@@ -63,6 +69,49 @@ PALABRAS_REQUISITO = (
     'dni', 'documento', 'original', 'copia', 'formulario', 'presentar',
     'acreditar', 'abonar', 'acompanar', 'vigente', 'certificado',
     'partida', 'constancia', 'comprobante', 'foto', 'fotocopia', 'turno',
+)
+
+# --- Cáscara: texto de menú/pie que nunca es dato --------------------
+# Los portales envuelven los links de menú en bloques enormes: si un
+# título o un requisito trae esto, es el menú colado y se descarta.
+PALABRAS_CASCARA = (
+    'ver mas', 'leer mas', 'seguir leyendo', 'mas informacion',
+    'compartir', 'imprimir', 'multimedia', 'galeria', 'redes sociales',
+    'suscrib', 'newsletter', 'mapa del sitio', 'politica de privacidad',
+    'terminos y condiciones', 'todos los derechos', 'inicio', 'contacto',
+    'tramites y gestiones', 'informacion general',
+    'exenciones y bonificaciones', 'boletin oficial', 'menu',
+)
+
+# --- Relleno: descripciones que son la bajada del sitio ---------------
+PALABRAS_RELLENO = (
+    'sitio de la', 'sitio oficial', 'portal oficial', 'pagina oficial',
+    'todos los derechos', 'politica de privacidad', 'uso de cookies',
+    'mapa del sitio', 'suscribite', 'seguinos', 'facebook', 'instagram',
+)
+
+# --- Títulos genéricos: son un botón o una sección, no un trámite -----
+TITULOS_GENERICOS = (
+    'tramites', 'tramites y gestiones', 'gestiones', 'servicios',
+    'servicios al ciudadano', 'inicio', 'home', 'principal',
+    'gestionar los servicios', 'mas informacion', 'ver mas', 'leer mas',
+    'ingresar', 'acceder', 'consultas', 'contacto', 'informacion general',
+    'novedades', 'noticias', 'servicios on line',
+)
+
+# Palabras de sección: un rótulo con DOS o más es un volcado de menú
+# («Inmobiliario Trámites y Gestiones Información General…»), no un
+# nombre de trámite.
+PALABRAS_SECCION = (
+    'tramites', 'gestiones', 'servicios', 'informacion', 'general',
+    'exenciones', 'bonificaciones', 'estados', 'consideraciones',
+    'multimedia', 'galeria', 'novedades', 'noticias', 'inicio',
+    'contacto', 'consultas', 'institucional', 'autoridades',
+)
+
+# --- Turnos: links para pedir turno en la ficha ----------------------
+PALABRAS_TURNO = (
+    'turno', 'reserv', 'sacar cita', 'pedir cita', 'cita previa',
 )
 
 # --- Clasificación: los 7 temas del catálogo -------------------------

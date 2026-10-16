@@ -7,14 +7,14 @@ hacer una segunda vuelta sobre ellas.
 """
 
 import re
-from urllib.parse import urldefrag, urljoin
+from urllib.parse import urldefrag, urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 from .relevancia import (
-    LARGO_URL_MAXIMO, PUNTAJE_MINIMO, esta_en_menu, es_ruido, puntaje_link,
-    sin_acentos,
+    LARGO_URL_MAXIMO, PUNTAJE_MINIMO, es_ruido, es_slug_de_titular,
+    esta_en_menu, puntaje_link, sin_acentos,
 )
 from .vocabulario import PALABRAS_PUERTA
 
@@ -52,6 +52,13 @@ def candidatos(html, base):
         if not url.startswith('http') or len(texto) < 5 or url in vistos:
             continue
         if len(url) > LARGO_URL_MAXIMO or es_ruido(url):
+            continue
+        # La home del sitio no es un trámite (y su link suele decir
+        # «Gestionar los servicios»): se descarta.
+        if urlparse(url).path in ('', '/'):
+            continue
+        # Un slug larguísimo es el titular de una noticia.
+        if es_slug_de_titular(url):
             continue
         puntos = puntaje_link(texto, url, en_menu=esta_en_menu(a))
         if puntos < PUNTAJE_MINIMO:

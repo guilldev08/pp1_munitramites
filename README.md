@@ -97,11 +97,15 @@ docker compose exec web python manage.py scrapear_sitios --limite 5 --max-por-si
 | Paso | Qué hace |
 |---|---|
 | 1 · Planilla | importa `services/scraper/data/organismos_misiones.csv` (NOMBRE, OCUPACION, LINK_SITIO_OFICIAL) y crea los organismos que falten — idempotente, no duplica |
-| 2 · Rastreo | visita cada sitio, puntúa los links (palabras fuertes/débiles, los de menú valen la mitad) y sigue solo los que huelen a trámite; si hay una «puerta» al portal (Servicios, Trámites, Turnos…), entra y busca también ahí |
-| 3 · Extracción | entra a cada ficha, verifica que **sea** una ficha (no un índice ni una noticia) y extrae descripción y requisitos |
+| 2 · Rastreo | visita cada sitio, puntúa los links (palabras fuertes/débiles, los de menú valen la mitad) y sigue solo los que huelen a trámite; si hay una «puerta» al portal (Servicios, Trámites, Turnos…), entra y busca también ahí, y de cada puerta mira sus propias puertas —las fichas están a dos o tres clicks de la home— |
+| 3 · Extracción | entra a cada ficha, verifica que **sea** una ficha (no un índice ni una noticia) y saca el nombre del `<title>`/`<h1>` de la página, la descripción del primer párrafo con sustancia, los requisitos de la lista que sigue a «Requisitos» y los enlaces de turno y del sitio oficial |
+| 4 · Sin repetir | no carga dos veces la misma ficha (compara la URL sin `www`, sin barra final ni fragmento) ni el mismo nombre de trámite, aunque venga de otro organismo; los requisitos repetidos se descartan |
 
 - Todo lo que sale del scraping queda **inactivo**: se revisa, se corrige y
   se publica desde el Centro de Trámites del panel.
+- Los datos se leen del contenido de la ficha, nunca del texto del link: en
+  los portales el link envuelve el menú entero («Inmobiliario Trámites y
+  Gestiones Información General…»).
 - Un sitio caído es una fila en el resumen, no un traceback: la corrida
   sigue con el resto.
 - Flags: `--csv` (otra planilla), `--limite N` (primeros N sitios),
@@ -381,12 +385,12 @@ munitramites/
     │       ├── vocabulario.py      #       todas las palabras, en un solo lugar
     │       ├── relevancia.py       #    2. qué link es un trámite (umbral + menú)
     │       ├── rastreo.py          #       HTTP + candidatos + puertas
-    │       ├── extraccion.py       #    3. ¿es ficha? requisitos + descripción
+    │       ├── extraccion.py       #    3. ¿es ficha? título + requisitos + enlaces
     │       ├── clasificacion.py    #       tema, municipio y modalidad
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (240)
+    ├── tests/                      #    tests de aceptación (254)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -511,7 +515,7 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 240 tests
+docker compose exec web python manage.py test --noinput         # correr los 254 tests
 
 docker compose logs -f ollama                                  # ver la carga del modelo
 docker compose exec ollama ollama list                         # modelos disponibles

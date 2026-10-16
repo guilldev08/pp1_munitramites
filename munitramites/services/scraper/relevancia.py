@@ -14,6 +14,7 @@ fuerte, o dos débiles). Ver vocabulario.py para las listas.
 
 import re
 import unicodedata
+from urllib.parse import urlparse
 
 from .vocabulario import (
     PALABRAS_DEBILES, PALABRAS_FUERTES, PALABRAS_RUIDO, REDES,
@@ -35,10 +36,42 @@ def sin_acentos(texto):
     )
 
 
+def normalizar(texto):
+    """Clave de comparación: sin acentos, sin mayúsculas, sin espacios de más."""
+    return re.sub(r'\s+', ' ', sin_acentos((texto or '').lower())).strip()
+
+
+def normalizar_url(url):
+    """Clave de comparación de URLs.
+
+    Dos links al mismo lugar que difieren en el esquema, el `www`, la
+    barra final o el fragmento son el MISMO trámite: se comparan
+    normalizados para no cargarlo dos veces.
+    """
+    partes = urlparse(url or '')
+    host = partes.netloc.lower()
+    if host.startswith('www.'):
+        host = host[4:]
+    clave = f'{host}{partes.path.rstrip("/") or "/"}'
+    return f'{clave}?{partes.query}' if partes.query else clave
+
+
 def es_ruido(texto):
     """¿El texto o la URL son de algo que nunca es un trámite?"""
     bajo = sin_acentos(texto.lower())
     return any(p in bajo for p in PALABRAS_RUIDO + REDES)
+
+
+# Un slug de trámite es corto («beneficios-cud»); un titular de noticia
+# arrastra ocho palabras o más («avanzamos-hacia-una-gestion-catastral…»).
+PALABRAS_SLUG_TITULAR = 8
+
+
+def es_slug_de_titular(url):
+    """¿La URL es el slug de una noticia («samsa-instala-nuevo-equipamiento…»)?"""
+    segmento = urlparse(url or '').path.rstrip('/').split('/')[-1]
+    palabras = [p for p in segmento.split('-') if p]
+    return len(palabras) >= PALABRAS_SLUG_TITULAR
 
 
 def puntaje_link(texto, url, en_menu=False):

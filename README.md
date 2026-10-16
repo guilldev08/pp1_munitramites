@@ -68,7 +68,9 @@ docker compose up -d --build
 La primera vez tarda unos minutos (baja imágenes e instala dependencias)
 y además baja **y calienta** el modelo del asistente (~6,6 GB, servicio
 `ollama-init`): el primer arranque suma ~3 minutos más y después el
-modelo queda cargado en RAM para todas las charlas.
+modelo queda cargado en RAM (~5,3 GB) para todas las charlas. Si el
+servicio `ollama` se reinicia y el modelo se descarga, `ollama-init` lo
+vuelve a calentar solo.
 
 ### Cargar los datos de ejemplo
 
@@ -634,10 +636,11 @@ Tests: `test_chatbot.BuscadorTests`.
 **El modelo corre dentro del proyecto**: el servicio `ollama` del
 `docker-compose.yml` baja **Gemma 4** la primera vez (~6,6 GB, guardado
 en el volumen `ollama_data`) y `llm.py` le pasa la pregunta con los
-fragmentos del índice. Al arrancar el stack, `ollama-init` calienta el
-modelo una vez (con `keep_alive=-1`, queda residente: ~1,9 GB) y así
-cada pregunta sale en ~60-90 s en CPU; si el modelo se descarga, la
-siguiente charla vuelve a tardar ~2-3 minutos mientras se recarga.
+fragmentos del índice. `ollama-init` mantiene el modelo cargado (con
+`keep_alive=-1`, residente: ~5,3 GB en CPU) y lo vuelve a calentar solo
+si se descarga —por ejemplo, si el servicio `ollama` se reinicia—: así
+cada pregunta sale en ~60-90 s en CPU. Sin eso, la primera consulta tras
+un reinicio paga una carga en frío de ~2-3 minutos.
 
 El prompt tiene dos niveles: **los datos de trámites salen SOLO del
 CONTEXTO** (el modelo cita requisitos y montos tal como aparecen en los
@@ -763,12 +766,13 @@ Luego escribí SQL y cerrá con `quit;`.
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 
-> **RAM del asistente**: la carga del modelo llega a ~5,7 GB y el uso
-> residente queda en ~1,9 GB. En una PC de 8 GB hay que darle a la VM de
-> Docker unos 6,5 GB (`.wslconfig` → `[wsl2]` con `memory=6500MB` y
-> `swap=8GB`) y cargarlo de una sola vez al arrancar (`ollama-init`, con
-> `keep_alive=-1`); si no alcanza, el asistente sigue funcionando con las
-> plantillas locales.
+> **RAM del asistente**: en CPU el modelo ocupa ~5,3 GB de RAM y el pico
+> de carga (con el buffer de *repack*) llega a ~6,8 GB. En una PC de 8 GB
+> hay que darle a la VM de Docker unos 6,5 GB (`.wslconfig` → `[wsl2]`
+> con `memory=6500MB` y `swap=8GB`) y mantenerlo cargado con
+> `ollama-init` (`keep_alive=-1`, y lo re-calienta si se descarga). Queda
+> al límite: si la VM no da abasto, el asistente sigue funcionando con
+> las plantillas locales.
 
 ## Notas
 

@@ -59,14 +59,15 @@ services:
     # Sin puertos publicados a propósito: el único cliente es el
     # servicio web (red interna) y así no choca con un Ollama de la PC.
 
-  # Baja el modelo la primera vez (idempotente: si ya está, no hace
-  # nada) y lo CALIENTA una vez por arranque con keep-alive -1: queda
-  # residente en RAM (~1,9 GB) y cada pregunta del asistente sale
-  # caliente (~60-90 s en CPU). Sin esto, cada charla pagaría la carga
-  # del modelo (~2-3 min) y en PCs de 8 GB esa carga puede tumbar el
-  # OOM de la VM — por eso se carga de una vez, al arrancar, sin
-  # usuarios hablando todavía. Si no hay modelo, el asistente contesta
-  # con la plantilla local (diseñado para eso).
+  # Mantiene el modelo CARGADO en RAM (keep-alive -1): lo baja la
+  # primera vez (idempotente) y, si el servicio `ollama` se reinicia y
+  # el modelo queda descargado, lo vuelve a calentar solo. En CPU el
+  # modelo ocupa ~5,3 GB de RAM (~6,8 GB en el pico de carga) y cada
+  # pregunta sale caliente (~60-90 s); sin esto, la primera consulta
+  # tras un reinicio paga una carga en frío (~2-3 min) cuyo pico de RAM
+  # se come el margen de la VM y tumba al contenedor `web` (esta PC
+  # tiene 7,8 GB en total). Si no hay modelo, el asistente contesta con
+  # la plantilla local (diseñado para eso).
   ollama-init:
     image: ollama/ollama:latest
     depends_on:
@@ -76,17 +77,25 @@ services:
     # La imagen trae ENTRYPOINT ["ollama"]: sin este override, el
     # sh -c de abajo se ejecutaría como «ollama sh -c» y no corre.
     entrypoint: ["/bin/sh", "-c"]
+    # Vigilante: en cada vuelta mira si el modelo está en RAM y, si no,
+    # lo calienta. Cubre el arranque del stack y también que `ollama`
+    # se reinicie por su cuenta —donde un one-shot no volvería a correr
+    # y el asistente quedaría pagando la carga en frío en cada charla.
     command:
       - >-
-        ollama list 2>/dev/null | grep -q gemma4 || ollama pull gemma4;
-        ok=0; intentos=0;
-        while [ $$ok -eq 0 ] && [ $$intentos -lt 6 ]; do
-          intentos=$$((intentos+1));
-          echo "Calentando gemma4 (intento $$intentos/6, queda cargado en RAM)...";
-          ollama run gemma4 "Responde unicamente: listo" && ok=1 || { echo "Fallo el calentamiento, reintento en 15 s."; sleep 15; };
-        done;
-        [ $$ok -eq 1 ] && echo "gemma4 cargado y residente (keep_alive -1)." || echo "No se pudo calentar; el asistente usara la plantilla local."
-    restart: "no"
+        while true; do
+          if ollama ps 2>/dev/null | grep -q gemma4; then
+            echo "gemma4 residente en RAM.";
+          else
+            echo "gemma4 no esta cargado; calentando (keep_alive -1)...";
+            ollama list 2>/dev/null | grep -q gemma4 || ollama pull gemma4;
+            ollama run gemma4 "Responde unicamente: listo" || echo "Fallo el calentamiento; reintento en 60 s.";
+          fi;
+          sleep 60;
+        done
+    # Es un vigilante permanente: si se cae, vuelve solo, y al
+    # reiniciar Docker arranca de nuevo y re-calienta si hace falta.
+    restart: unless-stopped
 
   firebird:
     # Imagen oficial de Firebird (jacobalberty/firebird quedó archivada)

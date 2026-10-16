@@ -1,13 +1,20 @@
-"""Pruebas del comando de scraping (con el HTTP simulado, sin red)."""
+"""Pruebas del scraper (con el HTTP simulado, sin red).
+
+La lógica vive en munitramites/services/scraper/; acá se prueba el
+command completo (que es una cáscara fina) y el criterio de relevancia
+que decide qué link es un trámite y qué página es una ficha.
+"""
 
 import os
 import tempfile
 from io import StringIO
 from unittest.mock import patch
 
+from bs4 import BeautifulSoup
 from django.core.management import call_command
 
 from munitramites.models import Municipio, Organismo, Requisito, Tema, Tramite
+from munitramites.services.scraper import extraccion, relevancia
 
 from .base import TestCase
 
@@ -75,7 +82,7 @@ class ScrapingTests(TestCase):
 
     def _correr(self):
         with patch(
-            'munitramites.management.commands.scrapear_sitios._traer',
+            'munitramites.services.scraper.rastreo.traer',
             side_effect=_fake_traer,
         ):
             call_command(
@@ -85,7 +92,7 @@ class ScrapingTests(TestCase):
 
     def test_importa_los_organismos_de_la_planilla(self):
         with patch(
-            'munitramites.management.commands.scrapear_sitios._traer',
+            'munitramites.services.scraper.rastreo.traer',
         ):
             call_command(
                 'scrapear_sitios', csv=self.ruta, solo_organismos=True,
@@ -170,7 +177,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.management.commands.scrapear_sitios._traer',
+            'munitramites.services.scraper.rastreo.traer',
             side_effect=lambda url: paginas.get(url),
         ):
             call_command(
@@ -192,7 +199,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.management.commands.scrapear_sitios._traer',
+            'munitramites.services.scraper.rastreo.traer',
             return_value=None,
         ):
             salida = StringIO()
@@ -214,7 +221,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.management.commands.scrapear_sitios._traer',
+            'munitramites.services.scraper.rastreo.traer',
             side_effect=_fake_traer,
         ):
             call_command(
@@ -267,7 +274,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.management.commands.scrapear_sitios._traer',
+            'munitramites.services.scraper.rastreo.traer',
             side_effect=lambda url: paginas.get(url),
         ):
             call_command(
@@ -280,3 +287,86 @@ class ScrapingTests(TestCase):
         )
         self.assertFalse(tramite.activo)
         self.assertEqual(tramite.requisitos.count(), 1)
+
+
+class RelevanciaTests(TestCase):
+    """El criterio que arregla el «tomaba cualquier cosa»."""
+
+    def test_una_palabra_debil_sola_no_alcanza(self):
+        # «Impuestos» o «Registro» sueltos no son un trámite.
+        self.assertLess(
+            relevancia.puntaje_link('Impuestos', '/impuestos'),
+            relevancia.PUNTAJE_MINIMO,
+        )
+        self.assertLess(
+            relevancia.puntaje_link('Registro', '/registro'),
+            relevancia.PUNTAJE_MINIMO,
+        )
+
+    def test_una_palabra_fuerte_alcanza(self):
+        self.assertGreaterEqual(
+            relevancia.puntaje_link('Partida de nacimiento', '/partida'),
+            relevancia.PUNTAJE_MINIMO,
+        )
+        self.assertGreaterEqual(
+            relevancia.puntaje_link('Licencia de conducir', '/licencia'),
+            relevancia.PUNTAJE_MINIMO,
+        )
+
+    def test_un_link_de_menu_vale_la_mitad(self):
+        self.assertLess(
+            relevancia.puntaje_link('Trámites', '/tramites/', en_menu=True),
+            relevancia.PUNTAJE_MINIMO,
+        )
+
+    def test_las_noticias_y_los_pdfs_son_ruido(self):
+        self.assertTrue(relevancia.es_ruido('/noticias/sumate'))
+        self.assertTrue(relevancia.es_ruido('/transparencia/boletin.pdf'))
+        self.assertFalse(relevancia.es_ruido('/dni/renovacion'))
+
+    def test_un_indice_de_seccion_no_parece_ficha(self):
+        indice = BeautifulSoup(
+            '<html><body><h1>Trámites</h1>'
+            '<a href="/dni">Renovación del DNI</a>'
+            '<a href="/pasaporte">Pasaporte</a>'
+            '<a href="/licencia">Licencia de conducir</a>'
+            '<a href="/partida">Partida de nacimiento</a>'
+            '<a href="/antecedentes">Antecedentes penales</a>'
+            '</body></html>',
+            'html.parser',
+        )
+        self.assertFalse(extraccion.parece_ficha(indice))
+
+    def test_una_ficha_con_requisitos_parece_ficha(self):
+        self.assertTrue(extraccion.parece_ficha(
+            BeautifulSoup(HTML_DNI, 'html.parser')
+        ))
+
+    def test_un_menu_suelto_no_produce_tramites(self):
+        """Una home que es solo un menú no carga trámites de relleno."""
+        html = (
+            '<html><body><nav>'
+            '<a href="/inicio">Inicio</a>'
+            '<a href="/servicios">Servicios</a>'
+            '<a href="/contacto">Contacto</a>'
+            '<a href="/transparencia">Transparencia</a>'
+            '</nav></body></html>'
+        )
+        ruta = _csv(
+            'NOMBRE,OCUPACION,LINK_SITIO_OFICIAL\n'
+            'Ejemplo de Misiones,Prueba,https://ejemplo.gob.ar/\n'
+        )
+        self.addCleanup(os.unlink, ruta)
+
+        with patch(
+            'munitramites.services.scraper.rastreo.traer',
+            side_effect=lambda url: (
+                html if url == 'https://ejemplo.gob.ar/' else None
+            ),
+        ):
+            call_command(
+                'scrapear_sitios', csv=ruta, espera=0,
+                stdout=StringIO(), stderr=StringIO(),
+            )
+
+        self.assertEqual(Tramite.objects.count(), 0)

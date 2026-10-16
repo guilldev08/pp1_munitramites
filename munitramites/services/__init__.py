@@ -5,6 +5,7 @@ Los servicios no conocen HTTP ni templates: se pueden llamar desde una
 vista, desde un management command, desde un test o desde una tarea.
 
     services/chatbot/   asistente virtual (RAG: indexar → recuperar → generar)
+    services/scraper/   scraping de sitios oficiales (planilla → rastreo → extracción)
 
 Para AGREGAR UN SERVICIO:
   1. creá la carpeta con su `__init__.py`,

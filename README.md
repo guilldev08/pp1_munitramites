@@ -84,9 +84,10 @@ Es **idempotente**: se puede correr las veces que haga falta sin duplicar nada.
 
 ### Cargar los organismos reales (scraping)
 
-Además del seed, el proyecto trae el **script de scraping**
-(`management/commands/scrapear_sitios.py`) con la planilla de organismos
-de la provincia en `data/organismos_misiones.csv`:
+Además del seed, el proyecto trae el **scraper** de sitios oficiales
+(`munitramites/services/scraper/`, igual que el chatbot) con la planilla
+de organismos de la provincia en
+`munitramites/services/scraper/data/organismos_misiones.csv`:
 
 ```powershell
 docker compose exec web python manage.py scrapear_sitios   # planilla + todos los sitios
@@ -95,8 +96,9 @@ docker compose exec web python manage.py scrapear_sitios --limite 5 --max-por-si
 
 | Paso | Qué hace |
 |---|---|
-| 1 · Planilla | importa `data/organismos_misiones.csv` (NOMBRE, OCUPACION, LINK_SITIO_OFICIAL) y crea los organismos que falten — idempotente, no duplica |
-| 2 · Sitios | visita cada sitio oficial, sigue los links con pinta de trámite (máx. `--max-por-sitio`, por defecto 8), entra a los más prometedores y extrae descripción y requisitos |
+| 1 · Planilla | importa `services/scraper/data/organismos_misiones.csv` (NOMBRE, OCUPACION, LINK_SITIO_OFICIAL) y crea los organismos que falten — idempotente, no duplica |
+| 2 · Rastreo | visita cada sitio, puntúa los links (palabras fuertes/débiles, los de menú valen la mitad) y sigue solo los que huelen a trámite; si hay una «puerta» al portal (Servicios, Trámites, Turnos…), entra y busca también ahí |
+| 3 · Extracción | entra a cada ficha, verifica que **sea** una ficha (no un índice ni una noticia) y extrae descripción y requisitos |
 
 - Todo lo que sale del scraping queda **inactivo**: se revisa, se corrige y
   se publica desde el Centro de Trámites del panel.
@@ -105,6 +107,8 @@ docker compose exec web python manage.py scrapear_sitios --limite 5 --max-por-si
 - Flags: `--csv` (otra planilla), `--limite N` (primeros N sitios),
   `--espera` (pausa entre pedidos, cortesía) y `--solo-organismos`
   (importar la planilla sin scrapear).
+- Las palabras y el umbral se ajustan en
+  `services/scraper/vocabulario.py` y `services/scraper/relevancia.py`.
 
 ## Usuarios
 
@@ -340,8 +344,6 @@ munitramites/
 ├── requirements.txt
 ├── manage.py
 ├── README.md                       # ← toda la documentación (estás adentro)
-├── data/
-│   └── organismos_misiones.csv     # planilla de organismos de Misiones (scraping)
 ├── static/
 │   ├── css/app.css                 # hoja de estilos del sitio
 │   ├── css/admin.css               # hoja de estilos del panel /admin/
@@ -368,16 +370,27 @@ munitramites/
     │   ├── cuenta.py               #    registro y perfil
     │   └── api.py                  #    API JSON
     ├── services/                   #    lógica que no depende del request
-    │   └── chatbot/                #    RAG: indexar → recuperar → generar
-    │       ├── indexar.py          #    1. convierte trámites en fragmentos
-    │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
-    │       ├── generacion.py       #    3. redacción con Gemma 4 o plantilla
-    │       ├── llm.py              #    cliente de Ollama (Gemma 4) con fallback
-    │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (233)
+    │   ├── chatbot/                #    RAG: indexar → recuperar → generar
+    │   │   ├── indexar.py          #    1. convierte trámites en fragmentos
+    │   │   ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
+    │   │   ├── generacion.py       #    3. redacción con Gemma 4 o plantilla
+    │   │   ├── llm.py              #    cliente de Ollama (Gemma 4) con fallback
+    │   │   └── pipeline.py         #    orquestador + reglas de la charla
+    │   └── scraper/                #    scraping: planilla → rastreo → extracción
+    │       ├── planilla.py         #    1. importa la planilla de organismos
+    │       ├── vocabulario.py      #       todas las palabras, en un solo lugar
+    │       ├── relevancia.py       #    2. qué link es un trámite (umbral + menú)
+    │       ├── rastreo.py          #       HTTP + candidatos + puertas
+    │       ├── extraccion.py       #    3. ¿es ficha? requisitos + descripción
+    │       ├── clasificacion.py    #       tema, municipio y modalidad
+    │       ├── servicio.py         #    orquestación del scraping
+    │       └── data/
+    │           └── organismos_misiones.csv   # planilla de organismos de Misiones
+    ├── tests/                      #    tests de aceptación (240)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
+    │   ├── test_scraping.py        #    scraper: relevancia + comando (sin red)
     │   ├── test_chatbot.py         #    asistente: RAG y privacidad
     │   ├── test_llm.py             #    el cliente del LLM, con mocks (nunca toca el modelo)
     │   ├── test_consultas.py       #    RF-08/09/10
@@ -389,7 +402,7 @@ munitramites/
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
     │   ├── cargar_datos.py         #    semilla de datos
-    │   └── scrapear_sitios.py      #    scraping: planilla CSV + sitios oficiales
+    │   └── scrapear_sitios.py      #    cáscara fina sobre services/scraper/
     ├── templatetags/
     │   ├── hora.py                 #    filtro |hora_local
     │   └── panel_admin.py          #    {% panel_admin %}: tarjetas del panel
@@ -462,7 +475,7 @@ munitramites/
 | Cambiar el diseño | `static/css/app.css` + `templates/base.html` (del panel: `static/css/admin.css`) | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
-| Cargar organismos y trámites reales | `management/commands/scrapear_sitios.py` + `data/organismos_misiones.csv` | `scrapear_sitios` |
+| Cargar organismos y trámites reales | `services/scraper/` (con su `data/organismos_misiones.csv`) | `scrapear_sitios` |
 | Cambiar el modelo del asistente | `docker-compose.yml` → `OLLAMA_MODELO` (+ `services/chatbot/llm.py`) | `docker compose up -d ollama ollama-init` |
 | Correr los tests | `tests/` | `manage.py test --noinput` |
 | Cambiar la base de datos | `settings.py` → `DATABASES` | — |
@@ -498,7 +511,7 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 233 tests
+docker compose exec web python manage.py test --noinput         # correr los 240 tests
 
 docker compose logs -f ollama                                  # ver la carga del modelo
 docker compose exec ollama ollama list                         # modelos disponibles

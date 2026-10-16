@@ -34,7 +34,8 @@ Qué hace el sistema, en corto:
   panel arriba de los resultados.
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
-- **Asistente virtual** con RAG: busca en los trámites reales, cita la fuente
+- **Asistente virtual** con RAG y un modelo local (**Gemma 4** vía Ollama,
+  dentro del proyecto): busca en los trámites reales, cita la fuente
   y, si no sabe, lo dice en lugar de inventar.
 
 Todo lo anterior está documentado acá y tiene sus tests de aceptación: ver
@@ -64,7 +65,8 @@ docker compose up -d --build
 | http://localhost:8000/api/tramites/ | API JSON |
 | Firebird | puerto 3050 |
 
-La primera vez tarda unos minutos (baja imágenes e instala dependencias).
+La primera vez tarda unos minutos (baja imágenes e instala dependencias)
+y además baja el modelo del asistente (~6,6 GB, servicio `ollama-init`).
 
 ### Cargar los datos de ejemplo
 
@@ -75,6 +77,30 @@ docker compose exec web python manage.py cargar_datos
 Crea 9 municipios, 7 organismos, 7 temas, 8 trámites, 32 requisitos y
 3 consultas.
 Es **idempotente**: se puede correr las veces que haga falta sin duplicar nada.
+
+### Cargar los organismos reales (scraping)
+
+Además del seed, el proyecto trae el **script de scraping**
+(`management/commands/scrapear_sitios.py`) con la planilla de organismos
+de la provincia en `data/organismos_misiones.csv`:
+
+```powershell
+docker compose exec web python manage.py scrapear_sitios   # planilla + todos los sitios
+docker compose exec web python manage.py scrapear_sitios --limite 5 --max-por-sitio 3   # corrida corta de prueba
+```
+
+| Paso | Qué hace |
+|---|---|
+| 1 · Planilla | importa `data/organismos_misiones.csv` (NOMBRE, OCUPACION, LINK_SITIO_OFICIAL) y crea los organismos que falten — idempotente, no duplica |
+| 2 · Sitios | visita cada sitio oficial, sigue los links con pinta de trámite (máx. `--max-por-sitio`, por defecto 8), entra a los más prometedores y extrae descripción y requisitos |
+
+- Todo lo que sale del scraping queda **inactivo**: se revisa, se corrige y
+  se publica desde el Centro de Trámites del panel.
+- Un sitio caído es una fila en el resumen, no un traceback: la corrida
+  sigue con el resto.
+- Flags: `--csv` (otra planilla), `--limite N` (primeros N sitios),
+  `--espera` (pausa entre pedidos, cortesía) y `--solo-organismos`
+  (importar la planilla sin scrapear).
 
 ## Usuarios
 
@@ -310,6 +336,8 @@ munitramites/
 ├── requirements.txt
 ├── manage.py
 ├── README.md                       # ← toda la documentación (estás adentro)
+├── data/
+│   └── organismos_misiones.csv     # planilla de organismos de Misiones (scraping)
 ├── static/
 │   ├── css/app.css                 # hoja de estilos del sitio
 │   ├── css/admin.css               # hoja de estilos del panel /admin/
@@ -339,13 +367,15 @@ munitramites/
     │   └── chatbot/                #    RAG: indexar → recuperar → generar
     │       ├── indexar.py          #    1. convierte trámites en fragmentos
     │       ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
-    │       ├── generacion.py       #    3. redacción con plantillas ancladas al contexto
+    │       ├── generacion.py       #    3. redacción con Gemma 4 o plantilla
+    │       ├── llm.py              #    cliente de Ollama (Gemma 4) con fallback
     │       └── pipeline.py         #    orquestador + reglas de la charla
-    ├── tests/                      #    tests de aceptación (200)
+    ├── tests/                      #    tests de aceptación (233)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
     │   ├── test_chatbot.py         #    asistente: RAG y privacidad
+    │   ├── test_llm.py             #    el cliente del LLM, con mocks (nunca toca el modelo)
     │   ├── test_consultas.py       #    RF-08/09/10
     │   ├── test_roles.py           #    ESP-02 · RF-03/11/13 (los tres roles)
     │   ├── test_panel.py           #    panel /panel/: matriz de aceptación
@@ -354,7 +384,8 @@ munitramites/
     │   └── test_admin.py           #    cara del /admin/ + candado + un solo super
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
-    │   └── cargar_datos.py         #    semilla de datos
+    │   ├── cargar_datos.py         #    semilla de datos
+    │   └── scrapear_sitios.py      #    scraping: planilla CSV + sitios oficiales
     ├── templatetags/
     │   ├── hora.py                 #    filtro |hora_local
     │   └── panel_admin.py          #    {% panel_admin %}: tarjetas del panel
@@ -427,6 +458,8 @@ munitramites/
 | Cambiar el diseño | `static/css/app.css` + `templates/base.html` (del panel: `static/css/admin.css`) | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
+| Cargar organismos y trámites reales | `management/commands/scrapear_sitios.py` + `data/organismos_misiones.csv` | `scrapear_sitios` |
+| Cambiar el modelo del asistente | `docker-compose.yml` → `OLLAMA_MODELO` (+ `services/chatbot/llm.py`) | `docker compose up -d ollama ollama-init` |
 | Correr los tests | `tests/` | `manage.py test --noinput` |
 | Cambiar la base de datos | `settings.py` → `DATABASES` | — |
 | Cambiar idioma / zona horaria | `settings.py` → `LANGUAGE_CODE` / `TIME_ZONE` | — |
@@ -459,8 +492,12 @@ docker compose exec web python manage.py check                  # revisar el có
 docker compose exec web python manage.py makemigrations         # generar migración
 docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
+docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 200 tests
+docker compose exec web python manage.py test --noinput         # correr los 233 tests
+
+docker compose logs -f ollama                                  # ver la carga del modelo
+docker compose exec ollama ollama list                         # modelos disponibles
 ```
 
 ### Ejecutar código desde el host
@@ -547,7 +584,7 @@ en esta tabla.
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
 | **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` · `test_auth.PerfilTests` (cambio estando adentro) |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
-| **IA — alucinaciones** | `services/chatbot/pipeline.py` (`_SIN_INFO`) · `generacion.py` (corte de montos: un precio que no está indexado se contesta con «no dispongo») | `test_chatbot` · `test_chatbot.AlucinacionesTests` |
+| **IA — alucinaciones** | `services/chatbot/llm.py` (el prompt prohíbe inventar montos y citas) · `generacion.py` (sin modelo: el corte de montos contesta «no dispongo» por un precio que no está indexado) · `pipeline.py` (`_SIN_INFO`) | `test_chatbot` · `test_chatbot.AlucinacionesTests` · `test_llm` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
@@ -567,14 +604,15 @@ en esta tabla.
 
 El chatbot **no adivina**: arma un índice con los trámites, busca los
 fragmentos que responden la pregunta y responde citando de dónde salió.
-Tres etapas, tres archivos, todas en `services/chatbot/`.
+Todo vive en `services/chatbot/`, en cuatro piezas.
 
 | Etapa | Archivo | Qué hace |
 |---|---|---|
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
-| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados usando `PlantillaLocal` (plantillas con varias variantes, sin dependencias ni costo); una pregunta por monto que no está indexada se contesta con «no dispongo» antes de redactar |
-| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y, si no hay contexto, lo dice citando lo que se preguntó —nunca dos consultas distintas con la misma frase— sin inventar nada |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con modelo (**Gemma 4** vía `llm.py`) la frase la arma el LLM citando el contexto; sin modelo cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
+| LLM | `llm.py` | cliente de Ollama: prompt de dos niveles (los datos de trámites SOLO del contexto; el resto, charla libre), historial corto, timeout y cooldown tras un fallo |
+| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y decide la puerta: con contexto → el modelo redacta; sin contexto → charla libre con el modelo (sin modelo, el «no sé» clásico citando la consulta). Nunca inventa nada |
 
 **Se le puede preguntar desde cuatro lugares**: el modal 💬 (desde cualquier
 página), la **chatbar de `/tramites/`** (arriba de todo en el listado: abre
@@ -591,39 +629,55 @@ Tests: `test_chatbot.BuscadorTests`.
 
 ### Cómo redacta (y por qué no inventa)
 
-La etapa 3 no trae un modelo dentro del proyecto: la respuesta la arma
-`generacion.py::PlantillaLocal` con las plantillas del sitio, siempre
-anclada a los fragmentos que recuperó el índice. Cada caso tiene más de
-una redacción, elegida de forma estable por la consulta (misma pregunta,
-misma frase; preguntas distintas, frases distintas), para que la charla
-no se vea clonada.
+**El modelo corre dentro del proyecto**: el servicio `ollama` del
+`docker-compose.yml` baja **Gemma 4** la primera vez (~6,6 GB, guardado
+en el volumen `ollama_data`) y `llm.py` le pasa la pregunta con los
+fragmentos del índice. En CPU la primera respuesta tarda ~1-2 minutos
+(carga del modelo en RAM) y después ~15-30 segundos por pregunta.
 
-**Las preguntas por monto no llegan a redactarse** (`generacion.py`):
-si el contexto no trae ninguno, la única respuesta posible sería una
-invención, así que sale un «no dispongo» inmediato y determinista
-(pasó en vivo: «$50.000.000» por renovar el DNI). Y los **«no sé»**
-(sin contexto y los de monto) **citan la consulta entrecomillada y
-traen tres variantes** cada uno, elegidas de forma estable por la
-consulta: dos preguntas distintas nunca reciben el mismo texto —pasó
-en vivo: «g» y «ag» salían letra por letra iguales—, y las consultas de
-menos de 3 letras se contestan aparte, pidiendo que la completen
+El prompt tiene dos niveles: **los datos de trámites salen SOLO del
+CONTEXTO** (el modelo cita requisitos y montos tal como aparecen en los
+fragmentos), y **todo lo demás es charla libre** (qué es el portal,
+saludos, dudas generales). Responde en español rioplatense, de 1 a 8
+oraciones.
+
+**Si no hay modelo** (PC sin RAM, sin red, Ollama caído), el asistente
+no se cae: `generacion.py::PlantillaLocal` arma la respuesta con las
+plantillas del sitio, siempre anclada a los fragmentos. Cada caso tiene
+más de una redacción, elegida de forma estable por la consulta (misma
+pregunta, misma frase), para que la charla no se vea clonada.
+
+**Las preguntas por monto**: con modelo, la regla vive en el prompt (no
+inventar cifras que no estén en el contexto); sin modelo, el corte
+determinista de `generacion.py` responde un «no dispongo» inmediato si
+el contexto no trae ninguno —pasó en vivo: «$50.000.000» por renovar el
+DNI—. Los **«no sé» sin modelo citan la consulta entrecomillada y traen
+tres variantes** cada uno, elegidas de forma estable por la consulta:
+dos preguntas distintas nunca reciben el mismo texto —pasó en vivo: «g»
+y «ag» salían letra por letra iguales—, y las consultas de menos de 3
+letras se contestan aparte, pidiendo que la completen
 (`pipeline._sin_informacion` y `generacion._sin_dato`).
 
 **Cuando la pregunta es corta** («¿y el plazo?») el pipeline la busca
 junto con las preguntas anteriores del usuario, así el seguimiento cae
-en los trámites correctos, y la plantilla cita esos trámites en vez de
+en los trámites correctos, y la respuesta cita esos trámites en vez de
 repetir la pregunta suelta. Los casos fijos —saludo, ayuda, «gracias»,
 «chau» y «limpiar»— responden sin buscar en el índice, y un saludo
 seguido de una pregunta ya no se traga la pregunta.
 
-Si algún día el asistente se conecta a un **servicio de lenguaje
-aparte**, el punto de conexión es `generar_respuesta()` en
-`generacion.py`: ni la vista, ni el RAG ni el pipeline cambian. Todo lo
+El punto de conexión sigue siendo `llm.redactar()` →
+`generar_respuesta()` en `generacion.py`: ni la vista, ni el RAG ni el
+pipeline cambian si mañana el modelo vive en otro lado (en la PC, en una
+GPU o en un servicio aparte: `OLLAMA_URL` apunta a donde esté). Todo lo
 de este apartado está cubierto por `tests/test_chatbot.py`
-(`PipelineTests`, `PlantillaLocalTests` y `AlucinacionesTests`).
+(`PipelineTests`, `PlantillaLocalTests` y `AlucinacionesTests`) y por
+`tests/test_llm.py` (el cliente, con mocks: los tests nunca tocan el
+modelo).
 
-Otras perillas: `CHATBOT_TOP_K` (fragmentos que se pasan como contexto) y
-`CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse).
+Otras perillas: `CHATBOT_TOP_K` (fragmentos que se pasan como contexto),
+`CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse) y
+`CHATBOT_LLM` (vacío = apagar el modelo y usar solo plantillas; en los
+tests siempre está apagado).
 
 Para agregar vocabulario del dominio, sumá entradas a `SINONIMOS` en
 `recuperacion.py`; para indexar otra cosa (por ejemplo las FAQ), ampliá
@@ -701,8 +755,14 @@ Luego escribí SQL y cerrá con `quit;`.
 | Backend Firebird | `django-firebird` 5.0.4 | (pip) |
 | Driver | `firebird-driver` 2.0.3 | (pip) |
 | Firebird Server | 4.0.7 | `firebirdsql/firebird:4.0.7` |
+| Ollama (asistente) | 0.40.5 | `ollama/ollama:latest` + modelo `gemma4` (6,6 GB) en el volumen `ollama_data` |
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
+
+> **RAM del asistente**: Gemma 4 ocupa ~5,7 GB en memoria. En una PC de
+> 8 GB hay que darle a la VM de Docker unos 6,5 GB (`.wslconfig` →
+> `[wsl2]` con `memory=6500MB` y `swap=8GB`); si no alcanza, el asistente
+> sigue funcionando con las plantillas locales.
 
 ## Notas
 

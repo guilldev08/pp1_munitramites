@@ -12,9 +12,11 @@ Reglas de la conversación:
       saludo SEGUIDO de una pregunta no se traga la pregunta),
     · «limpiar» vacía la charla y «gracias»/«chau» tienen su respuesta,
     · si el índice devuelve fragmentos, se citan los trámites fuente,
-    · si NO hay fragmentos por encima del umbral, se dice explícitamente
-      que no se dispone de esa información (nunca se inventa), citando
-      lo que se preguntó y sin repetir siempre la misma frase,
+    · si NO hay fragmentos por encima del umbral: con el LLM activo el
+      modelo contesta en libre —sin inventar fichas—; sin modelo, se
+      dice explícitamente que no se dispone de esa información (nunca
+      se inventa), citando lo que se preguntó y sin repetir siempre la
+      misma frase,
     · un seguimiento corto («¿y el plazo?») se busca junto con lo que se
       preguntó antes,
     · la charla no se guarda en la base: vive en la sesión del usuario.
@@ -23,7 +25,12 @@ Reglas de la conversación:
 import re
 
 from ...models import Tramite
-from .generacion import _citar, _redaccion, generar_respuesta
+from .generacion import (
+    _citar,
+    _redaccion,
+    generar_respuesta,
+    generar_sin_contexto,
+)
 from .recuperacion import buscar
 
 __all__ = ['es_limpieza', 'responder']
@@ -201,10 +208,15 @@ def responder(pregunta, historial=None):
         encontrados = buscar(f'{pregunta} {previas}')
 
     if not encontrados:
-        # Criterio «manejo de alucinaciones»: decir que no se sabe,
-        # con la consulta a la vista y sin repetir siempre la misma frase.
-        return {'texto': _sin_informacion(pregunta),
-                'tramites': [], 'fragmentos': []}
+        # Sin contexto: con el LLM activo, el modelo charla libre
+        # («¿qué es este portal?», preguntas generales) sin poder
+        # inventar fichas; sin modelo, el «no encontré» de siempre —
+        # criterio «manejo de alucinaciones», con la consulta a la
+        # vista y sin repetir siempre la misma frase.
+        texto = generar_sin_contexto(pregunta, historial) or _sin_informacion(
+            pregunta,
+        )
+        return {'texto': texto, 'tramites': [], 'fragmentos': []}
 
     fragmentos = [f for f, _ in encontrados]
     return {

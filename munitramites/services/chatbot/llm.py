@@ -1,15 +1,25 @@
 """Cliente del modelo de lenguaje: Gemma 4 corriendo en Ollama.
 
-Ollama se instala en la PC (fuera del contenedor) y expone una API REST
-en el puerto 11434. Desde el contenedor se lo alcanza por
-`host.docker.internal`, que Docker Desktop resuelve a la máquina
-anfitriona. La única dependencia es `requests`, que ya está en el
-proyecto: ni SDK ni claves (Ollama local no pide ninguna).
+Ollama es un servicio MÁS del docker-compose (imagen `ollama/ollama`,
+volumen `ollama_data` con los modelos): el proyecto es autocontenido y
+se levanta en cualquier PC con `docker compose up`, sin instalar nada
+aparte. Desde el servicio web se lo alcanza por `OLLAMA_URL`
+(`http://ollama:11434`, la red interna del compose). Si algún día se
+quiere usar el Ollama de la PC —por ejemplo, con GPU— alcanza con
+apuntar `OLLAMA_URL` a `host.docker.internal:11434`. La única
+dependencia del cliente es `requests`, que ya está en el proyecto: ni
+SDK ni claves (Ollama local no pide ninguna).
 
 El contrato con el pipeline es UNA función: `redactar(pregunta,
 fragmentos, historial)`. Si el modelo no está configurado, no responde,
 se cae o devuelve basura, devuelve None — y la etapa 3 cae en la
 plantilla local. El asistente nunca se queda mudo por un modelo.
+
+Se usa en DOS caminos: con contexto (la etapa 2 le pasó fragmentos) y
+SIN contexto (la consulta no trajo ninguna ficha): en ese segundo caso
+el modelo charla libre —saludos sueltos, «¿qué es este portal?»,
+preguntas generales— pero con la misma prohibición de inventar datos
+de trámites.
 
 Cuando Ollama se cae, se anota el momento del fallo y por
 `COOLDOWN_FALLO` segundos no se vuelve a intentar: sin eso, cada
@@ -42,31 +52,47 @@ _ultimo_fallo = 0.0
 
 # Gemma 4 con la configuración que recomienda Google para todos los
 # casos de uso (temperatura 1.0, top_p 0.95, top_k 64). `num_predict`
-# acorta la respuesta: el asistente contesta máximo 4 oraciones.
+# acorta la respuesta: alcanza para las 8 oraciones que pide el
+# prompt y corta cualquier divagación larga. `num_ctx` es 2048 y no
+# 4096 a propósito: con la KV cache en q8_0 (ver docker-compose.yml)
+# eso deja el pico de RAM del modelo por debajo del límite de la VM
+# de Docker y 2048 sobra para contexto + historial corto.
 OPCIONES = {
     'temperature': 1.0,
     'top_p': 0.95,
     'top_k': 64,
     'num_predict': 220,
-    'num_ctx': 4096,
+    'num_ctx': 2048,
 }
 
 # El system prompt va en español porque es el idioma del asistente:
-# Gemma 4 soporta `system` nativo y Ollama arma el template por nosotros.
+# Gemma 4 soporta `system` nativo y Ollama arma el template por
+# nosotros. DOS NIVELES a propósito: los DATOS de trámites sólo del
+# contexto (nunca inventar montos/plazos/requisitos), TODO LO DEMÁS en
+# libre —ese es justamente el punto de meter un LLM: contestar en voz
+# alta y no con frases pregrabadas.
 _SYSTEM = (
-    'Sos el asistente de trámites de Munitramites, de la Provincia de '
-    'Misiones (Argentina). Contestás en español rioplatense, con vos. '
-    'Reglas estrictas:\n'
-    '- Respondé SOLO con la información del CONTEXTO de abajo: es tu '
-    'única fuente válida.\n'
-    '- Nunca inventes montos, plazos, requisitos ni horarios. Si un dato '
-    'no está en el contexto, no existe para vos.\n'
-    '- Si el contexto no alcanza para contestar, decí que no dispongás '
-    'de ese dato y recomendá abrir la ficha del trámite o sus enlaces '
-    'oficiales.\n'
-    '- Mencioná los trámites por su nombre exacto y cerrá indicando que '
-    'la ficha tiene los requisitos y los enlaces oficiales.\n'
-    '- Máximo 4 oraciones. Sin presentaciones ni despedidas.'
+    'Sos el asistente de Munitramites, un portal de trámites de la '
+    'Provincia de Misiones (Argentina). Contestás en español '
+    'rioplatense, con vos, cercano y natural, como un vecino que te '
+    'ayuda en la ventanilla.\n'
+    'Dos niveles:\n'
+    '- DATOS DE TRÁMITES —requisitos, montos, plazos, horarios, '
+    'organismos, dónde y cuándo se presenta— sólo pueden salir del '
+    'CONTEXTO de abajo: es tu única fuente. Nunca los inventes. Si no '
+    'están ahí, decí con tus palabras que en la base no figura y '
+    'recomendá abrir la ficha o los enlaces oficiales.\n'
+    '- TODO LO DEMÁS —saludos, charla, qué es este portal, cómo '
+    'buscar, qué trámites suelen existir, dudas de cómo usarme— '
+    'contestalo con libertad y buena onda, sin vueltas de '
+    'formulario.\n'
+    '- Si hay trámites en el CONTEXTO, mencionalos por su nombre '
+    'exacto y señalá que la ficha trae los requisitos completos.\n'
+    '- Si el CONTEXTO dice «sin resultados», no cites trámites '
+    'inventados: contestá lo general y ofrecé ayudar a buscar de otra '
+    'forma.\n'
+    '- Natural: entre 1 y 8 oraciones según haga falta. Sin '
+    'presentaciones ni despedidas.'
 )
 
 
@@ -82,13 +108,18 @@ def _url(ruta):
 def _armar_user(pregunta, fragmentos, historial):
     """El pedido al modelo: contexto del índice + charla + pregunta.
 
-    El CONTEXTO es lo único que el modelo tiene permitido usar, así que
-    va primero y con los títulos de los trámites para que pueda citar
-    las fuentes por su nombre exacto.
+    El CONTEXTO va primero y con los títulos de los trámites, para que
+    el modelo pueda citar las fuentes por su nombre exacto. Sin
+    fragmentos (consulta que no trajo fichas) se lo dice explícito:
+    ahí el modelo puede charlar libre, pero sabe que no hay datos de
+    trámites para citar y no debe inventar ninguno.
     """
     partes = ['CONTEXTO (fichas de trámites de la base):']
-    for f in fragmentos:
-        partes.append(f'- {f.tramite_titulo}: {f.texto}')
+    if fragmentos:
+        for f in fragmentos:
+            partes.append(f'- {f.tramite_titulo}: {f.texto}')
+    else:
+        partes.append('(sin resultados: ninguna ficha responde a esto)')
 
     previos = [
         m for m in (historial or [])
@@ -109,7 +140,9 @@ def redactar(pregunta, fragmentos, historial=()):
 
     `fragmentos` son los Fragmento recuperados por el RAG (etapa 2) y
     `historial` la charla de la sesión, para seguir el hilo en
-    seguimientos cortos («¿y el plazo?»).
+    seguimientos cortos («¿y el plazo?»). `fragmentos` vacío es el
+    camino de charla libre: el modelo contesta sin datos de trámites
+    en pantalla, pero con las mismas reglas de no inventar.
     """
     global _ultimo_fallo
 

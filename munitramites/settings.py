@@ -209,15 +209,19 @@ CHATBOT_UMBRAL = 0.5
 # (vacio incluido) deja la plantilla local. En docker-compose viene
 # 'ollama' por defecto y se puede apagar con CHATBOT_LLM= en un .env.
 CHATBOT_LLM = os.environ.get('CHATBOT_LLM', '')
-# Ollama corre en la PC, fuera del contenedor: host.docker.internal es
-# la maquina anfitriona vista desde Docker Desktop.
+# Ollama vive como servicio del compose (http://ollama:11434, que es lo
+# que inyecta docker-compose.yml). El default de acá apunta a la maquina
+# anfitriona: sirve de escape hatch si el modelo corre en la PC (por
+# ejemplo, con GPU) en vez de en el contenedor.
 OLLAMA_URL = os.environ.get(
     'OLLAMA_URL', 'http://host.docker.internal:11434',
 )
 OLLAMA_MODELO = os.environ.get('OLLAMA_MODELO', 'gemma4')
-# Segundos de espera por respuesta: en CPU el modelo va lento, por eso
-# el corte es generoso (la plantilla local cubre los timeouts).
-OLLAMA_TIMEOUT = int(os.environ.get('OLLAMA_TIMEOUT', '60'))
+# Segundos de espera por respuesta: 300 porque la PRIMERA consulta de la
+# jornada tiene que esperar a que el modelo se cargue en RAM (hasta
+# ~2-3 minutos en una PC con poca RAM); las siguientes salen calientes
+# en ~15-30 s. Si igual no llega, la plantilla local cubre el timeout.
+OLLAMA_TIMEOUT = int(os.environ.get('OLLAMA_TIMEOUT', '300'))
 # En los tests NUNCA se habla con el modelo: la redacción vuelve a la
 # plantilla local (los tests de la capa LLM la simulan con mocks y la
 # reactivan con override_settings).

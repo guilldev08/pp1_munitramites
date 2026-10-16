@@ -4,9 +4,10 @@
 los fragmentos recuperados: sin dependencias, sin costo, sin internet y
 sin modelo propio. Si `CHATBOT_LLM='ollama'`, el texto lo redacta
 Gemma 4 (vía `llm.redactar`) con las MISMAS reglas metidas en el prompt
-del modelo: que use solo el contexto, que cite los trámites y que diga
-«no dispongo» cuando no alcanza. Si el modelo no está disponible o se
-cae, se vuelve a la plantilla local sin que el ciudadano se entere.
+del modelo: que los datos de trámites salgan solo del contexto, que cite
+los trámites y que diga «no dispongo» cuando no alcanza. Si el modelo
+no está disponible o se cae, se vuelve a la plantilla local sin que el
+ciudadano se entere.
 
 La redacción cumple los criterios del documento: contestar lo que
 preguntaron (con más de una variante, para no repetir siempre la misma
@@ -14,11 +15,23 @@ fórmula), citar el trámite fuente y decir «no dispongo de esa
 información» cuando el contexto no alcanza (precisión contextual,
 manejo de alucinaciones y cita de fuentes).
 
-Además hay un corte ANTES de redactar: una pregunta por MONTO que el
-contexto no trae se contesta con «no dispongo» de entrada — una cifra
-que no está indexada es, por definición, una invención (pasó en vivo:
-«$50.000.000» por renovar el DNI). Ese corte corre ANTES de llamar al
-modelo: es gratis, determinista y evita hasta preguntarle.
+Hay DOS puertas de entrada:
+
+    generar_respuesta(pregunta, fragmentos, historial)  con contexto
+    generar_sin_contexto(pregunta, historial)           sin contexto
+
+En la primera, con el modelo activo el pedido sale PRIMERO hacia Gemma
+—ella redacta con libertad citando lo que haya— y el corte
+determinista de montos recién corre si no hay modelo: una pregunta por
+un monto que el contexto no trae no puede redactarse la plantilla
+(pasó en vivo: «$50.000.000» por renovar el DNI) y el prompt del
+modelo prohíbe inventar cifras, así que con modelo alcanza con eso.
+
+La segunda es la charla libre: una consulta que no trajo ninguna ficha
+igual puede contestarse con el modelo («¿qué es este portal?»,
+preguntas generales, seguimientos sin datos) — nunca inventando fichas.
+Sin modelo devuelve None y el pipeline responde con su «no encontré»
+de siempre.
 """
 
 import re
@@ -29,6 +42,7 @@ from . import llm
 __all__ = [
     'PlantillaLocal',
     'generar_respuesta',
+    'generar_sin_contexto',
 ]
 
 # Consultas de seguimiento corto («¿y el plazo?»): hasta acá la
@@ -125,10 +139,13 @@ class PlantillaLocal:
         )
 
 
-# Preguntas por un MONTO: si el contexto no trae ninguno, no hace falta
-# redactar una respuesta — sólo podría inventarla (pasó en vivo: «el
-# costo es de $50.000.000» por un DNI). La respuesta sale acá mismo:
-# es inmediata, determinista y no depende de que ninguna frase obedezca.
+# Preguntas por un MONTO: si el contexto no trae ninguno, la plantilla
+# local no puede redactar nada — sólo podría inventarla (pasó en vivo:
+# «el costo es de $50.000.000» por un DNI). Con modelo activo este
+# corte no hace falta: el prompt prohíbe inventar cifras y el modelo
+# contesta con «no dispongo» él mismo. Sin modelo, la respuesta sale
+# acá mismo: inmediata, determinista y sin depender de que ninguna
+# frase obedezca.
 _PREGUNTA_MONTO = re.compile(
     r'cu[aá]nto\s+(?:se\s+)?(?:paga|cuesta|sale|vale)'
     r'|\bcu[aá]nto\s+es\b'
@@ -170,18 +187,33 @@ def _sin_dato(pregunta):
 def generar_respuesta(pregunta, fragmentos, historial=()):
     """Redacta la respuesta; nunca por encima de lo que está indexado.
 
-    Orden: el corte de montos (si la pregunta pide un precio y el
-    contexto no lo trae, «no dispongo» sin redactar); después el modelo
-    —Gemma 4 vía Ollama, si está configurado—; y si no hay modelo o se
-    cayó, la plantilla local, que sólo repite datos del índice.
+    Orden: primero el modelo —Gemma 4 vía Ollama, si está configurado—
+    que redacta con libertad usando el contexto. Sin modelo (o si se
+    cayó), el corte determinista de montos —si la pregunta pide un
+    precio y el contexto no lo trae, «no dispongo» sin redactar— y
+    después la plantilla local, que sólo repite datos del índice.
     """
+    texto = llm.redactar(pregunta, fragmentos, historial)
+    if texto:
+        return texto
+
     if _PREGUNTA_MONTO.search(pregunta) and not _HAY_MONTO.search(
         _contexto(fragmentos)
     ):
         return _sin_dato(pregunta)
 
-    texto = llm.redactar(pregunta, fragmentos, historial)
-    if texto:
-        return texto
-
     return PlantillaLocal().completar(pregunta, fragmentos, historial)
+
+
+def generar_sin_contexto(pregunta, historial=()):
+    """Sin fragmentos: con modelo, charla libre; sin modelo, None.
+
+    Es la puerta de respuesta abierta del asistente: una consulta que
+    el índice no pudo responder («¿qué es Munitramites?», una duda
+    general, un saludo con pregunta) no se contesta con la frase
+    pregrabada de «no encontré nada» si hay modelo — el prompt le
+    prohíbe inventar fichas, así que puede explicar, orientar y
+    conversar sin pasarse de la raya. Sin modelo (o si el modelo se
+    cae), el pipeline cae en su respuesta determinista de siempre.
+    """
+    return llm.redactar(pregunta, (), historial)

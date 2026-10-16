@@ -3,13 +3,18 @@ services:
     build: .
     # Se levanta solo si Docker Desktop se reinicia o se cae la PC
     restart: unless-stopped
-    # Gemma 4 (asistente): Ollama corre en la PC, no en el contenedor,
-    # y se alcanza por host.docker.internal. Para apagar el LLM, un
-    # .env con CHATBOT_LLM= (vacío) manda.
+    # Gemma 4 (asistente): el modelo corre EN el servicio ollama de
+    # este mismo compose (todo adentro de Docker, portable a cualquier
+    # PC). Para apagar el LLM, un .env con CHATBOT_LLM= (vacío) manda;
+    # para usar el Ollama de la PC (ej.: con GPU), apuntar OLLAMA_URL a
+    # http://host.docker.internal:11434.
     environment:
       CHATBOT_LLM: ${CHATBOT_LLM-ollama}
-      OLLAMA_URL: ${OLLAMA_URL-http://host.docker.internal:11434}
+      OLLAMA_URL: ${OLLAMA_URL-http://ollama:11434}
       OLLAMA_MODELO: ${OLLAMA_MODELO-gemma4}
+      # 300 s: la primera consulta de la jornada espera la carga del
+      # modelo en RAM (~2-3 min en CPU); después responde en ~15-30 s.
+      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT-300}
     ports:
       - "8000:8000"
     volumes:
@@ -17,6 +22,8 @@ services:
     depends_on:
       firebird:
         condition: service_healthy
+      ollama:
+        condition: service_started
     # Espera activa a que Firebird acepte conexiones antes de migrar
     command: >
       sh -c "for i in $$(seq 1 60); do
@@ -25,6 +32,42 @@ services:
       done;
       python manage.py migrate &&
       python manage.py runserver 0.0.0.0:8000"
+
+  # --- Ollama con Gemma 4: el LLM vive adentro de Docker ---------------
+  # Así el proyecto es autocontenido: en cualquier PC basta
+  # `docker compose up`. Los modelos quedan en el volumen ollama_data
+  # (no se bajan dos veces).
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    environment:
+      # 7,5 B de parámetros en CPU con poco RAM: la KV cache en q8_0
+      # (en vez de f16) y un solo stream ahorran ~1 GB del pico de
+      # carga — la diferencia entre que el modelo entre o lo mate el
+      # OOM de la VM (esta PC tiene 7,8 GB en total).
+      OLLAMA_KV_CACHE_TYPE: q8_0
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_CONTEXT_LENGTH: "2048"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Sin puertos publicados a propósito: el único cliente es el
+    # servicio web (red interna) y así no choca con un Ollama de la PC.
+
+  # Baja el modelo la primera vez que se levanta (idempotente: si ya
+  # está, no hace nada; si no hay red, el asistente contesta con la
+  # plantilla hasta que haya modelo).
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    # La imagen trae ENTRYPOINT ["ollama"]: sin este override, el
+    # sh -c de abajo se ejecutaría como «ollama sh -c» y no corre.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "ollama list 2>/dev/null | grep -q gemma4 || ollama pull gemma4"
+    restart: "no"
 
   firebird:
     # Imagen oficial de Firebird (jacobalberty/firebird quedó archivada)
@@ -48,3 +91,4 @@ services:
 
 volumes:
   firebird_data:
+  ollama_data:

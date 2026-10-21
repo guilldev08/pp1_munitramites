@@ -8,8 +8,12 @@ from django.urls import reverse
 
 from .base import TestCase
 
-# Archivo único de estilos del sitio (STATICFILES_DIRS apunta a static/).
-CSS = Path(settings.BASE_DIR) / 'static' / 'css' / 'app.css'
+# Hojas del sitio, en orden de carga: sitio.css ajusta los tokens de app.css
+# (STATICFILES_DIRS apunta a static/).
+CSS = [
+    Path(settings.BASE_DIR) / 'static' / 'css' / 'app.css',
+    Path(settings.BASE_DIR) / 'static' / 'css' / 'sitio.css',
+]
 
 # Pares de color medidos: (qué se lee, color del texto, color de fondo).
 # Texto plano sobre fondo = 4,5:1 mínimo (WCAG AA); el texto grande de las
@@ -59,12 +63,27 @@ def _variables(bloque):
     return dict(re.findall(r'(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;', bloque))
 
 
+def _texto():
+    """Las hojas, concatenadas en orden de carga."""
+    return '\n'.join(hoja.read_text(encoding='utf-8') for hoja in CSS)
+
+
+def _bloques(selector):
+    """Todos los bloques que arrancan con `selector`, en orden de carga."""
+    patron = re.escape(selector) + r'\s*\{(.*?)\n\}'
+    return [
+        m.group(1)
+        for hoja in CSS
+        for m in re.finditer(patron, hoja.read_text(encoding='utf-8'), re.S)
+    ]
+
+
 def _bloque(selector):
     """Texto entre llaves del primer bloque que arranca con `selector`."""
-    m = re.search(re.escape(selector) + r'\s*\{(.*?)\n\}', CSS.read_text(encoding='utf-8'), re.S)
-    if not m:
+    bloques = _bloques(selector)
+    if not bloques:
         raise AssertionError(f'el CSS no tiene el bloque {selector}')
-    return m.group(1)
+    return bloques[0]
 
 
 class InterruptorTest(TestCase):
@@ -99,7 +118,7 @@ class CssTest(TestCase):
     """El CSS declara los dos temas y el botón que los voltea."""
 
     def test_trae_el_bloque_oscuro(self):
-        css = CSS.read_text(encoding='utf-8')
+        css = _texto()
         self.assertIn(':root[data-tema="oscuro"]', css)
         self.assertIn('color-scheme: dark', css)
         # tokens que usan las tarjetas, los enlaces y el pie
@@ -107,22 +126,27 @@ class CssTest(TestCase):
         self.assertIn('--enlace', _bloque(':root'))
 
     def test_el_interruptor_tiene_estilo(self):
-        css = CSS.read_text(encoding='utf-8')
+        css = _texto()
         self.assertIn('.tema-boton', css)
 
 
 class ContrasteTest(TestCase):
-    """WCAG AA (4,5:1) medido sobre los hex que declara el CSS.
+    """WCAG AA (4,5:1) medido sobre los hex que declaran las hojas.
 
-    Lee el archivo de verdad (no una copia): si alguien mueve un gris,
+    Lee los archivos de verdad (no una copia): si alguien mueve un gris,
     el test se entera en lugar de enterarse el que está leyendo la pantalla.
     """
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.claro = _variables(_bloque(':root'))
-        cls.oscuro = dict(cls.claro, **_variables(_bloque(':root[data-tema="oscuro"]')))
+        # Se leen las dos hojas en orden: lo que declara sitio.css pisa a app.css.
+        cls.claro = {}
+        for bloque in _bloques(':root'):
+            cls.claro.update(_variables(bloque))
+        cls.oscuro = dict(cls.claro)
+        for bloque in _bloques(':root[data-tema="oscuro"]'):
+            cls.oscuro.update(_variables(bloque))
 
     def _ver(self, variables, tema):
         for descripcion, texto, fondo in PARES:

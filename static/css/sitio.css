@@ -1,0 +1,517 @@
+/* =========================================================================
+   Munitramites — sistema visual del rediseño (portada + trámites) para TODO
+   el sitio. Se carga DESPUÉS de app.css y antes de las hojas de página
+   (landing.css / tramites.css), así:
+     * redefine los tokens de app.css en los dos temas;
+     * ajusta los componentes compartidos (barra, tarjetas, paneles, forms,
+       tablas, modales, chat y panel de administración);
+     * las páginas .lp y .tr conservan su propia hoja y mandan dentro de su
+       bloque.
+   La idea: en oscuro se ve el azul noche de /tramites/; en claro, el blanco
+   y los tres colores de la portada. El interruptor de tema sigue mandando.
+   ========================================================================= */
+
+/* --- Tokens: tema claro (portada) --------------------------------------- */
+:root {
+  color-scheme: light;
+
+  /* Marca: los tres colores de la portada */
+  --m-azul: #0b5cab;
+  --m-verde: #1f9d55;
+  --m-rojo: #d62f3a;
+  --m-linea: linear-gradient(90deg, #0b5cab 0 33.33%, #1f9d55 33.33% 66.66%, #d62f3a 66.66%);
+  --m-boton: linear-gradient(135deg, #0b5cab, #1c74cf);
+
+  /* Cabecera y pie: azul noche en los dos temas (identidad) */
+  --m-noche: #12263f;
+  --m-noche-2: #0b1424;
+  --m-pie: #0b1220;
+
+  /* Tokens que usa app.css */
+  --azul: #0b5cab;
+  --azul-oscuro: #084a8c;
+  --enlace: #0b5cab;
+  --anillo: rgba(11, 92, 171, .18);
+  --azul-claro: #e3eefb;
+  --azul-txt: #0b4a8c;
+  --sup: #ffffff;
+  --radio: 10px;
+  --sombra: 0 1px 2px rgba(16, 24, 40, .05), 0 10px 26px rgba(16, 24, 40, .06);
+
+  --gris-50: #f4f7fb;
+  --gris-100: #e9eef6;
+  --gris-200: #dbe3ec;
+  --gris-400: #5f6f84;
+  --gris-500: #4d5c70;
+  --gris-700: #2a3646;
+  --gris-900: #111a26;
+
+  --verde: #177a44;
+  --verde-claro: #e2f5ec;
+  --ambar: #8a5a10;
+  --ambar-claro: #fdf1dd;
+  --rojo: #b42833;
+  --rojo-claro: #fde8ea;
+  --rojo-txt: #a8232c;
+  --violeta-bg: #efeafb;
+  --violeta-txt: #5b3eaa;
+  --ok-borde: #bfe8d2;
+  --error-borde: #f6c9cd;
+  --info-borde: #c9def5;
+  --pie-fondo: #0b1220;
+  --pie-texto: #93a4bd;
+
+  /* Tokens del rediseño */
+  --s-bg: #f4f7fb;
+  --s-bg2: #ffffff;
+  --s-cd: #ffffff;
+  --s-cd2: #f2f6fb;
+  --s-th: #eef3f9;
+  --s-hover: #e9eef6;
+  --s-tx: #1d2733;
+  --s-mu: #5a6878;
+  --s-ln: #dbe3ec;
+  --s-sombra: 0 1px 2px rgba(16, 24, 40, .05), 0 10px 26px rgba(16, 24, 40, .06);
+  --s-sombra-hover: 0 16px 34px rgba(11, 34, 64, .14);
+}
+
+/* --- Tokens: tema oscuro (trámites) ------------------------------------- */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+
+  --m-azul: #4d97e6;
+  --m-verde: #2fc77a;
+  --m-rojo: #f0555f;
+  --m-linea: linear-gradient(90deg, #4d97e6 0 33.33%, #2fc77a 33.33% 66.66%, #f0555f 66.66%);
+  --m-boton: linear-gradient(135deg, #1f5fb5, #2f7fd8);
+
+  --azul: #2563eb;
+  --azul-oscuro: #1d4ed8;
+  --enlace: #6fb3ff;
+  --anillo: rgba(77, 151, 230, .35);
+  --azul-claro: #16294a;
+  --azul-txt: #8fc1f5;
+  --sup: #131d35;
+  --radio: 14px;
+  --sombra: 0 8px 24px rgba(0, 0, 0, .35);
+
+  --gris-50: #0a1020;
+  --gris-100: #18233b;
+  --gris-200: #27385a;
+  --gris-400: #8194b0;
+  --gris-500: #9aabc4;
+  --gris-700: #d7e0ee;
+  --gris-900: #e8eef9;
+
+  --verde: #6fe3a8;
+  --verde-claro: #123a30;
+  --ambar: #fbbf24;
+  --ambar-claro: #3a2a0f;
+  --rojo: #c8353f;
+  --rojo-claro: #3a1a20;
+  --rojo-txt: #ff9aa1;
+  --violeta-bg: #2e2452;
+  --violeta-txt: #c4b5fd;
+  --ok-borde: #1f6b3f;
+  --error-borde: #7f2f2f;
+  --info-borde: #1e4a8a;
+  --pie-fondo: #070c16;
+  --pie-texto: #93a4bd;
+
+  --s-bg: #0a1020;
+  --s-bg2: #0f1830;
+  --s-cd: #131d35;
+  --s-cd2: #1a2744;
+  --s-th: #0d1730;
+  --s-hover: #1d2f4e;
+  --s-tx: #e8eef9;
+  --s-mu: #9aabc4;
+  --s-ln: #27385a;
+  --s-sombra: 0 8px 24px rgba(0, 0, 0, .35);
+  --s-sombra-hover: 0 16px 34px rgba(0, 0, 0, .5);
+}
+
+/* --- Base --------------------------------------------------------------- */
+body {
+  color: var(--s-tx);
+  background:
+    radial-gradient(900px 420px at 88% 0, rgba(11, 92, 171, .07), transparent 70%),
+    radial-gradient(700px 400px at 0 70%, rgba(31, 157, 85, .05), transparent 70%),
+    var(--s-bg);
+}
+
+:root[data-tema="oscuro"] body {
+  background:
+    radial-gradient(900px 420px at 88% 0, rgba(77, 151, 230, .13), transparent 70%),
+    radial-gradient(700px 400px at 0 70%, rgba(47, 199, 122, .07), transparent 70%),
+    var(--s-bg);
+}
+
+main { min-height: 62vh; }
+
+/* --- Cabecera: azul noche, marca tricolor y línea de los tres colores ---- */
+.header {
+  background: rgba(11, 20, 36, .94);
+  border-bottom: 0;
+  color: var(--s-tx);
+  backdrop-filter: blur(10px);
+}
+
+:root[data-tema="oscuro"] .header { background: rgba(8, 14, 28, .9); }
+
+.header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--m-linea);
+}
+
+.header__fila { min-height: 68px; }
+
+.marca { color: #fff; font-size: 1.12rem; font-weight: 800; letter-spacing: .2px; gap: 11px; }
+
+.marca__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2f7fd8, #0b5cab);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+  font-size: 1rem;
+}
+
+.marca__nombre span:nth-child(1) { color: #6db3f5; }
+.marca__nombre span:nth-child(2) { color: #48d487; }
+.marca__nombre span:nth-child(3) { color: #ff7a84; }
+
+.nav a { color: #c3d1e4; }
+.nav a:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.nav a.activo {
+  background: rgba(77, 151, 230, .2);
+  color: #eaf3ff;
+  box-shadow: inset 0 -2px 0 var(--m-verde);
+  font-weight: 600;
+}
+
+.nav__sesion { border-left-color: rgba(255, 255, 255, .14); color: #a9b8cd; }
+.nav__usuario { color: #e8eef9; }
+
+.header .boton--secundario {
+  background: transparent;
+  border-color: rgba(255, 255, 255, .3);
+  color: #e8eef9;
+}
+.header .boton--secundario:hover { background: rgba(255, 255, 255, .1); box-shadow: none; }
+
+.tema-boton {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  color: #c3d1e4;
+}
+.tema-boton:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+
+/* --- Botones ------------------------------------------------------------ */
+.boton {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 18px;
+  background: var(--m-boton);
+  color: #fff;
+  transition: transform .2s, box-shadow .25s, filter .2s;
+}
+.boton:hover {
+  background: var(--m-boton);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(47, 127, 216, .35);
+  filter: brightness(1.06);
+}
+.boton--secundario {
+  background: transparent;
+  border: 1px solid var(--s-ln);
+  color: var(--s-tx);
+}
+.boton--secundario:hover {
+  background: var(--s-hover);
+  border-color: rgba(77, 151, 230, .5);
+  box-shadow: none;
+  filter: none;
+}
+.boton--peligro { background: linear-gradient(135deg, #a8232c, #c8353f); }
+.boton--peligro:hover { background: linear-gradient(135deg, #a8232c, #c8353f); }
+.boton:focus-visible, .nav a:focus-visible, .tema-boton:focus-visible {
+  outline: 2px solid var(--m-azul);
+  outline-offset: 2px;
+}
+
+/* --- Títulos y migas ---------------------------------------------------- */
+.titulo-seccion h2 { font-weight: 400; letter-spacing: -.01em; }
+.titulo-seccion p { color: var(--s-mu); }
+.miga { color: var(--s-mu); }
+.miga a { color: var(--s-mu); }
+.miga a:hover { color: var(--enlace); }
+.miga span { color: var(--s-mu); opacity: .5; }
+
+/* --- Tarjetas: borde fino, sombra suave y la línea tricolor al pasar ---- */
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+  background: var(--s-cd);
+  border: 1px solid var(--s-ln);
+  border-radius: var(--radio);
+  box-shadow: var(--s-sombra);
+  transition: transform .25s, box-shadow .25s, border-color .25s;
+}
+.tarjeta::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: var(--m-linea);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .35s;
+}
+.tarjeta:hover {
+  transform: translateY(-5px);
+  border-color: rgba(77, 151, 230, .55);
+  box-shadow: var(--s-sombra-hover);
+}
+.tarjeta:hover::before { transform: scaleX(1); }
+.tarjeta h3 { font-weight: 600; }
+.tarjeta__meta { border-top-color: var(--s-ln); }
+.tarjeta__meta span { color: var(--s-mu); }
+
+/* --- Paneles ------------------------------------------------------------ */
+.panel {
+  background: var(--s-cd);
+  border: 1px solid var(--s-ln);
+  border-top: 3px solid var(--m-azul);
+  border-radius: var(--radio);
+  box-shadow: var(--s-sombra);
+  padding: 22px 24px;
+}
+.panel--ayuda {
+  background: linear-gradient(145deg, var(--azul-claro), var(--verde-claro));
+  border-color: transparent;
+}
+.panel--ayuda h3 { color: var(--s-tx); }
+
+/* --- Formularios -------------------------------------------------------- */
+.formulario {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  border-radius: var(--radio);
+  box-shadow: var(--s-sombra);
+}
+
+.campo input[type="text"],
+.campo input[type="email"],
+.campo input[type="password"],
+.campo input[type="search"],
+.campo input[type="number"],
+.campo input[type="url"],
+.campo select,
+.campo textarea,
+.filtros-tramites input[type="search"],
+.filtros-tramites select,
+.acciones-barra select,
+.subfiltros--busqueda input[type="search"],
+.chat__entrada input {
+  background: var(--s-cd2);
+  color: var(--s-tx);
+  border-color: var(--s-ln);
+  border-radius: 10px;
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus,
+.filtros-tramites input[type="search"]:focus,
+.filtros-tramites select:focus,
+.acciones-barra select:focus,
+.subfiltros--busqueda input[type="search"]:focus,
+.chat__entrada input:focus {
+  border-color: var(--m-azul);
+  box-shadow: 0 0 0 3px var(--anillo);
+}
+
+.campo__ver { border-left-color: var(--s-ln); color: var(--enlace); }
+.campo__ver:hover { background: var(--s-hover); }
+
+/* --- Alertas ------------------------------------------------------------ */
+.alerta { border-radius: 10px; border-left-width: 4px; border-left-style: solid; }
+.alerta--ok { border-left-color: var(--verde); }
+.alerta--error { border-left-color: var(--rojo-txt); }
+.alerta--info { border-left-color: var(--m-azul); }
+
+/* --- Tablas ------------------------------------------------------------- */
+.tabla-wrap {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  border-radius: var(--radio);
+  box-shadow: var(--s-sombra);
+}
+.tabla th {
+  background: var(--s-th);
+  color: var(--s-mu);
+  border-bottom-color: var(--s-ln);
+}
+.tabla th, .tabla td { border-bottom-color: var(--s-ln); }
+.tabla tbody tr:hover { background: var(--s-hover); }
+.tabla tbody tr:last-child td { border-bottom: none; }
+
+/* --- Pestañas y filtros ------------------------------------------------- */
+.pestanas { border-bottom-color: var(--s-ln); gap: 8px; }
+.pestanas a { border-radius: 999px; color: var(--s-mu); }
+.pestanas a:hover { background: var(--s-hover); color: var(--s-tx); }
+.pestanas a.activo {
+  background: var(--azul-claro);
+  color: var(--azul-txt);
+  box-shadow: inset 0 0 0 1px rgba(77, 151, 230, .28);
+}
+
+.subfiltros a {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  color: var(--s-tx);
+}
+.subfiltros a:hover { background: var(--s-hover); }
+.subfiltros a.activo {
+  background: var(--m-boton);
+  border-color: transparent;
+  color: #fff;
+}
+
+.filtros-panel { background: var(--s-bg2); border-color: var(--s-ln); }
+
+/* --- Listas, requisitos y datos ---------------------------------------- */
+.requisitos li {
+  background: var(--s-cd2);
+  border-color: var(--s-ln);
+  border-radius: 10px;
+}
+.datos div { border-bottom-color: var(--s-ln); }
+.paginacion a, .paginacion span {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  border-radius: 10px;
+}
+.paginacion a:hover { border-color: var(--m-azul); transform: translateY(-2px); }
+
+/* --- Chat (modal y página) --------------------------------------------- */
+.chat {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  border-radius: var(--radio);
+}
+.chat__historial { background: var(--s-bg2); }
+.chat__burbuja--usuario { background: var(--m-boton); }
+.chat__burbuja--bot {
+  background: var(--s-cd2);
+  border-color: var(--s-ln);
+  border-left: 3px solid var(--m-verde);
+}
+.chat__entrada {
+  background: var(--s-cd);
+  border-top-color: var(--s-ln);
+}
+.chip {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  color: var(--s-tx);
+}
+.chip:hover {
+  background: var(--azul-claro);
+  border-color: var(--azul-claro);
+  color: var(--azul-txt);
+}
+
+/* --- Modales ------------------------------------------------------------ */
+.modal { background: rgba(3, 8, 18, .72); backdrop-filter: blur(3px); }
+.modal__caja {
+  background: var(--s-cd);
+  border: 1px solid var(--s-ln);
+  border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
+}
+.modal__cabecera, .modal__pestanas { border-bottom-color: var(--s-ln); }
+.modal__pestana.activo { color: var(--enlace); border-bottom-color: var(--m-azul); }
+.modal__cerrar { border-radius: 50%; }
+.modal__cerrar:hover { background: var(--s-hover); color: var(--s-tx); }
+.modal .chat__historial { background: var(--s-bg2); }
+
+/* --- Botón flotante del asistente -------------------------------------- */
+.fab {
+  background: linear-gradient(135deg, #1fa866, #2fc77a);
+  box-shadow: 0 10px 26px rgba(47, 199, 122, .4);
+}
+.fab:hover {
+  background: linear-gradient(135deg, #199257, #2fc77a);
+  box-shadow: 0 14px 30px rgba(47, 199, 122, .5);
+}
+
+/* --- Panel de administración ------------------------------------------- */
+.ficha-tramite {
+  border-color: var(--s-ln);
+  border-radius: var(--radio);
+  box-shadow: var(--s-sombra);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+}
+.ficha-tramite:hover {
+  border-color: rgba(77, 151, 230, .5);
+  box-shadow: var(--s-sombra-hover);
+  transform: translateY(-2px);
+}
+.inline-fila {
+  background: var(--s-cd2);
+  border-color: var(--s-ln);
+  border-radius: 12px;
+}
+.inline-fila--borrar { border-color: var(--rojo-txt); }
+.subfiltros--busqueda input[type="search"] { border-radius: 999px; }
+.filtros-grupo a.activo { color: var(--enlace); }
+.enlace-tabla:hover { color: var(--enlace); }
+
+/* --- Barra del asistente (búsqueda del listado) ------------------------ */
+.barra-chat {
+  background: var(--s-cd);
+  border: 1px solid var(--s-ln);
+  border-radius: 999px;
+  box-shadow: var(--s-sombra);
+}
+.barra-chat input { color: var(--s-tx); }
+.barra-chat input::placeholder { color: var(--s-mu); }
+
+/* --- Pie: azul noche con la línea tricolor ----------------------------- */
+.footer {
+  position: relative;
+  background: var(--m-pie);
+  color: var(--pie-texto);
+  padding: 38px 0 34px;
+  border-top: 0;
+}
+.footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 4px;
+  background: var(--m-linea);
+}
+.footer a { color: #8ab4ff; }
+.footer a:hover { color: #b9d4ff; }
+.footer strong { color: #fff; }
+
+/* --- Vacío y estados ---------------------------------------------------- */
+.vacio {
+  background: var(--s-cd);
+  border-color: var(--s-ln);
+  box-shadow: var(--s-sombra);
+}

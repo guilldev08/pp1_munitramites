@@ -350,6 +350,7 @@ munitramites/
 ├── README.md                       # ← toda la documentación (estás adentro)
 ├── static/
 │   ├── css/app.css                 # hoja de estilos del sitio
+│   ├── css/sitio.css               # rediseño (portada + trámites) para todo el sitio
 │   ├── css/admin.css               # hoja de estilos del panel /admin/
 │   ├── css/landing.css             # portada a pantalla completa
 │   ├── css/tramites.css            # lista, ficha y chatbot (tema oscuro propio)
@@ -481,7 +482,7 @@ munitramites/
 | Agregar un campo a un formulario | `forms.py` | — |
 | Mejorar lo que sabe el asistente | `services/chatbot/` (ver sección siguiente) | — |
 | Agregar sinónimos al asistente | `services/chatbot/recuperacion.py` → `SINONIMOS` | — |
-| Cambiar el diseño | `static/css/app.css` + `templates/base.html` (lista, ficha y chat: `static/css/tramites.css`; panel: `static/css/admin.css`) | — |
+| Cambiar el diseño | `static/css/app.css` + `static/css/sitio.css` (rediseño: tokens y componentes de todo el sitio) + `templates/base.html` (lista, ficha y chat: `static/css/tramites.css`; panel: `static/css/admin.css`) | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
 | Cambiar un CSS o un JS | `static/` | `{% estatico %}` (le agrega `?v=<mtime>` para la caché) |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
@@ -750,9 +751,10 @@ docker compose exec firebird gbak -c -user SYSDBA -password masterkey \
   `/registro/` (que abren el modal del lado del servidor) y la barra del chat
   manda el POST a `/chatbot/`.
 - El contraste, el orden de tabulación y los tamaños de texto están en
-  `static/css/app.css` (incluye `prefers-reduced-motion`). Los pares de color
-  de los **dos temas** (claro y oscuro) se calculan contra WCAG AA (4,5:1) en
-  `tests/test_tema.py`: si alguien mueve un gris, se entera el test.
+  `static/css/app.css` + `static/css/sitio.css` (incluye
+  `prefers-reduced-motion`). Los pares de color de los **dos temas** (claro y
+  oscuro) se calculan contra WCAG AA (4,5:1) en `tests/test_tema.py`: si alguien
+  mueve un gris, se entera el test.
 
 ## Acceder a la base de datos
 

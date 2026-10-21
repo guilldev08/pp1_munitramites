@@ -6,6 +6,7 @@
   <title>Munitramites - {% block titulo %}Trámites de Misiones{% endblock %}</title>
   <meta name="description" content="Información de trámites públicos de la provincia de Misiones.">
   <link rel="stylesheet" href="{% estatico 'css/app.css' %}">
+  <link rel="stylesheet" href="{% estatico 'css/sitio.css' %}">
   <script>
     /* Tema: se aplica ANTES de pintar para que no destelle el otro tema.
        Manda la preferencia guardada; si el usuario nunca eligió, la del
@@ -30,7 +31,7 @@
   <div class="contenedor header__fila">
     <a class="marca" href="{% url 'inicio' %}">
       <span class="marca__logo">M</span>
-      <span>Munitramites</span>
+      <span class="marca__nombre"><span>Muni</span><span>tra</span><span>mites</span></span>
     </a>
 
     {# Barra: secciones a la izquierda, soporte + acceso a la derecha #}

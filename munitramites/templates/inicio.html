@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static estaticos %}
 
 {% block titulo %}Inicio{% endblock %}
 
@@ -7,7 +7,7 @@
 {% block encabezado %}{% endblock %}
 
 {% block contenido %}
-<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+<link rel="stylesheet" href="{% estatico 'css/landing.css' %}">
 <div class="lp">
 <section class="lp-hero"><div class="lp-wrap">
   <p class="lp-marca"><span>Muni</span><span>tra</span><span>mites</span></p>

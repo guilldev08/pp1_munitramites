@@ -390,7 +390,7 @@ munitramites/
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (257)
+    ├── tests/                      #    tests de aceptación (259)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -402,12 +402,14 @@ munitramites/
     │   ├── test_panel.py           #    panel /panel/: matriz de aceptación
     │   ├── test_rnf.py             #    RNF-03 rendimiento · RNF-05 integridad
     │   ├── test_tema.py            #    tema claro/oscuro + contraste WCAG
+    │   ├── test_estaticos.py       #    {% estatico %}: CSS/JS con ?v= para la caché
     │   └── test_admin.py           #    cara del /admin/ + candado + un solo super
     ├── migrations/                 #    migraciones generadas
     ├── management/commands/
     │   ├── cargar_datos.py         #    semilla de datos
     │   └── scrapear_sitios.py      #    cáscara fina sobre services/scraper/
     ├── templatetags/
+    │   ├── estaticos.py            #    {% estatico %}: CSS/JS con ?v=<mtime>
     │   ├── hora.py                 #    filtro |hora_local
     │   └── panel_admin.py          #    {% panel_admin %}: tarjetas del panel
     └── templates/
@@ -478,6 +480,7 @@ munitramites/
 | Agregar sinónimos al asistente | `services/chatbot/recuperacion.py` → `SINONIMOS` | — |
 | Cambiar el diseño | `static/css/app.css` + `templates/base.html` (del panel: `static/css/admin.css`) | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
+| Cambiar un CSS o un JS | `static/` | `{% estatico %}` (le agrega `?v=<mtime>` para la caché) |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
 | Cargar organismos y trámites reales | `services/scraper/` (con su `data/organismos_misiones.csv`) | `scrapear_sitios` |
 | Cambiar el modelo del asistente | `docker-compose.yml` → `OLLAMA_MODELO` (+ `services/chatbot/llm.py`) | `docker compose up -d ollama ollama-init` |
@@ -515,7 +518,7 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 257 tests
+docker compose exec web python manage.py test --noinput         # correr los 259 tests
 
 docker compose logs -f ollama                                  # ver la carga del modelo
 docker compose exec ollama ollama list                         # modelos disponibles

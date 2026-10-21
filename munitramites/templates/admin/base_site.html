@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load static %}
+{% load static estaticos %}
 
 {% comment %}
    =============================================================================
@@ -15,7 +15,7 @@
    =============================================================================
 {% endcomment %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static 'css/admin.css' %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% estatico 'css/admin.css' %}">{% endblock %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:'Munitramites' }}{% endblock %}
 

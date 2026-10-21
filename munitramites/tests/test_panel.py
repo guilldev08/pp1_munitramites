@@ -758,6 +758,9 @@ class DisenoTests(TestCase):
         r = self.client.get(reverse('panel'))
 
         self.assertContains(r, 'css/app.css')
+        # La URL lleva la fecha del archivo: el navegador no reusa la copia
+        # vieja cuando cambia el CSS (ver templatetags/estaticos.py).
+        self.assertContains(r, 'css/app.css?v=')
 
     def test_los_formularios_del_panel_traen_el_token_csrf(self):
         for nombre in ('panel_tramite_nuevo', 'panel_usuario_nuevo',

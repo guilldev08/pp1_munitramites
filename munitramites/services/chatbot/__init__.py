@@ -26,9 +26,9 @@ Pipeline de tres etapas:
     ORQUESTAR      services/chatbot/pipeline.py
                     saludos/ordenes fijas (rápidas), seguimientos
                     cortos, umbral y entrega final: texto + tramites
-                    fuente. Sin fragmentos NO se llama al modelo: el
-                    «no encontré» clásico (el asistente solo responde
-                    sobre trámites).
+                    fuente. Sin fragmentos, con modelo, contesta en
+                    libre (charla general, «qué es este portal»); sin
+                    modelo, el «no encontré» clásico.
 
 Criterios del documento que garantiza este diseno:
 

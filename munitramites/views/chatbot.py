@@ -131,8 +131,8 @@ def buscador_api(request):
 
     El modelo SOLO redacta con sesión iniciada: una visita anónima
     recibe la respuesta de las plantillas. Así la barra pública no
-    gasta la API de Groq (y el asistente, sin contexto de trámites, ni
-    siquiera intenta llamarla).
+    gasta la API de Groq; el chat (con sesión) sí puede charlar y
+    variar la redacción.
 
     Sin JavaScript no se usa este JSON: el <noscript> del listado lleva a
     /chatbot/?q=… que responde la misma pregunta en la página del chat.

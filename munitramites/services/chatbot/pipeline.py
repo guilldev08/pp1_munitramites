@@ -13,11 +13,11 @@ Reglas de la conversación:
     · «limpiar» vacía la charla y «gracias»/«chau» tienen su respuesta,
     · si el índice devuelve fragmentos, se citan los trámites fuente y
       el modelo redacta con ese contexto,
-    · si NO hay fragmentos por encima del umbral, NO se llama al modelo:
-      se dice explícitamente que no se dispone de esa información,
-      citando lo que se preguntó y sin repetir siempre la misma frase
-      (el asistente solo responde sobre trámites y no gasta la API en
-      consultas fuera de tema),
+    · si NO hay fragmentos por encima del umbral: con el modelo activo,
+      contesta en libre (charla general, «qué es este portal», dudas
+      sueltas) sin inventar fichas; sin modelo o en la barra pública, se
+      dice explícitamente que no se dispone de esa información, citando
+      lo que se preguntó y sin repetir siempre la misma frase,
     · un seguimiento corto («¿y el plazo?») se busca junto con lo que se
       preguntó antes,
     · la barra de búsqueda pública pasa `usar_llm=False`: responde el RAG
@@ -32,6 +32,7 @@ from .generacion import (
     _citar,
     _redaccion,
     generar_respuesta,
+    generar_sin_contexto,
 )
 from .recuperacion import buscar
 
@@ -213,13 +214,20 @@ def responder(pregunta, historial=None, usar_llm=True):
         encontrados = buscar(f'{pregunta} {previas}')
 
     if not encontrados:
-        # Sin contexto no se llama al modelo: el asistente solo responde
-        # sobre trámites y una consulta que el índice no reconoce no
-        # justifica gastar la API. Se contesta con el «no encontré» de
-        # siempre —criterio «manejo de alucinaciones», con la consulta a
-        # la vista y sin repetir siempre la misma frase.
+        # Sin contexto: con el modelo activo contesta en libre (charla
+        # general, «qué es este portal», dudas sueltas) sin poder
+        # inventar fichas; sin modelo o en la barra pública, el «no
+        # encontré» de siempre —criterio «manejo de alucinaciones», con
+        # la consulta a la vista y sin repetir siempre la misma frase.
+        # Con menos de 3 letras («g», «¿y?») no hay nada que el modelo
+        # pueda hacer: se pide completar la consulta sin gastar la API.
+        texto = None
+        if len(re.sub(r'[\W_]+', '', pregunta.lower())) >= 3:
+            texto = generar_sin_contexto(
+                pregunta, historial, usar_llm=usar_llm,
+            )
         return {
-            'texto': _sin_informacion(pregunta),
+            'texto': texto or _sin_informacion(pregunta),
             'tramites': [],
             'fragmentos': [],
         }

@@ -9,7 +9,7 @@ management commands son cáscaras finas sobre esto.
 |---|---|
 | `indexar.py` | 1 · convierte cada trámite activo en fragmentos y los mantiene en memoria (se invalida solo con las señales de `apps.py`) |
 | `recuperacion.py` | 2 · BM25 + sinónimos + stopwords; filtra bajo `CHATBOT_UMBRAL` |
-| `generacion.py` | 3 · plantilla local (y corte de montos); llama al modelo solo si hay contexto |
+| `generacion.py` | 3 · plantilla local (y corte de montos); el modelo redacta con o sin contexto |
 | `pipeline.py` | orquesta: saludos, seguimientos, umbral, fuentes y `usar_llm` |
 | `llm/prompt.py` | **la ventana de contexto**: `SYSTEM` + `armar_user()` |
 | `llm/groq.py` | POST a Groq (API compatible con OpenAI) |
@@ -20,6 +20,10 @@ Para revisar el contexto exacto que se manda al modelo, sin gastar la API:
 ```powershell
 docker compose exec web python manage.py ver_contexto "¿qué necesito para renovar el DNI?"
 ```
+
+El chat (con sesión) usa el modelo para redactar, con o sin contexto; la
+barra de búsqueda pública, sin sesión, responde con plantillas para no
+gastar la API.
 
 ## `scraper/` — importación de trámites oficiales
 

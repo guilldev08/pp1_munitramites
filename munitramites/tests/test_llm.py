@@ -4,9 +4,9 @@ El modelo NUNCA se toca de verdad en los tests: se simula la API de
 Groq con mocks y se reactiva `CHATBOT_LLM` con override_settings
 (settings.py lo apaga en los tests). Lo que se prueba acá es el
 contrato entre el pipeline y el modelo: que redacte con contexto, que
-NO llame a la API cuando no hay contexto (el asistente solo responde
-sobre trámites), que caiga en la plantilla si el modelo no está, y que
-un fallo no se pague en cada mensaje.
+pueda charlar en libre cuando NO hay contexto (sin inventar fichas),
+que caiga en la plantilla si el modelo no está o no corresponde usarlo,
+y que un fallo no se pague en cada mensaje.
 """
 
 from unittest.mock import MagicMock, patch
@@ -125,15 +125,50 @@ class LlmTests(TestCase):
 
         self.assertTrue(rta['texto'].startswith('Encontré'))
 
-    def test_sin_contexto_no_se_llama_a_groq(self):
-        """Fuera de tema o sin fichas: no se gasta la API."""
+    def test_sin_contexto_el_llm_contesta_en_libre(self):
+        """Sin fichas el modelo puede orientar/charlar, sin inventar."""
+        with patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+            return_value=_respuesta_modelo(
+                'Soy el asistente de Munitramites: te ayudo a encontrar '
+                'el trámite que necesitás.'
+            ),
+        ) as post:
+            rta = responder('¿qué es Munitramites?')
+
+        self.assertEqual(
+            rta['texto'],
+            'Soy el asistente de Munitramites: te ayudo a encontrar '
+            'el trámite que necesitás.',
+        )
+        self.assertEqual(rta['tramites'], [])
+
+        # Se le avisa explícitamente que NO hay contexto, para que
+        # pueda charlar pero no se invente fichas.
+        cuerpo = post.call_args.kwargs['json']
+        self.assertIn('sin resultados',
+                      cuerpo['messages'][1]['content'])
+        self.assertIn('¿qué es Munitramites?',
+                      cuerpo['messages'][1]['content'])
+
+    def test_consulta_corta_no_gasta_la_api(self):
+        """Con «g» no hay nada que el modelo pueda hacer: no se llama."""
         with patch(
             'munitramites.services.chatbot.llm.groq.requests.post',
         ) as post:
-            rta = responder('¿me contás un chiste?')
+            rta = responder('g')
 
-        # El asistente solo responde sobre trámites: sin contexto
-        # recuperado contesta la plantilla y NO toca la API.
+        self.assertIn('«g»', rta['texto'])
+        self.assertEqual(rta['tramites'], [])
+        post.assert_not_called()
+
+    def test_sin_contexto_con_usar_llm_false_usa_plantilla(self):
+        """La barra pública, sin contexto, no gasta la API."""
+        with patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+        ) as post:
+            rta = responder('¿qué es Munitramites?', usar_llm=False)
+
         self.assertTrue(rta['texto'].startswith(
             ('No encontré', 'No dispongo', 'Nada indexado'),
         ))

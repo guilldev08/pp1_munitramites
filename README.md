@@ -34,9 +34,9 @@ Qué hace el sistema, en corto:
   panel arriba de los resultados.
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
-- **Asistente virtual** con RAG y un modelo local (**Gemma 4** vía Ollama,
-  dentro del proyecto): busca en los trámites reales, cita la fuente
-  y, si no sabe, lo dice en lugar de inventar.
+- **Asistente virtual** con RAG y **Groq** como modelo (API en la nube):
+  busca en los trámites reales, cita la fuente y, si no sabe, lo dice en
+  lugar de inventar. Sin clave, responde con las plantillas locales.
 
 Todo lo anterior está documentado acá y tiene sus tests de aceptación: ver
 [Tests y trazabilidad](#tests-y-trazabilidad).
@@ -65,12 +65,11 @@ docker compose up -d --build
 | http://localhost:8000/api/tramites/ | API JSON |
 | Firebird | puerto 3050 |
 
-La primera vez tarda unos minutos (baja imágenes e instala dependencias)
-y además baja **y calienta** el modelo del asistente (~6,6 GB, servicio
-`ollama-init`): el primer arranque suma ~3 minutos más y después el
-modelo queda cargado en RAM (~5,3 GB) para todas las charlas. Si el
-servicio `ollama` se reinicia y el modelo se descarga, `ollama-init` lo
-vuelve a calentar solo.
+La primera vez tarda unos minutos (baja imágenes e instala dependencias).
+El asistente **ya funciona sin configuración**: sin clave de Groq
+responde con las plantillas locales del sitio. Para que redacte el
+modelo, pegá la clave en el `.env` de la raíz (ver
+[Cómo redacta](#cómo-redacta-y-por-qué-no-inventa)).
 
 ### Cargar los datos de ejemplo
 
@@ -381,8 +380,8 @@ munitramites/
     │   ├── chatbot/                #    RAG: indexar → recuperar → generar
     │   │   ├── indexar.py          #    1. convierte trámites en fragmentos
     │   │   ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
-    │   │   ├── generacion.py       #    3. redacción con Gemma 4 o plantilla
-    │   │   ├── llm.py              #    cliente de Ollama (Gemma 4) con fallback
+    │   │   ├── generacion.py       #    3. redacción con Groq o plantilla
+    │   │   ├── llm.py              #    cliente de Groq con fallback
     │   │   └── pipeline.py         #    orquestador + reglas de la charla
     │   └── scraper/                #    scraping: planilla → rastreo → extracción
     │       ├── planilla.py         #    1. importa la planilla de organismos
@@ -394,7 +393,7 @@ munitramites/
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (259)
+    ├── tests/                      #    tests de aceptación (260)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -487,7 +486,7 @@ munitramites/
 | Cambiar un CSS o un JS | `static/` | `{% estatico %}` (le agrega `?v=<mtime>` para la caché) |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
 | Cargar organismos y trámites reales | `services/scraper/` (con su `data/organismos_misiones.csv`) | `scrapear_sitios` |
-| Cambiar el modelo del asistente | `docker-compose.yml` → `OLLAMA_MODELO` (+ `services/chatbot/llm.py`) | `docker compose up -d ollama ollama-init` |
+| Cambiar el modelo del asistente | `.env` → `GROQ_MODELO` (+ `services/chatbot/llm.py`) | `docker compose up -d web` |
 | Correr los tests | `tests/` | `manage.py test --noinput` |
 | Cambiar la base de datos | `settings.py` → `DATABASES` | — |
 | Cambiar idioma / zona horaria | `settings.py` → `LANGUAGE_CODE` / `TIME_ZONE` | — |
@@ -522,10 +521,9 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 259 tests
+docker compose exec web python manage.py test --noinput         # correr los 260 tests
 
-docker compose logs -f ollama                                  # ver la carga del modelo
-docker compose exec ollama ollama list                         # modelos disponibles
+docker compose logs -f web                                     # ver los pedidos a Groq
 ```
 
 ### Ejecutar código desde el host
@@ -638,8 +636,8 @@ Todo vive en `services/chatbot/`, en cuatro piezas.
 |---|---|---|
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
-| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con modelo (**Gemma 4** vía `llm.py`) la frase la arma el LLM citando el contexto; sin modelo cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
-| LLM | `llm.py` | cliente de Ollama: prompt de dos niveles (los datos de trámites SOLO del contexto; el resto, charla libre), historial corto, timeout y cooldown tras un fallo |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con clave de Groq (**`GROQ_MODELO`**, vía `llm.py`) la frase la arma el LLM citando el contexto; sin clave o si falla cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
+| LLM | `llm.py` | cliente de Groq (API compatible con OpenAI): prompt de dos niveles (los datos de trámites SOLO del contexto; el resto, charla libre), historial corto, timeout y cooldown tras un fallo |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y decide la puerta: con contexto → el modelo redacta; sin contexto → charla libre con el modelo (sin modelo, el «no sé» clásico citando la consulta). Nunca inventa nada |
 
 **Se le puede preguntar desde cuatro lugares**: el modal 💬 (desde cualquier
@@ -657,14 +655,28 @@ Tests: `test_chatbot.BuscadorTests`.
 
 ### Cómo redacta (y por qué no inventa)
 
-**El modelo corre dentro del proyecto**: el servicio `ollama` del
-`docker-compose.yml` baja **Gemma 4** la primera vez (~6,6 GB, guardado
-en el volumen `ollama_data`) y `llm.py` le pasa la pregunta con los
-fragmentos del índice. `ollama-init` mantiene el modelo cargado (con
-`keep_alive=-1`, residente: ~5,3 GB en CPU) y lo vuelve a calentar solo
-si se descarga —por ejemplo, si el servicio `ollama` se reinicia—: así
-cada pregunta sale en ~60-90 s en CPU. Sin eso, la primera consulta tras
-un reinicio paga una carga en frío de ~2-3 minutos.
+**El modelo lo corre Groq** (API en la nube, compatible con OpenAI):
+`llm.py` le pasa la pregunta con los fragmentos del índice a
+`https://api.groq.com/openai/v1/chat/completions` y la respuesta vuelve
+en segundos, sin bajar ni mantener ningún modelo en la PC. La clave va
+en el `.env` de la raíz —nunca al repo, `.env` está en `.gitignore`—:
+
+```powershell
+# .env (al lado de docker-compose.yml)
+GROQ_API_KEY=gsk_...
+```
+
+y se aplica recreando el servicio web:
+
+```powershell
+docker compose up -d web
+```
+
+El modelo por defecto es `openai/gpt-oss-120b` (`GROQ_MODELO` en el
+`.env` para cambiarlo); la lista viva está en
+[console.groq.com/docs/models](https://console.groq.com/docs/models).
+Docker Compose lee el `.env` solo, así que no hay que exportar nada a
+mano.
 
 El prompt tiene dos niveles: **los datos de trámites salen SOLO del
 CONTEXTO** (el modelo cita requisitos y montos tal como aparecen en los
@@ -672,7 +684,7 @@ fragmentos), y **todo lo demás es charla libre** (qué es el portal,
 saludos, dudas generales). Responde en español rioplatense, de 1 a 8
 oraciones.
 
-**Si no hay modelo** (PC sin RAM, sin red, Ollama caído), el asistente
+**Si no hay clave o modelo** (sin `.env`, sin red, Groq caído), el asistente
 no se cae: `generacion.py::PlantillaLocal` arma la respuesta con las
 plantillas del sitio, siempre anclada a los fragmentos. Cada caso tiene
 más de una redacción, elegida de forma estable por la consulta (misma
@@ -698,17 +710,18 @@ seguido de una pregunta ya no se traga la pregunta.
 
 El punto de conexión sigue siendo `llm.redactar()` →
 `generar_respuesta()` en `generacion.py`: ni la vista, ni el RAG ni el
-pipeline cambian si mañana el modelo vive en otro lado (en la PC, en una
-GPU o en un servicio aparte: `OLLAMA_URL` apunta a donde esté). Todo lo
+pipeline cambian si mañana cambia el proveedor (`GROQ_URL` y
+`GROQ_MODELO` apuntan a dónde y con qué modelo). Todo lo
 de este apartado está cubierto por `tests/test_chatbot.py`
 (`PipelineTests`, `PlantillaLocalTests` y `AlucinacionesTests`) y por
 `tests/test_llm.py` (el cliente, con mocks: los tests nunca tocan el
 modelo).
 
 Otras perillas: `CHATBOT_TOP_K` (fragmentos que se pasan como contexto),
-`CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse) y
+`CHATBOT_UMBRAL` (qué tan relevante tiene ser para citarse),
 `CHATBOT_LLM` (vacío = apagar el modelo y usar solo plantillas; en los
-tests siempre está apagado).
+tests siempre está apagado) y `GROQ_MODELO` / `GROQ_TIMEOUT` (modelo y
+segundos de espera del proveedor).
 
 Para agregar vocabulario del dominio, sumá entradas a `SINONIMOS` en
 `recuperacion.py`; para indexar otra cosa (por ejemplo las FAQ), ampliá
@@ -787,17 +800,14 @@ Luego escribí SQL y cerrá con `quit;`.
 | Backend Firebird | `django-firebird` 5.0.4 | (pip) |
 | Driver | `firebird-driver` 2.0.3 | (pip) |
 | Firebird Server | 4.0.7 | `firebirdsql/firebird:4.0.7` |
-| Ollama (asistente) | 0.40.5 | `ollama/ollama:latest` + modelo `gemma4` (6,6 GB) en el volumen `ollama_data` |
+| Asistente | — | Groq API (`openai/gpt-oss-120b` por defecto), sin modelo local |
 
 Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
 
-> **RAM del asistente**: en CPU el modelo ocupa ~5,3 GB de RAM y el pico
-> de carga (con el buffer de *repack*) llega a ~6,8 GB. En una PC de 8 GB
-> hay que darle a la VM de Docker unos 6,5 GB (`.wslconfig` → `[wsl2]`
-> con `memory=6500MB` y `swap=8GB`) y mantenerlo cargado con
-> `ollama-init` (`keep_alive=-1`, y lo re-calienta si se descarga). Queda
-> al límite: si la VM no da abasto, el asistente sigue funcionando con
-> las plantillas locales.
+> **Asistente**: la generación con Groq necesita `GROQ_API_KEY` en el
+> `.env` y conexión a internet; sin ninguna de las dos, el sitio entero
+> funciona igual con las plantillas locales (no hay modelo en la PC ni
+> volumen que mantener).
 
 ## Notas
 

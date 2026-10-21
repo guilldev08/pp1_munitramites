@@ -1,19 +1,17 @@
-"""Cliente del modelo de lenguaje: Gemma 4 corriendo en Ollama.
+"""Cliente del modelo de lenguaje: Groq (API compatible con OpenAI).
 
-Ollama es un servicio MÁS del docker-compose (imagen `ollama/ollama`,
-volumen `ollama_data` con los modelos): el proyecto es autocontenido y
-se levanta en cualquier PC con `docker compose up`, sin instalar nada
-aparte. Desde el servicio web se lo alcanza por `OLLAMA_URL`
-(`http://ollama:11434`, la red interna del compose). Si algún día se
-quiere usar el Ollama de la PC —por ejemplo, con GPU— alcanza con
-apuntar `OLLAMA_URL` a `host.docker.internal:11434`. La única
-dependencia del cliente es `requests`, que ya está en el proyecto: ni
-SDK ni claves (Ollama local no pide ninguna).
+Groq corre los modelos en su infraestructura: el proyecto no baja ni
+mantiene ningún modelo. El cliente es un POST a
+`https://api.groq.com/openai/v1/chat/completions` con la clave
+`GROQ_API_KEY`, que se pega en el `.env` de la raíz (nunca en el código
+ni en el repo: `.env` está en `.gitignore`). La única dependencia es
+`requests`, que ya está en el proyecto.
 
 El contrato con el pipeline es UNA función: `redactar(pregunta,
-fragmentos, historial)`. Si el modelo no está configurado, no responde,
-se cae o devuelve basura, devuelve None — y la etapa 3 cae en la
-plantilla local. El asistente nunca se queda mudo por un modelo.
+fragmentos, historial)`. Si la clave no está configurada, el modelo no
+responde, la API falla o devuelve basura, devuelve None — y la etapa 3
+cae en la plantilla local. El asistente nunca se queda mudo por un
+modelo.
 
 Se usa en DOS caminos: con contexto (la etapa 2 le pasó fragmentos) y
 SIN contexto (la consulta no trajo ninguna ficha): en ese segundo caso
@@ -21,13 +19,12 @@ el modelo charla libre —saludos sueltos, «¿qué es este portal?»,
 preguntas generales— pero con la misma prohibición de inventar datos
 de trámites.
 
-Cuando Ollama se cae, se anota el momento del fallo y por
-`COOLDOWN_FALLO` segundos no se vuelve a intentar: sin eso, cada
-mensaje de la charla sumaría el timeout completo de la conexión
-muerta en la cara del ciudadano.
+Cuando Groq falla (clave vencida, cuota, red), se anota el momento del
+fallo y por `COOLDOWN_FALLO` segundos no se vuelve a intentar: sin eso,
+cada mensaje de la charla pagaría el timeout completo en la cara del
+ciudadano.
 """
 
-import re
 import time
 
 import requests
@@ -35,42 +32,23 @@ from django.conf import settings
 
 __all__ = ['activo', 'redactar']
 
-# Gemma 4 piensa antes de contestar: aunque Ollama arma el template, a
-# veces el bloque de «thought» o los tokens de control se cuelan en el
-# contenido. Se barren antes de devolver: son marcas, no prosa.
-_LIMPIEZA = (
-    re.compile(r'<\|channel>thought\n.*?<channel\|>', re.DOTALL),
-    re.compile(r'<\|[^|<>]{1,24}\|>'),
-    re.compile(r'<channel\|>'),
-)
-
 # Segundos sin reintentar tras un fallo (ver docstring).
 COOLDOWN_FALLO = 60
 
 # Momento (monotónico) del último fallo; 0.0 = nunca falló.
 _ultimo_fallo = 0.0
 
-# Gemma 4 con la configuración que recomienda Google para todos los
-# casos de uso (temperatura 1.0, top_p 0.95, top_k 64). `num_predict`
-# acorta la respuesta: alcanza para las 8 oraciones que pide el
-# prompt y corta cualquier divagación larga. `num_ctx` es 2048 y no
-# 4096 a propósito: con la KV cache en q8_0 (ver docker-compose.yml)
-# eso deja el pico de RAM del modelo por debajo del límite de la VM
-# de Docker y 2048 sobra para contexto + historial corto.
-OPCIONES = {
-    'temperature': 1.0,
-    'top_p': 0.95,
-    'top_k': 64,
-    'num_predict': 220,
-    'num_ctx': 2048,
-}
+# Cómo se pide la respuesta: el prompt ya limita el largo a 1-8
+# oraciones; `max_completion_tokens` es el tope de costo (en los modelos
+# de razonamiento de Groq incluye el razonamiento interno).
+TEMPERATURA = 0.7
+MAX_TOKENS = 1200
 
-# El system prompt va en español porque es el idioma del asistente:
-# Gemma 4 soporta `system` nativo y Ollama arma el template por
-# nosotros. DOS NIVELES a propósito: los DATOS de trámites sólo del
-# contexto (nunca inventar montos/plazos/requisitos), TODO LO DEMÁS en
-# libre —ese es justamente el punto de meter un LLM: contestar en voz
-# alta y no con frases pregrabadas.
+# El system prompt va en español porque es el idioma del asistente.
+# DOS NIVELES a propósito: los DATOS de trámites sólo del contexto
+# (nunca inventar montos/plazos/requisitos), TODO LO DEMÁS en libre
+# —ese es justamente el punto de meter un LLM: contestar en voz alta y
+# no con frases pregrabadas.
 _SYSTEM = (
     'Sos el asistente de Munitramites, un portal de trámites de la '
     'Provincia de Misiones (Argentina). Contestás en español '
@@ -97,12 +75,8 @@ _SYSTEM = (
 
 
 def activo():
-    """¿El asistente debe redactar con el LLM (y hay a dónde pegarle)?"""
-    return settings.CHATBOT_LLM == 'ollama'
-
-
-def _url(ruta):
-    return f'{settings.OLLAMA_URL.rstrip("/")}/{ruta.lstrip("/")}'
+    """¿Hay clave configurada y el asistente está encendido?"""
+    return bool(settings.CHATBOT_LLM == 'groq' and settings.GROQ_API_KEY)
 
 
 def _armar_user(pregunta, fragmentos, historial):
@@ -153,9 +127,13 @@ def redactar(pregunta, fragmentos, historial=()):
 
     try:
         respuesta = requests.post(
-            _url('/api/chat'),
+            settings.GROQ_URL,
+            headers={
+                'Authorization': f'Bearer {settings.GROQ_API_KEY}',
+                'Content-Type': 'application/json',
+            },
             json={
-                'model': settings.OLLAMA_MODELO,
+                'model': settings.GROQ_MODELO,
                 'messages': [
                     {'role': 'system', 'content': _SYSTEM},
                     {
@@ -165,28 +143,25 @@ def redactar(pregunta, fragmentos, historial=()):
                         ),
                     },
                 ],
-                'stream': False,
-                # Gemma 4 piensa antes de contestar: en CPU ese modo se
-                # come los tokens y deja la respuesta vacía. Apagado,
-                # la respuesta sale entera y más rápido.
-                'think': False,
-                'options': OPCIONES,
+                'temperature': TEMPERATURA,
+                'max_completion_tokens': MAX_TOKENS,
             },
-            timeout=settings.OLLAMA_TIMEOUT,
+            timeout=settings.GROQ_TIMEOUT,
         )
         respuesta.raise_for_status()
-        texto = (
-            (respuesta.json().get('message') or {}).get('content') or ''
-        ).strip()
+        opciones = respuesta.json().get('choices') or []
+        texto = ''
+        if opciones:
+            texto = (
+                (opciones[0].get('message') or {}).get('content') or ''
+            ).strip()
     except (requests.RequestException, ValueError):
-        # Ollama caído, timeout o respuesta ilegible: se anota el fallo
-        # y la etapa 3 usa la plantilla local.
+        # Sin red, timeout, 401 (clave vencida) o 429 (cuota):
+        # se anota el fallo y la etapa 3 usa la plantilla local.
         _ultimo_fallo = time.monotonic()
         return None
 
     if not texto:
         _ultimo_fallo = time.monotonic()
         return None
-    for patron in _LIMPIEZA:
-        texto = patron.sub('', texto)
-    return texto.strip() or None
+    return texto

@@ -13,11 +13,11 @@ Pipeline de tres etapas:
                     umbral, no hay contexto util.
 
     3. GENERAR      services/chatbot/generacion.py
-                    Redacta la respuesta. Con CHATBOT_LLM='ollama' la
-                    redaccion es de Gemma 4 con el contexto en la mano
-                    (services/chatbot/llm.py, contra el servicio
-                    `ollama` del docker-compose); sin modelo —o si se
-                    cae— vuelve a la plantilla local, anclada a los
+                    Redacta la respuesta. Con CHATBOT_LLM='groq' la
+                    redaccion es del modelo de Groq con el contexto en
+                    la mano (services/chatbot/llm.py, contra la API de
+                    Groq); sin clave, sin modelo —o si se cae— vuelve a
+                    la plantilla local, anclada a los
                     fragmentos y con variantes para no repetirse. Nunca
                     inventa: los datos de tramites salen solo del
                     contexto, y una pregunta por monto que no esta

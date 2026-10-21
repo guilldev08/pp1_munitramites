@@ -1,7 +1,7 @@
-"""Pruebas del asistente con LLM (Gemma 4 vía Ollama, simulado).
+"""Pruebas del asistente con LLM (Groq, simulado).
 
 El modelo NUNCA se toca de verdad en los tests: se simula la API de
-Ollama con mocks y se reactiva `CHATBOT_LLM` con override_settings
+Groq con mocks y se reactiva `CHATBOT_LLM` con override_settings
 (settings.py lo apaga en los tests). Lo que se prueba acá es el
 contrato entre el pipeline y el modelo: que redacte con contexto, que
 charle libre cuando NO hay contexto, que caiga en la plantilla si el
@@ -20,10 +20,10 @@ from .base import TestCase, tramite
 
 
 def _respuesta_modelo(texto):
-    """Mock del JSON que devuelve Ollama en /api/chat."""
+    """Mock del JSON que devuelve Groq en /openai/v1/chat/completions."""
     respuesta = MagicMock()
     respuesta.json.return_value = {
-        'message': {'role': 'assistant', 'content': texto},
+        'choices': [{'message': {'role': 'assistant', 'content': texto}}],
     }
     return respuesta
 
@@ -32,9 +32,14 @@ def _apagar_cooldown():
     llm._ultimo_fallo = 0.0
 
 
-@override_settings(CHATBOT_LLM='ollama', OLLAMA_TIMEOUT=5)
+@override_settings(
+    CHATBOT_LLM='groq',
+    GROQ_API_KEY='gsk_prueba',
+    GROQ_MODELO='openai/gpt-oss-120b',
+    GROQ_TIMEOUT=5,
+)
 class LlmTests(TestCase):
-    """Con CHATBOT_LLM='ollama': Gemma redacta; si no puede, plantilla."""
+    """Con CHATBOT_LLM='groq': Groq redacta; si no puede, plantilla."""
 
     def setUp(self):
         super().setUp()
@@ -57,10 +62,17 @@ class LlmTests(TestCase):
         )
         self.assertEqual(len(rta['tramites']), 1)  # las fuentes no cambian
 
-        # El pedido lleva el modelo, sin streaming, con system + contexto.
+        # El pedido va a la API de Groq, con la clave y el modelo.
+        self.assertEqual(
+            post.call_args.args[0],
+            'https://api.groq.com/openai/v1/chat/completions',
+        )
+        self.assertEqual(
+            post.call_args.kwargs['headers']['Authorization'],
+            'Bearer gsk_prueba',
+        )
         cuerpo = post.call_args.kwargs['json']
-        self.assertEqual(cuerpo['model'], 'gemma4')
-        self.assertFalse(cuerpo['stream'])
+        self.assertEqual(cuerpo['model'], 'openai/gpt-oss-120b')
         mensajes = cuerpo['messages']
         self.assertEqual(mensajes[0]['role'], 'system')
         self.assertIn('rioplatense', mensajes[0]['content'])
@@ -69,10 +81,22 @@ class LlmTests(TestCase):
         self.assertIn('¿qué necesito para renovar el DNI?',
                       mensajes[1]['content'])
 
-    def test_si_ollama_se_cae_vuelve_a_la_plantilla(self):
+    @override_settings(GROQ_API_KEY='')
+    def test_sin_clave_no_se_llama_a_groq(self):
         with patch(
             'munitramites.services.chatbot.llm.requests.post',
-            side_effect=requests.ConnectionError('sin ollama'),
+        ) as post:
+            rta = responder('¿qué necesito para renovar el DNI?')
+
+        # Sin clave, el asistente responde con la plantilla y no toca
+        # la red: es el estado en que queda clonado el repo.
+        self.assertTrue(rta['texto'].startswith('Encontré'))
+        post.assert_not_called()
+
+    def test_si_groq_se_cae_vuelve_a_la_plantilla(self):
+        with patch(
+            'munitramites.services.chatbot.llm.requests.post',
+            side_effect=requests.ConnectionError('sin groq'),
         ):
             rta = responder('¿qué necesito para renovar el DNI?')
 
@@ -83,7 +107,7 @@ class LlmTests(TestCase):
     def test_tras_un_fallo_no_se_reintenta_en_cada_mensaje(self):
         with patch(
             'munitramites.services.chatbot.llm.requests.post',
-            side_effect=requests.ConnectionError('sin ollama'),
+            side_effect=requests.ConnectionError('sin groq'),
         ) as post:
             responder('¿qué necesito para renovar el DNI?')
             responder('¿y con la partida de nacimiento?')

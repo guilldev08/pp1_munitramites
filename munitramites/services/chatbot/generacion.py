@@ -2,8 +2,9 @@
 
 `PlantillaLocal` arma el texto con las plantillas del sitio a partir de
 los fragmentos recuperados: sin dependencias, sin costo, sin internet y
-sin modelo propio. Si `CHATBOT_LLM='ollama'`, el texto lo redacta
-Gemma 4 (vía `llm.redactar`) con las MISMAS reglas metidas en el prompt
+sin modelo propio. Si `CHATBOT_LLM='groq'`, el texto lo redacta
+el modelo de Groq (vía `llm.redactar`) con las MISMAS reglas metidas en
+el prompt
 del modelo: que los datos de trámites salgan solo del contexto, que cite
 los trámites y que diga «no dispongo» cuando no alcanza. Si el modelo
 no está disponible o se cae, se vuelve a la plantilla local sin que el
@@ -20,8 +21,8 @@ Hay DOS puertas de entrada:
     generar_respuesta(pregunta, fragmentos, historial)  con contexto
     generar_sin_contexto(pregunta, historial)           sin contexto
 
-En la primera, con el modelo activo el pedido sale PRIMERO hacia Gemma
-—ella redacta con libertad citando lo que haya— y el corte
+En la primera, con el modelo activo el pedido sale PRIMERO hacia Groq
+—el modelo redacta con libertad citando lo que haya— y el corte
 determinista de montos recién corre si no hay modelo: una pregunta por
 un monto que el contexto no trae no puede redactarse la plantilla
 (pasó en vivo: «$50.000.000» por renovar el DNI) y el prompt del
@@ -187,7 +188,7 @@ def _sin_dato(pregunta):
 def generar_respuesta(pregunta, fragmentos, historial=()):
     """Redacta la respuesta; nunca por encima de lo que está indexado.
 
-    Orden: primero el modelo —Gemma 4 vía Ollama, si está configurado—
+    Orden: primero el modelo —Groq, si está configurado—
     que redacta con libertad usando el contexto. Sin modelo (o si se
     cayó), el corte determinista de montos —si la pregunta pide un
     precio y el contexto no lo trae, «no dispongo» sin redactar— y

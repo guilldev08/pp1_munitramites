@@ -3,19 +3,15 @@ services:
     build: .
     # Se levanta solo si Docker Desktop se reinicia o se cae la PC
     restart: unless-stopped
-    # Gemma 4 (asistente): el modelo corre EN el servicio ollama de
-    # este mismo compose (todo adentro de Docker, portable a cualquier
-    # PC). Para apagar el LLM, un .env con CHATBOT_LLM= (vacío) manda;
-    # para usar el Ollama de la PC (ej.: con GPU), apuntar OLLAMA_URL a
-    # http://host.docker.internal:11434.
+    # Asistente: Groq (API en la nube, compatible con OpenAI). La clave
+    # se pega en el .env de esta carpeta (GROQ_API_KEY=gsk_...) y se
+    # aplica con `docker compose up -d web`. Sin clave, el asistente
+    # contesta con la plantilla local y nunca se queda mudo.
     environment:
-      CHATBOT_LLM: ${CHATBOT_LLM-ollama}
-      OLLAMA_URL: ${OLLAMA_URL-http://ollama:11434}
-      OLLAMA_MODELO: ${OLLAMA_MODELO-gemma4}
-      # 300 s: resguardo por si el modelo no está cargado (arranque sin
-      # calentar): la recarga en RAM puede llevar ~2-3 min en CPU; con
-      # el modelo residente la respuesta sale en ~60-90 s.
-      OLLAMA_TIMEOUT: ${OLLAMA_TIMEOUT-300}
+      CHATBOT_LLM: ${CHATBOT_LLM:-groq}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODELO: ${GROQ_MODELO:-openai/gpt-oss-120b}
+      GROQ_TIMEOUT: ${GROQ_TIMEOUT:-30}
     ports:
       - "8000:8000"
     volumes:
@@ -23,8 +19,6 @@ services:
     depends_on:
       firebird:
         condition: service_healthy
-      ollama:
-        condition: service_started
     # Espera activa a que Firebird acepte conexiones antes de migrar
     command: >
       sh -c "for i in $$(seq 1 60); do
@@ -33,69 +27,6 @@ services:
       done;
       python manage.py migrate &&
       python manage.py runserver 0.0.0.0:8000"
-
-  # --- Ollama con Gemma 4: el LLM vive adentro de Docker ---------------
-  # Así el proyecto es autocontenido: en cualquier PC basta
-  # `docker compose up`. Los modelos quedan en el volumen ollama_data
-  # (no se bajan dos veces).
-  ollama:
-    image: ollama/ollama:latest
-    restart: unless-stopped
-    environment:
-      # 7,5 B de parámetros en CPU con poco RAM: la KV cache en q8_0
-      # (en vez de f16) y un solo stream ahorran ~1 GB del pico de
-      # carga — la diferencia entre que el modelo entre o lo mate el
-      # OOM de la VM (esta PC tiene 7,8 GB en total).
-      OLLAMA_KV_CACHE_TYPE: q8_0
-      OLLAMA_NUM_PARALLEL: "1"
-      OLLAMA_CONTEXT_LENGTH: "2048"
-      # El modelo queda en RAM hasta que se apague el stack: sin esto,
-      # a los 5 min sin consultas Ollama lo descarga y la próxima charla
-      # vuelve a pagar la carga (~2-3 min; en PCs de 8 GB esa carga
-      # puede tumbar la VM por OOM).
-      OLLAMA_KEEP_ALIVE: "-1"
-    volumes:
-      - ollama_data:/root/.ollama
-    # Sin puertos publicados a propósito: el único cliente es el
-    # servicio web (red interna) y así no choca con un Ollama de la PC.
-
-  # Mantiene el modelo CARGADO en RAM (keep-alive -1): lo baja la
-  # primera vez (idempotente) y, si el servicio `ollama` se reinicia y
-  # el modelo queda descargado, lo vuelve a calentar solo. En CPU el
-  # modelo ocupa ~5,3 GB de RAM (~6,8 GB en el pico de carga) y cada
-  # pregunta sale caliente (~60-90 s); sin esto, la primera consulta
-  # tras un reinicio paga una carga en frío (~2-3 min) cuyo pico de RAM
-  # se come el margen de la VM y tumba al contenedor `web` (esta PC
-  # tiene 7,8 GB en total). Si no hay modelo, el asistente contesta con
-  # la plantilla local (diseñado para eso).
-  ollama-init:
-    image: ollama/ollama:latest
-    depends_on:
-      - ollama
-    environment:
-      OLLAMA_HOST: http://ollama:11434
-    # La imagen trae ENTRYPOINT ["ollama"]: sin este override, el
-    # sh -c de abajo se ejecutaría como «ollama sh -c» y no corre.
-    entrypoint: ["/bin/sh", "-c"]
-    # Vigilante: en cada vuelta mira si el modelo está en RAM y, si no,
-    # lo calienta. Cubre el arranque del stack y también que `ollama`
-    # se reinicie por su cuenta —donde un one-shot no volvería a correr
-    # y el asistente quedaría pagando la carga en frío en cada charla.
-    command:
-      - >-
-        while true; do
-          if ollama ps 2>/dev/null | grep -q gemma4; then
-            echo "gemma4 residente en RAM.";
-          else
-            echo "gemma4 no esta cargado; calentando (keep_alive -1)...";
-            ollama list 2>/dev/null | grep -q gemma4 || ollama pull gemma4;
-            ollama run gemma4 "Responde unicamente: listo" || echo "Fallo el calentamiento; reintento en 60 s.";
-          fi;
-          sleep 60;
-        done
-    # Es un vigilante permanente: si se cae, vuelve solo, y al
-    # reiniciar Docker arranca de nuevo y re-calienta si hace falta.
-    restart: unless-stopped
 
   firebird:
     # Imagen oficial de Firebird (jacobalberty/firebird quedó archivada)
@@ -119,4 +50,3 @@ services:
 
 volumes:
   firebird_data:
-  ollama_data:

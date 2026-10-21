@@ -189,8 +189,8 @@ DEFAULT_FROM_EMAIL = 'no-responder@munitramites.test'
 
 # --- Chatbot (asistente con arquitectura RAG) ------------------------------
 # `services/chatbot/` implementa indexacion -> recuperacion -> generacion.
-# La generacion redacta con Gemma 4 (ver CHATBOT_LLM abajo) y si no hay
-# modelo disponible cae en una plantilla anclada al contexto (ver
+# La generacion redacta con Groq (ver CHATBOT_LLM abajo) y si no hay
+# clave o modelo disponible cae en una plantilla anclada al contexto (ver
 # `services/chatbot/generacion.py`): el asistente funciona igual sin
 # modelo ni servicio.
 
@@ -204,25 +204,24 @@ CHATBOT_TOP_K = 4
 # descartando las consultas sin coincidencia (esas puntuan 0).
 CHATBOT_UMBRAL = 0.5
 
-# --- Asistente con LLM (Gemma 4 vía Ollama) -------------------------------
-# 'ollama' activa la redaccion con el modelo; cualquier otro valor
-# (vacio incluido) deja la plantilla local. En docker-compose viene
-# 'ollama' por defecto y se puede apagar con CHATBOT_LLM= en un .env.
-CHATBOT_LLM = os.environ.get('CHATBOT_LLM', '')
-# Ollama vive como servicio del compose (http://ollama:11434, que es lo
-# que inyecta docker-compose.yml). El default de acá apunta a la maquina
-# anfitriona: sirve de escape hatch si el modelo corre en la PC (por
-# ejemplo, con GPU) en vez de en el contenedor.
-OLLAMA_URL = os.environ.get(
-    'OLLAMA_URL', 'http://host.docker.internal:11434',
+# --- Asistente con LLM (Groq) ---------------------------------------------
+# 'groq' activa la redaccion con el modelo; cualquier otro valor (vacio
+# incluido) deja la plantilla local. Además hace falta GROQ_API_KEY.
+CHATBOT_LLM = os.environ.get('CHATBOT_LLM', 'groq')
+# La clave se pega en el .env de la raíz (ver README): nunca en el
+# código ni en el repo. Sin clave no se llama a la API y el asistente
+# usa la plantilla local.
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+# La API es la de Groq, compatible con OpenAI (chat/completions).
+GROQ_URL = os.environ.get(
+    'GROQ_URL', 'https://api.groq.com/openai/v1/chat/completions',
 )
-OLLAMA_MODELO = os.environ.get('OLLAMA_MODELO', 'gemma4')
-# Segundos de espera por respuesta: 300 de resguardo por si el modelo
-# no está cargado (arranque sin calentar): la carga en RAM puede llevar
-# ~2-3 minutos en CPU. Con el modelo residente (ollama-init lo calienta
-# al arrancar, con keep_alive=-1) la respuesta sale en ~60-90 s. Si
-# igual no llega, la plantilla local cubre el timeout.
-OLLAMA_TIMEOUT = int(os.environ.get('OLLAMA_TIMEOUT', '300'))
+# Modelo de Groq: gpt-oss-120b (producción, rápido, buen español).
+# Alternativa más barata: openai/gpt-oss-20b.
+GROQ_MODELO = os.environ.get('GROQ_MODELO', 'openai/gpt-oss-120b')
+# Segundos de espera por respuesta: Groq contesta en segundos; 30 cubre
+# una respuesta larga sin colgar la charla si el proveedor no responde.
+GROQ_TIMEOUT = int(os.environ.get('GROQ_TIMEOUT', '30'))
 # En los tests NUNCA se habla con el modelo: la redacción vuelve a la
 # plantilla local (los tests de la capa LLM la simulan con mocks y la
 # reactivan con override_settings).

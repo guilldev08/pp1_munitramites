@@ -1,41 +1,61 @@
 {% extends "base.html" %}
+{% load estaticos %}
 
 {% block titulo %}Trámites{% endblock %}
 
+{% block extra_head %}<link rel="stylesheet" href="{% estatico 'css/tramites.css' %}">{% endblock %}
+
 {% block contenido %}
+<div class="tr">
+
+{# --- Banner: migas, titulo y barra del asistente, con tres datos a la derecha --- #}
+<section class="tr-hero">
+  <div class="contenedor tr-hero__grid">
+    <div>
+      <div class="miga">
+        <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Trámites
+      </div>
+
+      <div class="titulo-seccion">
+        <div>
+          <h2>Trámites disponibles</h2>
+          <p>
+            {% if pagina.paginator.count %}
+              {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}
+              {% if hay_filtros %} con los filtros aplicados{% endif %}.
+            {% else %}Sin resultados.{% endif %}
+          </p>
+        </div>
+        <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">
+          ¿No lo encontrás? Preguntá
+        </a>
+      </div>
+
+      {# --- Barra del asistente: preguntar sin salir del listado ------------- #}
+      {# Sin JavaScript hace POST a /chatbot/ y se responde en la página del chat; con JavaScript app.js abre el modal y manda la pregunta. #}
+      <form class="barra-chat" id="barra-chat" method="post"
+            action="{% url 'chatbot' %}" autocomplete="off">
+        {% csrf_token %}
+        <input type="text" name="mensaje" maxlength="300" required
+               placeholder="Preguntale al asistente… (ej.: «¿cómo renuevo el DNI?»)"
+               aria-label="Pregunta al asistente">
+        <button class="boton" type="submit">Preguntar</button>
+      </form>
+    </div>
+
+    <aside class="tr-destacados" aria-label="Resumen">
+      <div class="tr-tile" style="--c:#1f6fd1;--c2:#3a93f2"><small>Disponibles</small><b>{{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}</b></div>
+      <div class="tr-tile" style="--c:#14864f;--c2:#25b873"><small>Filtrá por</small><b>Tema · Municipio · Modalidad</b></div>
+      <div class="tr-tile" style="--c:#c8353f;--c2:#f0606a"><small>Cada ficha</small><b>Requisitos y enlaces oficiales</b></div>
+    </aside>
+  </div>
+</section>
+
 <section class="seccion">
   <div class="contenedor">
-    <div class="miga">
-      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Trámites
-    </div>
-
-    {# --- Barra del asistente: preguntar sin salir del listado ------------- #}
-    {# Sin JavaScript hace POST a /chatbot/ y se responde en la página del chat; con JavaScript app.js abre el modal y manda la pregunta. #}
-    <form class="barra-chat" id="barra-chat" method="post"
-          action="{% url 'chatbot' %}" autocomplete="off">
-      {% csrf_token %}
-      <input type="text" name="mensaje" maxlength="300" required
-             placeholder="Preguntale al asistente… (ej.: «¿cómo renuevo el DNI?»)"
-             aria-label="Pregunta al asistente">
-      <button class="boton" type="submit">Preguntar</button>
-    </form>
-
-    <div class="titulo-seccion">
-      <div>
-        <h2>Trámites disponibles</h2>
-        <p>
-          {% if pagina.paginator.count %}
-            {{ pagina.paginator.count }} trámite{{ pagina.paginator.count|pluralize }}
-            {% if hay_filtros %} con los filtros aplicados{% endif %}.
-          {% else %}Sin resultados.{% endif %}
-        </p>
-      </div>
-      <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">
-        ¿No lo encontrás? Preguntá
-      </a>
-    </div>
-
     {% include "parciales/lista_tramites.html" %}
   </div>
 </section>
+
+</div>
 {% endblock %}

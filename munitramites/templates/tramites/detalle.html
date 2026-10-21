@@ -1,29 +1,46 @@
 {% extends "base.html" %}
-{% load hora %}
+{% load hora estaticos %}
 
 {% block titulo %}{{ tramite.titulo }}{% endblock %}
 
-{% block contenido %}
-<section class="seccion">
-  <div class="contenedor">
-    <div class="miga">
-      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>
-      <a href="{% url 'tramites' %}">Trámites</a><span>/</span>
-      {{ tramite.titulo }}
-    </div>
+{% block extra_head %}<link rel="stylesheet" href="{% estatico 'css/tramites.css' %}">{% endblock %}
 
-    <div class="titulo-seccion">
-      <div>
-        <div class="etiquetas mb-1">
-          <span class="etiqueta etiqueta--tema">{{ tramite.tema }}</span>
-          <span class="etiqueta etiqueta--{{ tramite.modalidad }}">{{ tramite.get_modalidad_display }}</span>
-          {% if tramite.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
+{% block contenido %}
+<div class="tr">
+
+{# --- Banner: migas + titulo, con tres datos clave a la derecha ------------ #}
+<section class="tr-hero">
+  <div class="contenedor tr-hero__grid">
+    <div>
+      <div class="miga">
+        <a href="{% url 'inicio' %}">Inicio</a><span>/</span>
+        <a href="{% url 'tramites' %}">Trámites</a><span>/</span>
+        {{ tramite.titulo }}
+      </div>
+
+      <div class="titulo-seccion">
+        <div>
+          <div class="etiquetas mb-1">
+            <span class="etiqueta etiqueta--tema">{{ tramite.tema }}</span>
+            <span class="etiqueta etiqueta--{{ tramite.modalidad }}">{{ tramite.get_modalidad_display }}</span>
+            {% if tramite.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
+          </div>
+          <h2>{{ tramite.titulo }}</h2>
+          <p>{{ tramite.organismo.nombre }} · {{ tramite.municipio.nombre }}</p>
         </div>
-        <h2>{{ tramite.titulo }}</h2>
-        <p>{{ tramite.organismo.nombre }} · {{ tramite.municipio.nombre }}</p>
       </div>
     </div>
 
+    <aside class="tr-destacados" aria-label="Resumen del trámite">
+      <div class="tr-tile" style="--c:#1f6fd1;--c2:#3a93f2"><small>Requisitos a presentar</small><b>{{ tramite.requisitos.count }}</b></div>
+      <div class="tr-tile" style="--c:#14864f;--c2:#25b873"><small>Modalidad</small><b>{{ tramite.get_modalidad_display }}</b></div>
+      <div class="tr-tile" style="--c:#c8353f;--c2:#f0606a"><small>Municipio</small><b>{{ tramite.municipio.nombre }}</b></div>
+    </aside>
+  </div>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
     <div class="ficha">
       <div>
         <div class="panel">
@@ -90,12 +107,18 @@
             Hacer una consulta sobre este trámite
           </a>
         </div>
+
+        <div class="panel panel--ayuda">
+          <h3 class="mt-0">¿Tenés dudas?</h3>
+          <p class="texto-suave texto-chico">El asistente responde con los requisitos reales y cita la fuente.</p>
+          <a class="boton boton--ancho" href="{% url 'chatbot' %}">Preguntale al asistente</a>
+        </div>
       </aside>
     </div>
 
     {% if relacionados %}
-      <div class="titulo-seccion mt-3">
-        <div><h2 style="font-size:1.15rem">Trámites relacionados</h2></div>
+      <div class="titulo-seccion mt-3" style="margin-bottom:18px">
+        <div><h2 style="font-size:1.3rem">Trámites relacionados</h2></div>
       </div>
       <div class="rejilla">
         {% for t in relacionados %}
@@ -114,4 +137,6 @@
     {% endif %}
   </div>
 </section>
+
+</div>
 {% endblock %}

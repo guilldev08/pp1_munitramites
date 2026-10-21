@@ -1,0 +1,135 @@
+/* Páginas de trámites y chatbot. Todo va bajo .tr (no toca el resto del sitio).
+   Tema oscuro fijo con los colores de marca: azul, verde y rojo. */
+.tr{--az:#4d97e6;--ve:#2fc77a;--ro:#f0555f;--bg:#0a1020;--bg2:#0f1830;--cd:#131d35;--cd2:#1a2744;--ln:#27385a;--tx:#e8eef9;--mu:#9aabc4;--gris-200:#27385a;
+  color-scheme:dark;color:var(--tx);line-height:1.55;overflow-x:clip;
+  background:radial-gradient(900px 420px at 88% 0,rgba(77,151,230,.13),transparent 70%),radial-gradient(700px 400px at 0 70%,rgba(47,199,122,.07),transparent 70%),var(--bg)}
+.tr *{box-sizing:border-box}
+.tr a{color:inherit;text-decoration:none}
+.tr .contenedor{max-width:1140px;margin:0 auto;padding:0 20px}
+.tr .seccion{padding:34px 0 64px}
+.tr .mt-0{margin-top:0}.tr .mb-0{margin-bottom:0}.tr .mb-1{margin-bottom:.5rem}.tr .mb-2{margin-bottom:1rem}.tr .mt-2{margin-top:1rem}.tr .mt-3{margin-top:1.6rem}
+.tr .texto-suave{color:var(--mu)}.tr .texto-chico{font-size:.86rem}.tr .centrado{text-align:center}
+
+/* ---- Banner ---- */
+.tr-hero{position:relative;overflow:hidden;padding:36px 0 44px;border-bottom:5px solid;border-image:linear-gradient(90deg,var(--az) 33%,var(--ve) 33% 66%,var(--ro) 66%) 1}
+.tr-hero::before{content:"";position:absolute;inset:0;background:url('../img/banner_tramites.jpg') center/cover;animation:zoom 24s ease-in-out infinite alternate}
+.tr-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,rgba(7,14,30,.95) 0%,rgba(7,14,30,.8) 52%,rgba(10,52,110,.55) 100%)}
+.tr-hero>.contenedor{position:relative;z-index:1}
+.tr-hero__grid{display:grid;grid-template-columns:1fr 310px;gap:36px;align-items:center}
+.tr-hero__grid--solo{grid-template-columns:1fr}
+.tr .miga{font-size:.85rem;color:var(--mu);margin-bottom:16px;animation:subir .6s both}
+.tr .miga span{margin:0 8px;opacity:.5}.tr .miga a{transition:color .2s}.tr .miga a:hover{color:var(--az)}
+.tr .titulo-seccion{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;animation:subir .7s .08s both}
+.tr .titulo-seccion h2{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:700;line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+.tr .titulo-seccion p{margin:0;color:#c3d0e4;max-width:620px}
+.tr .etiquetas{display:flex;flex-wrap:wrap;gap:8px}
+.tr .etiqueta{display:inline-block;padding:3px 12px;border-radius:999px;font-size:.78rem;font-weight:600;border:1px solid rgba(47,199,122,.45);background:rgba(47,199,122,.14);color:#6fe3a8}
+.tr .etiqueta--tema{border-color:rgba(77,151,230,.5);background:rgba(77,151,230,.16);color:#8fc1f5}
+.tr .etiqueta--destacado{border-color:rgba(240,85,95,.5);background:rgba(240,85,95,.16);color:#ff9aa1}
+.tr-destacados{display:grid;gap:10px}
+.tr-tile{padding:16px 20px;border-radius:12px;color:#fff;background:linear-gradient(135deg,var(--c),var(--c2));box-shadow:0 8px 22px rgba(0,0,0,.35);animation:subir .6s both;transition:transform .25s,box-shadow .25s}
+.tr-tile:nth-child(2){animation-delay:.12s}.tr-tile:nth-child(3){animation-delay:.24s}
+.tr-tile:hover{transform:translateX(-8px) scale(1.02);box-shadow:0 12px 28px rgba(0,0,0,.5)}
+.tr-tile small{display:block;font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;opacity:.85}
+.tr-tile b{display:block;font-size:1.2rem}
+
+/* ---- Ficha ---- */
+.tr .ficha{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+.tr .ficha aside{position:sticky;top:90px}
+.tr .panel{--pc:var(--az);background:var(--cd);border:1px solid var(--ln);border-top:3px solid var(--pc);border-radius:14px;padding:22px 24px;margin-bottom:20px;animation:subir .6s both;transition:transform .25s,box-shadow .25s,border-color .25s}
+.tr .ficha>div>.panel:nth-child(3n+2),.tr .ficha aside>.panel:nth-child(3n+2){--pc:var(--ve)}
+.tr .ficha>div>.panel:nth-child(3n),.tr .ficha aside>.panel:nth-child(3n){--pc:var(--ro)}
+.tr .ficha>div>.panel:nth-child(2){animation-delay:.1s}.tr .ficha>div>.panel:nth-child(3){animation-delay:.2s}
+.tr .ficha aside>.panel:nth-child(1){animation-delay:.1s}.tr .ficha aside>.panel:nth-child(2){animation-delay:.2s}.tr .ficha aside>.panel:nth-child(3){animation-delay:.3s}
+.tr .panel:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.4);border-color:var(--pc)}
+.tr .panel h3{font-size:1.1rem;margin:0 0 12px}
+.tr .panel p{margin:0 0 10px}
+.tr .panel--ayuda{background:linear-gradient(145deg,#142a52,#123a30)}
+.tr .requisitos{list-style:none;counter-reset:r;padding:0;margin:0;display:grid;gap:10px}
+.tr .requisitos li{counter-increment:r;display:flex;gap:14px;align-items:flex-start;padding:12px 14px;background:var(--cd2);border:1px solid transparent;border-radius:10px;transition:transform .2s,border-color .2s,background .2s}
+.tr .requisitos li::before{content:counter(r);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:700;color:#052414;background:var(--ve)}
+.tr .requisitos li:hover{transform:translateX(5px);border-color:var(--ve);background:#1d2f4e}
+.tr .datos{margin:0}
+.tr .datos>div{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px dashed var(--ln)}
+.tr .datos>div:last-child{border:0}
+.tr .datos dt{color:var(--mu)}.tr .datos dd{margin:0;font-weight:600;text-align:right}
+
+/* ---- Botones ---- */
+.tr .acciones{display:flex;flex-wrap:wrap;gap:12px}
+.tr .boton{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border:2px solid transparent;border-radius:10px;font:inherit;font-weight:600;color:#fff;cursor:pointer;background:linear-gradient(135deg,#2b7be0,#4d97e6);transition:transform .2s,box-shadow .25s,background .25s,color .25s}
+.tr .boton::after{content:"";position:absolute;top:0;left:-130%;width:55%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);transition:left .6s}
+.tr .boton:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(77,151,230,.45)}.tr .boton:hover::after{left:150%}
+.tr .boton--secundario{background:transparent;border-color:var(--ve);color:var(--ve)}
+.tr .boton--secundario:hover{background:var(--ve);color:#05210f;box-shadow:0 8px 22px rgba(47,199,122,.4)}
+.tr .boton--ancho{display:flex;width:100%}.tr .boton--chico{padding:7px 14px;font-size:.85rem}
+
+/* ---- Tarjetas ---- */
+.tr .rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.tr .tarjeta{position:relative;overflow:hidden;display:block;padding:20px;background:var(--cd);border:1px solid var(--ln);border-radius:14px;animation:subir .6s both;transition:transform .25s,box-shadow .25s,border-color .25s}
+.tr .tarjeta:nth-child(2){animation-delay:.08s}.tr .tarjeta:nth-child(3){animation-delay:.16s}.tr .tarjeta:nth-child(4){animation-delay:.24s}
+.tr .tarjeta::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--az) 33%,var(--ve) 33% 66%,var(--ro) 66%);transform:scaleX(0);transform-origin:left;transition:transform .35s}
+.tr .tarjeta::after{content:"→";position:absolute;right:18px;bottom:16px;color:var(--az);opacity:0;transform:translateX(-8px);transition:.25s}
+.tr .tarjeta:hover{transform:translateY(-7px);border-color:rgba(77,151,230,.6);box-shadow:0 16px 34px rgba(0,0,0,.5)}
+.tr .tarjeta:hover::before{transform:scaleX(1)}.tr .tarjeta:hover::after{opacity:1;transform:none}
+.tr .tarjeta h3{font-size:1.08rem;margin:12px 0 8px}
+.tr .tarjeta__meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:.86rem}
+
+/* ---- Chatbot ---- */
+.tr .chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.tr .chip{--c:var(--az);display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:var(--cd);color:var(--tx);border:1px solid var(--ln);font:inherit;font-size:.9rem;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}
+.tr .chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.tr .chips form>.chip:nth-child(3n+2){--c:var(--ve)}.tr .chips form>.chip:nth-child(3n){--c:var(--ro)}
+.tr .chip:hover{transform:translateY(-3px);border-color:var(--c);box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 3px rgba(255,255,255,.04)}
+.tr .chat{position:relative;overflow:hidden;background:var(--cd);border:1px solid var(--ln);border-radius:18px;box-shadow:0 22px 50px rgba(0,0,0,.45);animation:subir .7s .1s both}
+.tr .chat::before{content:"Asistente de trámites · en línea";display:block;padding:15px 20px 15px 42px;font-weight:600;font-size:.95rem;background:linear-gradient(90deg,#14305c,#133a30);border-bottom:1px solid var(--ln)}
+.tr .chat::after{content:"";position:absolute;top:20px;left:20px;width:10px;height:10px;border-radius:50%;background:var(--ve);animation:pulso 2s infinite}
+.tr .chat__historial{height:430px;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:var(--ln) transparent}
+.tr .chat__burbuja{max-width:82%;padding:11px 15px;border-radius:16px;animation:pop .35s both}
+.tr .chat__burbuja--usuario{align-self:flex-end;color:#fff;background:linear-gradient(135deg,#2b7be0,#4d97e6);border-bottom-right-radius:4px}
+.tr .chat__burbuja--bot{align-self:flex-start;background:var(--cd2);border:1px solid var(--ln);border-left:3px solid var(--ve);border-bottom-left-radius:4px}
+.tr .lista-limpia{list-style:none;padding:0;margin:0}
+.tr .chat__burbuja--bot a{color:#6fe3a8;font-weight:600;display:inline-block;transition:transform .2s}.tr .chat__burbuja--bot a:hover{transform:translateX(4px)}
+.tr .chat__historial .centrado>div:first-child{display:inline-block;animation:saludo 2.6s ease-in-out infinite;transform-origin:70% 70%}
+.tr .chat__entrada{display:flex;gap:10px;padding:14px;background:var(--bg2);border-top:1px solid var(--ln)}
+.tr .chat__entrada input{flex:1;min-width:0;padding:12px 18px;border-radius:999px;background:var(--cd);border:1px solid var(--ln);color:var(--tx);font:inherit;transition:border-color .2s,box-shadow .2s}
+.tr .chat__entrada input:focus{outline:0;border-color:var(--az);box-shadow:0 0 0 3px rgba(77,151,230,.28)}
+.tr .chat__entrada .boton{border-radius:999px;background:linear-gradient(135deg,#1fa866,#2fc77a);color:#04210f}
+.tr .chat__entrada .boton:hover{box-shadow:0 8px 22px rgba(47,199,122,.45)}
+
+
+/* ---- Lista de trámites: barra del asistente, filtros, paginación ---- */
+.tr .barra-chat{display:flex;gap:8px;max-width:720px;margin:24px 0 0;padding:7px;border-radius:999px;background:rgba(15,24,48,.85);backdrop-filter:blur(8px);border:1px solid var(--ln);box-shadow:0 14px 34px rgba(0,0,0,.4);animation:subir .7s .16s both;transition:border-color .2s,box-shadow .2s}
+.tr .barra-chat:focus-within{border-color:var(--az);box-shadow:0 0 0 3px rgba(77,151,230,.28),0 14px 34px rgba(0,0,0,.4)}
+.tr .barra-chat input{flex:1;min-width:0;background:transparent;border:0;color:var(--tx);font:inherit;padding:10px 18px}
+.tr .barra-chat input:focus{outline:0;box-shadow:none}.tr .barra-chat input::placeholder{color:var(--mu)}
+.tr .barra-chat .boton{border-radius:999px;background:linear-gradient(135deg,#1fa866,#2fc77a);color:#04210f}
+.tr .filtros{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:18px 20px;margin-bottom:26px;background:var(--cd);border:1px solid var(--ln);border-top:3px solid var(--ve);border-radius:14px;animation:subir .6s .1s both}
+.tr .filtros label{display:block;margin-bottom:5px;font-size:.78rem;font-weight:600;letter-spacing:.03em;color:var(--mu)}
+.tr select,.tr .filtros input[type=text],.tr .filtros input[type=search]{min-width:170px;padding:10px 14px;background:var(--cd2);color:var(--tx);border:1px solid var(--ln);border-radius:10px;font:inherit;transition:border-color .2s,box-shadow .2s}
+.tr select:focus,.tr .filtros input:focus{outline:0;border-color:var(--az);box-shadow:0 0 0 3px rgba(77,151,230,.25)}
+.tr select option{background:var(--cd);color:var(--tx)}
+.tr .paginacion{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:36px 0 0}
+.tr .paginacion a,.tr .paginacion span{padding:8px 15px;background:var(--cd);border:1px solid var(--ln);border-radius:10px;transition:transform .2s,border-color .2s}
+.tr .paginacion a:hover{transform:translateY(-2px);border-color:var(--az)}
+.tr .paginacion .activo,.tr .paginacion [aria-current]{background:var(--az);border-color:var(--az);color:#fff;font-weight:700}
+.tr .vacio{padding:50px 20px;text-align:center;color:var(--mu);border:1px dashed var(--ln);border-radius:14px}
+.tr .tarjeta:nth-child(n+5){animation-delay:.3s}
+@media(max-width:600px){.tr .barra-chat{border-radius:18px;flex-direction:column}.tr .barra-chat .boton{width:100%}}
+
+/* ---- Chat vacío: mensaje grande y claro para guiar a quien empieza ---- */
+.tr .chat__vacio{margin:auto;padding:30px 16px;max-width:460px}
+.tr .chat__vacio-icono{font-size:3.2rem;margin-bottom:6px}
+.tr .chat__vacio h3{font-size:1.5rem;margin:0 0 10px;color:var(--tx)}
+.tr .chat__vacio p{font-size:1.1rem;margin:0 0 8px;color:var(--mu)}
+.tr .chat__vacio .texto-chico{font-size:.95rem}.tr .chat__vacio strong{color:var(--ve)}
+.tr .chat__flecha{display:block;font-size:2.2rem;color:var(--ve);animation:rebote 1.4s ease-in-out infinite}
+.tr .chat__entrada input,.tr .chat__entrada .boton{font-size:1.05rem}
+@keyframes rebote{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+@keyframes subir{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes zoom{from{transform:scale(1)}to{transform:scale(1.1)}}
+@keyframes pulso{0%{box-shadow:0 0 0 0 rgba(47,199,122,.6)}100%{box-shadow:0 0 0 10px rgba(47,199,122,0)}}
+@keyframes saludo{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(16deg)}20%,40%{transform:rotate(-10deg)}50%{transform:rotate(8deg)}}
+@media(max-width:900px){.tr-hero__grid,.tr .ficha{grid-template-columns:1fr}.tr .ficha aside{position:static}.tr-destacados{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.tr-destacados{grid-template-columns:1fr}.tr .chat__burbuja{max-width:92%}}
+@media(prefers-reduced-motion:reduce){.tr *,.tr *::before,.tr *::after{animation:none!important;transition:none!important}}

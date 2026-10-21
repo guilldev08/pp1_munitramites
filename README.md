@@ -351,6 +351,9 @@ munitramites/
 ├── static/
 │   ├── css/app.css                 # hoja de estilos del sitio
 │   ├── css/admin.css               # hoja de estilos del panel /admin/
+│   ├── css/landing.css             # portada a pantalla completa
+│   ├── css/tramites.css            # lista, ficha y chatbot (tema oscuro propio)
+│   ├── img/                        # andresito (portada) y banner de trámites
 │   └── js/app.js                   # modales + envío del chat (sin frameworks)
 └── munitramites/                   # ← TODO lo de Django está acá
     ├── settings.py                 #    configuración: BD, email, chatbot, idioma
@@ -478,7 +481,7 @@ munitramites/
 | Agregar un campo a un formulario | `forms.py` | — |
 | Mejorar lo que sabe el asistente | `services/chatbot/` (ver sección siguiente) | — |
 | Agregar sinónimos al asistente | `services/chatbot/recuperacion.py` → `SINONIMOS` | — |
-| Cambiar el diseño | `static/css/app.css` + `templates/base.html` (del panel: `static/css/admin.css`) | — |
+| Cambiar el diseño | `static/css/app.css` + `templates/base.html` (lista, ficha y chat: `static/css/tramites.css`; panel: `static/css/admin.css`) | — |
 | Agregar un filtro de template | `templatetags/hora.py` | `{% load hora %}` |
 | Cambiar un CSS o un JS | `static/` | `{% estatico %}` (le agrega `?v=<mtime>` para la caché) |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |

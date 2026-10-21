@@ -1,28 +1,40 @@
 {% extends "base.html" %}
+{% load estaticos %}
 
 {% block titulo %}Chatbot{% endblock %}
 
+{% block extra_head %}<link rel="stylesheet" href="{% estatico 'css/tramites.css' %}">{% endblock %}
+
 {% block contenido %}
+<div class="tr">
+
+<section class="tr-hero">
+  <div class="contenedor tr-hero__grid tr-hero__grid--solo">
+    <div>
+      <div class="miga">
+        <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Chatbot
+      </div>
+
+      <div class="titulo-seccion">
+        <div>
+          <h2>Asistente de trámites</h2>
+          <p>Responde con los trámites y requisitos cargados en el sistema, sin
+            inventar, y cita la fuente de cada respuesta. El modelo corre en este
+            equipo.</p>
+        </div>
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'chatbot_limpiar' %}">
+            {% csrf_token %}
+            <button class="boton boton--secundario boton--chico" type="submit">Vaciar chat</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="seccion">
   <div class="contenedor" style="max-width:780px">
-    <div class="miga">
-      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>Chatbot
-    </div>
-
-    <div class="titulo-seccion">
-      <div>
-        <h2>Asistente de trámites</h2>
-        <p>Responde con los trámites y requisitos cargados en el sistema, sin
-          inventar, y cita la fuente de cada respuesta. El modelo corre en este
-          equipo.</p>
-      </div>
-      {% if user.is_authenticated %}
-        <form method="post" action="{% url 'chatbot_limpiar' %}">
-          {% csrf_token %}
-          <button class="boton boton--secundario boton--chico" type="submit">Vaciar chat</button>
-        </form>
-      {% endif %}
-    </div>
 
     {# Sugerencias rapidas #}
     <div class="chips">
@@ -39,10 +51,12 @@
     <div class="chat">
       <div class="chat__historial" id="historial">
         {% if not historial %}
-          <div class="centrado texto-suave" style="padding:40px 10px">
-            <div style="font-size:2.2rem; margin-bottom:8px">👋</div>
-            <p class="mb-0">Preguntame por cualquier trámite de Misiones.</p>
-            <p class="texto-chico mb-0">Ejemplo: «¿qué necesito para la partida de nacimiento?»</p>
+          <div class="centrado chat__vacio">
+            <div class="chat__vacio-icono">👋</div>
+            <h3>¡Hola! Empezá a hablar</h3>
+            <p>Escribí tu pregunta en el cuadro de abajo y tocá <strong>Enviar</strong>.</p>
+            <p class="texto-chico">Por ejemplo: «¿qué necesito para la partida de nacimiento?». También podés tocar una de las opciones de arriba.</p>
+            <span class="chat__flecha" aria-hidden="true">↓</span>
           </div>
         {% endif %}
 
@@ -76,10 +90,12 @@
 
     <p class="centrado texto-suave texto-chico mt-2">
       ¿No resolvió tu duda?
-      <a href="{% url 'consulta_nueva' %}">Enviar una consulta formal →</a>
+      <a href="{% url 'consulta_nueva' %}" style="color:var(--az)">Enviar una consulta formal →</a>
     </p>
   </div>
 </section>
+
+</div>
 
 <script>
   // Siempre arranca abajo, en el ultimo mensaje

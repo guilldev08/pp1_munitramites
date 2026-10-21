@@ -81,8 +81,8 @@ class LandingTests(TestCase):
 class ListadoTests(TestCase):
 
     def test_abre_con_la_barra_del_asistente(self):
-        """La chatbar queda arriba de todo: después de la miga y antes
-        del título de la sección. Sin JS hace POST a /chatbot/."""
+        """La chatbar va en el banner de la página: arriba de los filtros y
+        del listado. Sin JS hace POST a /chatbot/."""
         r = self.client.get(reverse('tramites'))
 
         html = r.content.decode()
@@ -90,7 +90,7 @@ class ListadoTests(TestCase):
         self.assertContains(r, 'action="%s"' % reverse('chatbot'))
         self.assertLess(
             html.index('id="barra-chat"'),
-            html.index('Trámites disponibles'),
+            html.index('class="filtros"'),
         )
 
     def test_lista_los_tramites_activos(self):

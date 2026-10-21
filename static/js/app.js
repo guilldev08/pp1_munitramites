@@ -441,24 +441,110 @@
       Arranque
       -------------------------------------------------------------------- */
   /* --------------------------------------------------------------------
-     Filas extra de los formsets del panel (+ Agregar requisito/enlace):
+     Filas de los formsets del panel (+ Agregar requisito/enlace):
      clonan la plantilla <template data-vacio="..."> y suben TOTAL_FORMS.
+     Además numeran las filas visibles (data-numerar) y sacan de la lista
+     la fila marcada «Eliminar», con un «Deshacer» para volver atrás.
      -------------------------------------------------------------------- */
+  function filasDe(contenedor) {
+    return $$('.inline-fila', contenedor);
+  }
+
+  function casillaBorrar(fila) {
+    return fila.querySelector('input[type="checkbox"][name$="-DELETE"]');
+  }
+
+  function numerarFilas(contenedor) {
+    if (!contenedor.hasAttribute('data-numerar')) return;
+    var numero = 0;
+    filasDe(contenedor).forEach(function (fila) {
+      if (fila.classList.contains('inline-fila--oculta')) return;
+      numero += 1;
+      var salida = fila.querySelector('[data-numero]');
+      if (salida) salida.textContent = String(numero);
+    });
+  }
+
+  function avisoDeBorrado(contenedor) {
+    var panel = contenedor.parentNode;
+    return panel ? panel.querySelector('[data-aviso-borrado]') : null;
+  }
+
+  function refrescarAviso(contenedor) {
+    var aviso = avisoDeBorrado(contenedor);
+    if (!aviso) return;
+    var marcadas = filasDe(contenedor).filter(function (fila) {
+      var box = casillaBorrar(fila);
+      return box && box.checked;
+    }).length;
+    aviso.hidden = !marcadas;
+    if (!marcadas) return;
+    var singular = aviso.getAttribute('data-aviso-borrado') || 'fila';
+    var texto = aviso.querySelector('[data-texto]');
+    if (texto) {
+      texto.textContent = marcadas === 1
+        ? '1 ' + singular + ' marcado para eliminar.'
+        : marcadas + ' ' + singular + 's marcados para eliminar.';
+    }
+  }
+
+  function sacarFila(fila, contenedor) {
+    var box = casillaBorrar(fila);
+    fila.classList.toggle('inline-fila--oculta', !!(box && box.checked));
+    numerarFilas(contenedor);
+    refrescarAviso(contenedor);
+  }
+
+  function prepararFilas(contenedor) {
+    filasDe(contenedor).forEach(function (fila) {
+      var box = casillaBorrar(fila);
+      if (box && !box.hasAttribute('data-preparada')) {
+        box.setAttribute('data-preparada', '');
+        box.addEventListener('change', function () {
+          sacarFila(fila, contenedor);
+        });
+      }
+      sacarFila(fila, contenedor);
+    });
+
+    var aviso = avisoDeBorrado(contenedor);
+    var deshacer = aviso && aviso.querySelector('[data-deshacer]');
+    if (deshacer && !deshacer.hasAttribute('data-preparado')) {
+      deshacer.setAttribute('data-preparado', '');
+      deshacer.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        filasDe(contenedor).forEach(function (fila) {
+          var box = casillaBorrar(fila);
+          if (box) box.checked = false;
+          fila.classList.remove('inline-fila--oculta');
+        });
+        numerarFilas(contenedor);
+        refrescarAviso(contenedor);
+      });
+    }
+  }
+
   function prepararInlines() {
-    $$('[data-agregar-fila]').forEach(function (boton) {
-      var clave = boton.getAttribute('data-agregar-fila');
-      var filas = $('[data-filas="' + clave + '"]');
+    $$('[data-filas]').forEach(function (contenedor) {
+      var clave = contenedor.getAttribute('data-filas');
+      var boton = $('[data-agregar-fila="' + clave + '"]');
       var plantilla = $('[data-vacio="' + clave + '"]');
       var management = $('[name="' + clave + '-TOTAL_FORMS"]');
-      if (!filas || !plantilla || !management) return;
+
+      prepararFilas(contenedor);
+      numerarFilas(contenedor);
+      refrescarAviso(contenedor);
+
+      if (!boton || !plantilla || !management) return;
       boton.addEventListener('click', function (ev) {
         ev.preventDefault();
         var n = parseInt(management.value, 10) || 0;
-        filas.insertAdjacentHTML(
+        contenedor.insertAdjacentHTML(
           'beforeend',
           plantilla.innerHTML.replace(/__prefix__/g, String(n))
         );
         management.value = n + 1;
+        prepararFilas(contenedor);
       });
     });
   }

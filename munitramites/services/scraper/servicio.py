@@ -10,7 +10,7 @@ import time
 from bs4 import BeautifulSoup
 from django.db import transaction
 
-from munitramites.models import Requisito, Tramite
+from munitramites.models import Enlace, Requisito, Tramite
 
 from . import clasificacion, extraccion, planilla, rastreo
 from .relevancia import normalizar, normalizar_url
@@ -153,6 +153,13 @@ def crear_tramite(candidato, organismo, espera=0.0):
     enlace_turnos, enlace_oficial = extraccion.enlaces(
         sopa, candidato['url'],
     )
+    # Los enlaces se cargan como botones con nombre, igual que en el
+    # panel: el admin después les cambia el texto o los borra.
+    botones = []
+    if enlace_turnos:
+        botones.append(('Pedir turno', enlace_turnos))
+    if enlace_oficial:
+        botones.append(('Sitio del organismo', enlace_oficial))
     contexto = (
         f'{organismo.nombre} {organismo.ocupacion} '
         f'{candidato["texto"]} {candidato["url"]}'
@@ -165,13 +172,15 @@ def crear_tramite(candidato, organismo, espera=0.0):
             municipio=clasificacion.municipio_para(organismo.nombre),
             organismo=organismo,
             descripcion=descripcion,
-            enlace_turnos=enlace_turnos,
-            enlace_oficial=enlace_oficial,
             activo=False,
         )
         for orden, texto in enumerate(requisitos, 1):
             Requisito.objects.create(
                 tramite=tramite, descripcion=texto, orden=orden,
+            )
+        for orden, (nombre, url) in enumerate(botones):
+            Enlace.objects.create(
+                tramite=tramite, nombre=nombre, url=url, orden=orden,
             )
     return True
 

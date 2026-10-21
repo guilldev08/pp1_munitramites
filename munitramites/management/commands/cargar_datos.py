@@ -13,7 +13,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from munitramites.models import (
-    Consulta, Municipio, Organismo, Requisito, Tema, Tramite,
+    Consulta, Enlace, Municipio, Organismo, Requisito, Tema, Tramite,
 )
 
 
@@ -57,7 +57,7 @@ TRAMITES = [
         'Posadas', 'Registro Civil de Misiones', True,
         'Tramite para la renovacion del Documento Nacional de Identidad '
         'ante el Registro Civil de la Provincia de Misiones.',
-        'https://www.argentina.gob.ar/interior/renovacion-dni', '',
+        '', 'https://www.argentina.gob.ar/interior/renovacion-dni',
         [
             'DNI anterior (original)',
             'Partida de nacimiento actualizada',
@@ -218,8 +218,6 @@ class Command(BaseCommand):
                     'municipio': Municipio.objects.get(nombre=muni),
                     'organismo': Organismo.objects.get(nombre=org),
                     'descripcion': descripcion,
-                    'enlace_turnos': enlaces_turnos,
-                    'enlace_oficial': enlace_oficial,
                     'destacado': destacado,
                 },
             )
@@ -229,10 +227,24 @@ class Command(BaseCommand):
                     Requisito.objects.create(
                         tramite=tramite, descripcion=req, orden=i
                     )
+            # Los enlaces son botones con nombre, igual que los que carga
+            # el admin en el panel (los campos viejos quedan de respaldo).
+            botones = (
+                ('Pedir turno', enlaces_turnos),
+                ('Sitio del organismo', enlace_oficial),
+            )
+            for i, (nombre, url) in enumerate(botones):
+                if not url:
+                    continue
+                Enlace.objects.get_or_create(
+                    tramite=tramite, url=url,
+                    defaults={'nombre': nombre, 'orden': i},
+                )
         self.stdout.write(
             f'  Tramites:        {Tramite.objects.count()} ({creados} nuevos)'
         )
         self.stdout.write(f'  Requisitos:      {Requisito.objects.count()}')
+        self.stdout.write(f'  Enlaces:         {Enlace.objects.count()}')
 
         # Consultas --------------------------------------------------------
         for (tipo, asunto, contenido, tramite_titulo, fecha, estado) in CONSULTAS:

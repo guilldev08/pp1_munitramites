@@ -390,7 +390,7 @@ munitramites/
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (254)
+    ├── tests/                      #    tests de aceptación (257)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -470,7 +470,7 @@ munitramites/
 | Ver una tabla en `/admin/` | `admin.py` | — |
 | Cambiar la cara del panel (tarjetas, colores, saludo) | `templates/admin/` + `static/css/admin.css` | — |
 | Ajustar quién puede qué en el panel | `admin.py` → `BaseAdmin` / `SoloSuperusuario` / `SinAutogestion` | `test_admin` |
-| Cambiar requisitos o botones de una ficha | `/admin/` → Trámites → **Requisitos** / **Enlaces oficiales** | — |
+| Cambiar requisitos o botones de una ficha | `/panel/tramites/` → **Editar** (requisitos numerados y enlaces con nombre y URL) | — |
 | Cambiar el rol de una cuenta o el correo | `/admin/` → Usuarios → fila → **Perfil** (rol de solo lectura) | — |
 | Crear una página nueva | `templates/` + `views/<modulo>.py` + `urls.py` | — |
 | Agregar un campo a un formulario | `forms.py` | — |
@@ -515,7 +515,7 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 254 tests
+docker compose exec web python manage.py test --noinput         # correr los 257 tests
 
 docker compose logs -f ollama                                  # ver la carga del modelo
 docker compose exec ollama ollama list                         # modelos disponibles
@@ -764,7 +764,7 @@ Luego escribí SQL y cerrá con `quit;`.
 | `ORGANISMO` | 7 | seed (incluye `ocupacion` / área de acción) |
 | `TRAMITE` | 8 | seed |
 | `REQUISITO` | 32 | seed |
-| `ENLACE` | 0 con el seed | botones con nombre: se cargan en `/admin/`; la ficha muestra igual los `enlace_turnos` / `enlace_oficial` que trae el seed |
+| `ENLACE` | 5 | botones con nombre y URL que carga el seed (el panel los agrega, edita y borra); los campos viejos `enlace_turnos` / `enlace_oficial` quedan solo como respaldo |
 | `CONSULTA` | 3+ | seed + formularios (incluye el prefijo `Soporte: `) |
 | `PERFIL` | 1+ | se crea con el registro (guarda el rol; su id es un UUID) |
 | `AUTH_USER` | 2 | Django (usuarios) |

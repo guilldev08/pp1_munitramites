@@ -202,7 +202,6 @@ class CentroDeTramitesTests(TestCase):
             'organismo_nuevo': 'Direccion de Licencias de Trafico',
             'descripcion': 'Se tramita en el municipio.',
             'destacado': '', 'activo': 'on',
-            'enlace_turnos': '', 'enlace_oficial': '',
             'requisitos-TOTAL_FORMS': '1', 'requisitos-INITIAL_FORMS': '0',
             'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
             'enlaces-TOTAL_FORMS': '1', 'enlaces-INITIAL_FORMS': '0',
@@ -226,7 +225,6 @@ class CentroDeTramitesTests(TestCase):
             'organismo_nuevo': '',
             'descripcion': 'Se tramita en la municipalidad.',
             'destacado': '', 'activo': 'on',
-            'enlace_turnos': '', 'enlace_oficial': '',
             'requisitos-TOTAL_FORMS': '1', 'requisitos-INITIAL_FORMS': '0',
             'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
             'enlaces-TOTAL_FORMS': '1', 'enlaces-INITIAL_FORMS': '0',
@@ -247,6 +245,26 @@ class CentroDeTramitesTests(TestCase):
         self.assertContains(r, 'data-agregar-fila="enlaces"')
         self.assertContains(r, 'requisitos-__prefix__-descripcion')
 
+    def test_los_requisitos_se_numeran_solos_y_la_fila_borrada_sale(self):
+        """El número lo pone el panel y la fila «Eliminar» se saca de la lista."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r, 'data-numerar')
+        self.assertContains(r, 'Requisito <span data-numero>1</span>')
+        self.assertContains(r, 'data-aviso-borrado="requisito"')
+        self.assertContains(r, 'data-aviso-borrado="enlace"')
+
+    def test_los_enlaces_no_son_campos_fijos(self):
+        """Cada enlace se carga como botón con nombre y URL, no hardcodeado."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertNotContains(r, 'Enlace turnos')
+        self.assertNotContains(r, 'Enlace oficial')
+        self.assertNotContains(r, 'name="enlace_turnos"')
+        self.assertNotContains(r, 'name="enlace_oficial"')
+        self.assertContains(r, 'enlaces-0-nombre')
+        self.assertContains(r, 'enlaces-0-url')
+
     def test_crea_un_tramite_con_requisitos_y_enlaces(self):
         r = self.client.post(reverse('panel_tramite_nuevo'), {
             'titulo': 'Pasaporte argentino',
@@ -256,7 +274,6 @@ class CentroDeTramitesTests(TestCase):
             'organismo': organismo().pk,
             'descripcion': 'Se tramita con turno previo.',
             'destacado': 'on', 'activo': 'on',
-            'enlace_turnos': '', 'enlace_oficial': '',
             'requisitos-TOTAL_FORMS': '1', 'requisitos-INITIAL_FORMS': '0',
             'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
             'requisitos-0-descripcion': 'DNI en vigor y partida de nacimiento',
@@ -307,7 +324,6 @@ class CentroDeTramitesTests(TestCase):
                 'organismo': t.organismo.pk,
                 'descripcion': 'Descripción actualizada.',
                 'destacado': '', 'activo': 'on',
-                'enlace_turnos': '', 'enlace_oficial': '',
                 'requisitos-TOTAL_FORMS': '2',
                 'requisitos-INITIAL_FORMS': '1',
                 'requisitos-MIN_NUM_FORMS': '0',
@@ -327,6 +343,34 @@ class CentroDeTramitesTests(TestCase):
         t.refresh_from_db()
         self.assertEqual(t.titulo, 'Renovación de DNI (editado)')
         self.assertEqual(t.requisitos.count(), 2)
+
+    def test_marcar_eliminar_borra_el_requisito_al_guardar(self):
+        """La casilla «Eliminar» borra la fila: no queda un requisito vacío."""
+        t = tramite()
+        req = t.requisitos.first()
+
+        r = self.client.post(reverse('panel_tramite_editar', args=[t.pk]), {
+            'titulo': t.titulo,
+            'tema': t.tema.pk,
+            'modalidad': t.modalidad,
+            'municipio': t.municipio.pk,
+            'organismo': t.organismo.pk,
+            'descripcion': t.descripcion,
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '1',
+            'requisitos-INITIAL_FORMS': '1',
+            'requisitos-MIN_NUM_FORMS': '0',
+            'requisitos-MAX_NUM_FORMS': '1000',
+            'requisitos-0-id': str(req.pk),
+            'requisitos-0-descripcion': req.descripcion,
+            'requisitos-0-DELETE': 'on',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0',
+            'enlaces-MAX_NUM_FORMS': '1000',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(t.requisitos.exists())
 
     def test_puede_publicar_desactivar_y_destacar(self):
         t = tramite(activo=False)

@@ -110,8 +110,10 @@ class ScrapingTests(TestCase):
         dni = Tramite.objects.get(titulo='Renovación del DNI en línea')
         # Inactivo: nada del scraping se publica sin revisión.
         self.assertFalse(dni.activo)
-        self.assertEqual(dni.enlace_oficial,
-                         'https://ejemplo.gob.ar/dni/renovacion')
+        self.assertEqual(
+            dni.enlaces.get(nombre='Sitio del organismo').url,
+            'https://ejemplo.gob.ar/dni/renovacion',
+        )
         self.assertEqual(dni.descripcion,
                          'Trámite de renovación del DNI para los vecinos '
                          'de la provincia.')
@@ -143,9 +145,9 @@ class ScrapingTests(TestCase):
         )
         self.assertEqual(licencia.tema.nombre, 'Tránsito')
         self.assertEqual(licencia.modalidad, 'presencial')
-        # La URL trae «turno»: queda cargada como enlace de turnos.
+        # La URL trae «turno»: queda cargada como botón de turnos.
         self.assertEqual(
-            licencia.enlace_turnos,
+            licencia.enlaces.get(nombre='Pedir turno').url,
             'https://ejemplo.gob.ar/turnos/licencia-conducir',
         )
         # Sin sección de requisitos ni <li> con pinta de requerimiento.
@@ -186,8 +188,9 @@ class ScrapingTests(TestCase):
             )
 
         self.assertEqual(Tramite.objects.count(), 1)
+        tramite = Tramite.objects.get()
         self.assertEqual(
-            Tramite.objects.get().enlace_oficial,
+            tramite.enlaces.get(nombre='Sitio del organismo').url,
             'https://ejemplo.gob.ar/dni/corto',
         )
 
@@ -532,8 +535,14 @@ class ExtraccionTests(_ScraperTestCase):
         self.correr(paginas, 'Direccion de Transito,Transito,https://x.gob.ar/\n')
 
         tramite = Tramite.objects.get()
-        self.assertEqual(tramite.enlace_turnos, 'https://turnos.gob.ar/licencia')
-        self.assertEqual(tramite.enlace_oficial, 'https://x.gob.ar/licencia')
+        self.assertEqual(
+            tramite.enlaces.get(nombre='Pedir turno').url,
+            'https://turnos.gob.ar/licencia',
+        )
+        self.assertEqual(
+            tramite.enlaces.get(nombre='Sitio del organismo').url,
+            'https://x.gob.ar/licencia',
+        )
 
     def test_una_noticia_no_se_sigue_por_su_slug(self):
         """Un slug de titular («…-nuevo-equipamiento-…») es una noticia."""

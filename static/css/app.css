@@ -931,6 +931,16 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
   transform: translateY(2px);
 }
 .inline-fila--borrar { border-color: var(--rojo); opacity: .8; }
+/* La fila marcada «Eliminar» sale de la lista (app.js la puede devolver) */
+.inline-fila--oculta { display: none; }
+/* Número de la fila: los requisitos se numeran solos, por su posición */
+.inline-fila__numero {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--gris-500);
+}
 
 /* Etiquetas de rol y de estado (colores ya probados en tests/test_tema.py) */
 .etiqueta--activo { background: var(--verde-claro); color: var(--verde); }

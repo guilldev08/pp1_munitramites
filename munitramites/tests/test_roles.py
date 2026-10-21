@@ -224,7 +224,6 @@ class AdministradorTests(TestCase):
             'descripcion': 'Se pide en linea.',
             'municipio': municipio().pk,
             'organismo': organismo().pk,
-            'enlace_turnos': '', 'enlace_oficial': '',
             'destacado': 'on', 'activo': 'on',
             'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
             'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',

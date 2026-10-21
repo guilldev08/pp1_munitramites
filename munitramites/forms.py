@@ -210,9 +210,11 @@ class TemaForm(forms.ModelForm):
 class TramitePanelForm(forms.ModelForm):
     """Alta y edición de trámites desde el Centro de Trámites.
 
-    Los requisitos y los enlaces oficiales no viajan en este form: se
-    cargan con los formsets de acá abajo (`RequisitoFormSet` y
-    `EnlaceFormSet`), que se validan y se guardan juntos con el trámite.
+    Los requisitos y los enlaces no viajan en este form: se cargan con
+    los formsets de acá abajo (`RequisitoFormSet` y `EnlaceFormSet`), que
+    se validan y se guardan juntos con el trámite. No hay campos fijos
+    para «turnos» ni «sitio oficial»: cada botón se carga con el nombre
+    que se le quiera dar y su URL.
     """
 
     class Meta:
@@ -220,7 +222,6 @@ class TramitePanelForm(forms.ModelForm):
         fields = [
             'titulo', 'tema', 'modalidad', 'municipio', 'organismo',
             'descripcion', 'destacado', 'activo',
-            'enlace_turnos', 'enlace_oficial',
         ]
         widgets = {
             'titulo': forms.TextInput(attrs={
@@ -230,22 +231,50 @@ class TramitePanelForm(forms.ModelForm):
                 'rows': 5,
                 'placeholder': 'Qué se hace, dónde, cuándo y a quién acudir…',
             }),
-            'enlace_turnos': forms.URLInput(attrs={
-                'placeholder': 'https://… (opcional)',
-            }),
-            'enlace_oficial': forms.URLInput(attrs={
-                'placeholder': 'https://… (opcional)',
-            }),
         }
 
 
 # Inlines del Centro de Trámites: el usuario NO escribe el «orden». Lo
-# numera el panel solo, por la posición de la fila (ver views/panel.py),
-# así no hay ningún campo obligatorio escondido que trabe el guardado.
-# `extra=3` deja tres filas vacías listas; para seguir cargando hay un
-# botón «+ Agregar» que clona una fila nueva (app.js, prepararInlines()).
+# numera el panel solo, por la posición de la fila visible (ver
+# views/panel.py), así no hay ningún campo obligatorio escondido que
+# trabe el guardado. `extra=3` deja tres filas vacías listas; para seguir
+# cargando hay un botón «+ Agregar» que clona una fila nueva, y la fila
+# marcada «Eliminar» sale de la lista (app.js, prepararInlines()).
+class RequisitoInlineForm(forms.ModelForm):
+    """Fila de requisito: la descripción se numera sola por su posición."""
+
+    class Meta:
+        model = Requisito
+        fields = ['descripcion']
+        labels = {'descripcion': 'Descripción'}
+        widgets = {
+            'descripcion': forms.TextInput(attrs={
+                'placeholder': 'Ej.: DNI vigente y formulario completo',
+            }),
+        }
+
+
+class EnlaceInlineForm(forms.ModelForm):
+    """Fila de enlace: el nombre que se ve en el botón y la URL."""
+
+    class Meta:
+        model = Enlace
+        fields = ['nombre', 'url']
+        labels = {
+            'nombre': 'Nombre del botón',
+            'url': 'URL',
+        }
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'placeholder': 'Ej.: Pedir turno',
+            }),
+            'url': forms.URLInput(attrs={'placeholder': 'https://…'}),
+        }
+
+
 RequisitoFormSet = inlineformset_factory(
     Tramite, Requisito,
+    form=RequisitoInlineForm,
     fields=['descripcion'],
     extra=3,
     can_delete=True,
@@ -253,6 +282,7 @@ RequisitoFormSet = inlineformset_factory(
 
 EnlaceFormSet = inlineformset_factory(
     Tramite, Enlace,
+    form=EnlaceInlineForm,
     fields=['nombre', 'url'],
     extra=3,
     can_delete=True,

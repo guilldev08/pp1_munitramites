@@ -155,7 +155,12 @@ class Enlace(models.Model):
         max_length=100,
         help_text='Texto del boton, ej.: «Pedir turno» o «Sitio del organismo».',
     )
-    url = models.URLField(help_text='URL completa, ej.: https://ejemplo.gob.ar/…')
+    # 300: igual que los campos viejos, las URL reales de los portales
+    # (con sus parámetros) pasan tranquilas de los 200 por defecto.
+    url = models.URLField(
+        max_length=300,
+        help_text='URL completa, ej.: https://ejemplo.gob.ar/…',
+    )
     orden = models.PositiveIntegerField(default=0)
 
     class Meta:

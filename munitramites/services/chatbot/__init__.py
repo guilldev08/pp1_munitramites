@@ -15,7 +15,7 @@ Pipeline de tres etapas:
     3. GENERAR      services/chatbot/generacion.py
                     Redacta la respuesta. Con CHATBOT_LLM='groq' la
                     redaccion es del modelo de Groq con el contexto en
-                    la mano (services/chatbot/llm.py, contra la API de
+                    la mano (services/chatbot/llm/, contra la API de
                     Groq); sin clave, sin modelo —o si se cae— vuelve a
                     la plantilla local, anclada a los
                     fragmentos y con variantes para no repetirse. Nunca
@@ -26,9 +26,9 @@ Pipeline de tres etapas:
     ORQUESTAR      services/chatbot/pipeline.py
                     saludos/ordenes fijas (rápidas), seguimientos
                     cortos, umbral y entrega final: texto + tramites
-                    fuente. Sin fragmentos y con modelo, la etapa 3
-                    contesta en libre (charla general, «qué es este
-                    portal»); sin modelo, el «no encontré» clásico.
+                    fuente. Sin fragmentos NO se llama al modelo: el
+                    «no encontré» clásico (el asistente solo responde
+                    sobre trámites).
 
 Criterios del documento que garantiza este diseno:
 

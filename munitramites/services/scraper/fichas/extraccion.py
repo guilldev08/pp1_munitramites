@@ -10,8 +10,8 @@ del primer párrafo con sustancia (nunca de la bajada del sitio).
 import re
 from urllib.parse import urljoin, urlparse
 
-from .relevancia import normalizar, sin_acentos, texto_visible
-from .vocabulario import (
+from ..busqueda.relevancia import normalizar, sin_acentos, texto_visible
+from ..busqueda.vocabulario import (
     PALABRAS_CASCARA, PALABRAS_RELLENO, PALABRAS_REQUISITO, PALABRAS_SECCION,
     PALABRAS_TURNO, TITULOS_GENERICOS,
 )

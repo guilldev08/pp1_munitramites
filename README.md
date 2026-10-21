@@ -35,8 +35,9 @@ Qué hace el sistema, en corto:
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
 - **Asistente virtual** con RAG y **Groq** como modelo (API en la nube):
-  busca en los trámites reales, cita la fuente y, si no sabe, lo dice en
-  lugar de inventar. Sin clave, responde con las plantillas locales.
+  responde solo consultas sobre trámites, cita la fuente y, si no sabe,
+  lo dice en lugar de inventar. Sin clave usa las plantillas locales y
+  no gasta la API.
 
 Todo lo anterior está documentado acá y tiene sus tests de aceptación: ver
 [Tests y trazabilidad](#tests-y-trazabilidad).
@@ -111,7 +112,7 @@ docker compose exec web python manage.py scrapear_sitios --limite 5 --max-por-si
   `--espera` (pausa entre pedidos, cortesía) y `--solo-organismos`
   (importar la planilla sin scrapear).
 - Las palabras y el umbral se ajustan en
-  `services/scraper/vocabulario.py` y `services/scraper/relevancia.py`.
+  `services/scraper/busqueda/vocabulario.py` y `services/scraper/busqueda/relevancia.py`.
 
 ## Usuarios
 
@@ -377,23 +378,29 @@ munitramites/
     │   ├── cuenta.py               #    registro y perfil
     │   └── api.py                  #    API JSON
     ├── services/                   #    lógica que no depende del request
+    │   ├── README.md               #    mapa: qué hace cada archivo
     │   ├── chatbot/                #    RAG: indexar → recuperar → generar
     │   │   ├── indexar.py          #    1. convierte trámites en fragmentos
     │   │   ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
-    │   │   ├── generacion.py       #    3. redacción con Groq o plantilla
-    │   │   ├── llm.py              #    cliente de Groq con fallback
+    │   │   ├── generacion.py       #    3. plantilla local + reglas de montos
+    │   │   ├── llm/                #    modelo: qué se manda y cuándo
+    │   │   │   ├── prompt.py       #       la ventana de contexto (system + user)
+    │   │   │   ├── groq.py         #       POST a la API de Groq
+    │   │   │   └── __init__.py     #       activo / cooldown / fallback
     │   │   └── pipeline.py         #    orquestador + reglas de la charla
-    │   └── scraper/                #    scraping: planilla → rastreo → extracción
+    │   └── scraper/                #    scraping: planilla → buscar → fichas
     │       ├── planilla.py         #    1. importa la planilla de organismos
-    │       ├── vocabulario.py      #       todas las palabras, en un solo lugar
-    │       ├── relevancia.py       #    2. qué link es un trámite (umbral + menú)
-    │       ├── rastreo.py          #       HTTP + candidatos + puertas
-    │       ├── extraccion.py       #    3. ¿es ficha? título + requisitos + enlaces
-    │       ├── clasificacion.py    #       tema, municipio y modalidad
+    │       ├── busqueda/           #    2. qué link es un trámite y cuáles seguir
+    │       │   ├── vocabulario.py  #       todas las palabras del dominio
+    │       │   ├── relevancia.py   #       puntúa links (umbral + menú)
+    │       │   └── rastreo.py      #       HTTP + candidatos + puertas
+    │       ├── fichas/             #    3. de la página a la ficha
+    │       │   ├── extraccion.py   #       título + requisitos + enlaces
+    │       │   └── clasificacion.py#       tema, municipio y modalidad
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (260)
+    ├── tests/                      #    tests de aceptación (263)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -486,7 +493,7 @@ munitramites/
 | Cambiar un CSS o un JS | `static/` | `{% estatico %}` (le agrega `?v=<mtime>` para la caché) |
 | Cargar datos de ejemplo | `management/commands/cargar_datos.py` | `cargar_datos` |
 | Cargar organismos y trámites reales | `services/scraper/` (con su `data/organismos_misiones.csv`) | `scrapear_sitios` |
-| Cambiar el modelo del asistente | `.env` → `GROQ_MODELO` (+ `services/chatbot/llm.py`) | `docker compose up -d web` |
+| Cambiar el modelo del asistente | `.env` → `GROQ_MODELO` (+ `services/chatbot/llm/`) | `docker compose up -d web` |
 | Correr los tests | `tests/` | `manage.py test --noinput` |
 | Cambiar la base de datos | `settings.py` → `DATABASES` | — |
 | Cambiar idioma / zona horaria | `settings.py` → `LANGUAGE_CODE` / `TIME_ZONE` | — |
@@ -521,7 +528,8 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 260 tests
+docker compose exec web python manage.py test --noinput         # correr los 263 tests
+docker compose exec web python manage.py ver_contexto "¿qué necesito para renovar el DNI?"  # ver el contexto que se manda a Groq
 
 docker compose logs -f web                                     # ver los pedidos a Groq
 ```
@@ -610,7 +618,7 @@ en esta tabla.
 | **RF-14** Cerrar sesión | `/logout/` | `test_auth.SesionTests` |
 | **RF-15** Recuperar/restablecer contraseña | `urls.py` + `templates/registration/password_reset_*` | `test_auth.RecuperarClaveTests` · `test_auth.PerfilTests` (cambio estando adentro) |
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
-| **IA — alucinaciones** | `services/chatbot/llm.py` (el prompt prohíbe inventar montos y citas) · `generacion.py` (sin modelo: el corte de montos contesta «no dispongo» por un precio que no está indexado) · `pipeline.py` (`_SIN_INFO`) | `test_chatbot` · `test_chatbot.AlucinacionesTests` · `test_llm` |
+| **IA - alucinaciones** | `services/chatbot/llm/prompt.py` (el prompt prohíbe inventar montos y citas) · `generacion.py` (sin modelo: el corte de montos contesta «no dispongo» por un precio que no está indexado) · `pipeline.py` (`_SIN_INFO`) | `test_chatbot` · `test_chatbot.AlucinacionesTests` · `test_llm` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
 | **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
 | **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
@@ -636,9 +644,9 @@ Todo vive en `services/chatbot/`, en cuatro piezas.
 |---|---|---|
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
-| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con clave de Groq (**`GROQ_MODELO`**, vía `llm.py`) la frase la arma el LLM citando el contexto; sin clave o si falla cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
-| LLM | `llm.py` | cliente de Groq (API compatible con OpenAI): prompt de dos niveles (los datos de trámites SOLO del contexto; el resto, charla libre), historial corto, timeout y cooldown tras un fallo |
-| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}` y decide la puerta: con contexto → el modelo redacta; sin contexto → charla libre con el modelo (sin modelo, el «no sé» clásico citando la consulta). Nunca inventa nada |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con clave de Groq (**`GROQ_MODELO`**, vía `llm/`) la frase la arma el LLM citando el contexto; sin clave, si falla o si la consulta no trajo fichas, cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
+| LLM | `llm/` | cliente de Groq (API compatible con OpenAI): `prompt.py` arma la ventana de contexto, `groq.py` hace el POST y `__init__.py` decide cuándo llamar (cooldown tras un fallo). **Solo responde sobre trámites** |
+| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}`. Con contexto → el modelo redacta; **sin contexto → NO se llama al modelo**: contesta el «no dispongo» citando la consulta. Nunca inventa nada |
 
 **Se le puede preguntar desde cuatro lugares**: el modal 💬 (desde cualquier
 página), la **chatbar de `/tramites/`** (arriba de todo en el listado: abre
@@ -649,14 +657,16 @@ la lista y, arriba de los resultados, un panel con el mismo pipeline
 redacta la respuesta (`parciales/lista_tramites.html` + `app.js`). Ese
 panel sale por `/buscador/api/?q=…`, que llama al mismo `responder()` que
 el chat pero **sin tocar la sesión**: lo que se busca no queda en la charla
-(privacidad, verificado en vivo). Sin JavaScript el panel muestra el
-enlace a `/chatbot/?q=…`, que responde la misma pregunta en el chat.
+(privacidad, verificado en vivo). Sin sesión iniciada ese panel responde
+con plantillas —el modelo solo redacta para usuarios logueados—, así que
+una visita anónima no gasta la API de Groq. Sin JavaScript el panel muestra
+el enlace a `/chatbot/?q=…`, que responde la misma pregunta en el chat.
 Tests: `test_chatbot.BuscadorTests`.
 
 ### Cómo redacta (y por qué no inventa)
 
 **El modelo lo corre Groq** (API en la nube, compatible con OpenAI):
-`llm.py` le pasa la pregunta con los fragmentos del índice a
+`llm/groq.py` manda la pregunta con los fragmentos del índice a
 `https://api.groq.com/openai/v1/chat/completions` y la respuesta vuelve
 en segundos, sin bajar ni mantener ningún modelo en la PC. La clave va
 en el `.env` de la raíz —nunca al repo, `.env` está en `.gitignore`—:
@@ -678,11 +688,26 @@ El modelo por defecto es `openai/gpt-oss-120b` (`GROQ_MODELO` en el
 Docker Compose lee el `.env` solo, así que no hay que exportar nada a
 mano.
 
-El prompt tiene dos niveles: **los datos de trámites salen SOLO del
-CONTEXTO** (el modelo cita requisitos y montos tal como aparecen en los
-fragmentos), y **todo lo demás es charla libre** (qué es el portal,
-saludos, dudas generales). Responde en español rioplatense, de 1 a 8
-oraciones.
+**La ventana de contexto** se arma en `services/chatbot/llm/prompt.py`:
+`SYSTEM` son las reglas fijas y `armar_user()` pega los fragmentos que
+devolvió el RAG (`CHATBOT_TOP_K` = 4), la charla previa y la pregunta.
+Para ver el payload exacto de una consulta, sin gastar la API:
+
+```powershell
+docker compose exec web python manage.py ver_contexto "¿qué necesito para renovar el DNI?"
+```
+
+El comando imprime los fragmentos, los dos mensajes completos y el
+tamaño (caracteres y tokens estimados); con `--json` los vuelca como
+JSON.
+
+**Solo trámites**: el asistente no es un chat general. Si la pregunta no
+es sobre trámites —o el índice no recupera ninguna ficha— **no se llama
+al modelo**: contesta la plantilla local, que pide que nombre el trámite
+que necesita. El prompt además le prohíbe responder otros temas, por si
+alguna consulta rara llega con contexto. Los datos de trámites salen
+SOLO del CONTEXTO, y el CONTEXTO se trata como datos, no como órdenes.
+Responde en español rioplatense, de 1 a 8 oraciones.
 
 **Si no hay clave o modelo** (sin `.env`, sin red, Groq caído), el asistente
 no se cae: `generacion.py::PlantillaLocal` arma la respuesta con las

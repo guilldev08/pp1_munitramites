@@ -4,8 +4,9 @@ El modelo NUNCA se toca de verdad en los tests: se simula la API de
 Groq con mocks y se reactiva `CHATBOT_LLM` con override_settings
 (settings.py lo apaga en los tests). Lo que se prueba acá es el
 contrato entre el pipeline y el modelo: que redacte con contexto, que
-charle libre cuando NO hay contexto, que caiga en la plantilla si el
-modelo no está, y que un fallo no se pague en cada mensaje.
+NO llame a la API cuando no hay contexto (el asistente solo responde
+sobre trámites), que caiga en la plantilla si el modelo no está, y que
+un fallo no se pague en cada mensaje.
 """
 
 from unittest.mock import MagicMock, patch
@@ -49,7 +50,7 @@ class LlmTests(TestCase):
 
     def test_el_llm_redacta_la_respuesta(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
             return_value=_respuesta_modelo(
                 'Renovás el DNI con el DNI anterior en vigor.'
             ),
@@ -84,7 +85,7 @@ class LlmTests(TestCase):
     @override_settings(GROQ_API_KEY='')
     def test_sin_clave_no_se_llama_a_groq(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
         ) as post:
             rta = responder('¿qué necesito para renovar el DNI?')
 
@@ -95,7 +96,7 @@ class LlmTests(TestCase):
 
     def test_si_groq_se_cae_vuelve_a_la_plantilla(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
             side_effect=requests.ConnectionError('sin groq'),
         ):
             rta = responder('¿qué necesito para renovar el DNI?')
@@ -106,7 +107,7 @@ class LlmTests(TestCase):
 
     def test_tras_un_fallo_no_se_reintenta_en_cada_mensaje(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
             side_effect=requests.ConnectionError('sin groq'),
         ) as post:
             responder('¿qué necesito para renovar el DNI?')
@@ -117,43 +118,44 @@ class LlmTests(TestCase):
 
     def test_respuesta_vacia_del_modelo_cae_en_plantilla(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
             return_value=_respuesta_modelo('   '),
         ):
             rta = responder('¿qué necesito para renovar el DNI?')
 
         self.assertTrue(rta['texto'].startswith('Encontré'))
 
-    def test_sin_contexto_el_llm_charla_libre(self):
+    def test_sin_contexto_no_se_llama_a_groq(self):
+        """Fuera de tema o sin fichas: no se gasta la API."""
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
-            return_value=_respuesta_modelo(
-                'Munitramites es el portal de trámites de Misiones: '
-                'buscá por tema o preguntame por un trámite.'
-            ),
+            'munitramites.services.chatbot.llm.groq.requests.post',
         ) as post:
-            rta = responder('¿qué es Munitramites?')
+            rta = responder('¿me contás un chiste?')
 
-        # No es la frase pregrabada «no encontré nada»: contesta el
-        # modelo y no cita trámites (no hay).
-        self.assertEqual(
-            rta['texto'],
-            'Munitramites es el portal de trámites de Misiones: '
-            'buscá por tema o preguntame por un trámite.',
-        )
+        # El asistente solo responde sobre trámites: sin contexto
+        # recuperado contesta la plantilla y NO toca la API.
+        self.assertTrue(rta['texto'].startswith(
+            ('No encontré', 'No dispongo', 'Nada indexado'),
+        ))
         self.assertEqual(rta['tramites'], [])
+        post.assert_not_called()
 
-        # Se le avisa explícitamente que NO hay contexto, para que
-        # pueda charlar pero no se invente fichas.
-        cuerpo = post.call_args.kwargs['json']
-        self.assertIn('sin resultados',
-                      cuerpo['messages'][1]['content'])
-        self.assertIn('¿qué es Munitramites?',
-                      cuerpo['messages'][1]['content'])
+    def test_usar_llm_false_no_toca_la_api(self):
+        """La barra pública usa el RAG con plantillas, sin gastar Groq."""
+        with patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+        ) as post:
+            rta = responder(
+                '¿qué necesito para renovar el DNI?', usar_llm=False,
+            )
+
+        self.assertTrue(rta['texto'].startswith('Encontré'))
+        self.assertEqual(len(rta['tramites']), 1)
+        post.assert_not_called()
 
     def test_con_llm_la_pregunta_de_monto_llega_al_modelo(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
             return_value=_respuesta_modelo(
                 'Ese monto no figura en la base: revisá la ficha '
                 'oficial del trámite.'
@@ -180,7 +182,7 @@ class SinLlmTests(TestCase):
 
     def test_se_usa_la_plantilla_y_no_se_llama_a_ningun_modelo(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
         ) as post:
             rta = responder('¿qué necesito para renovar el DNI?')
 
@@ -189,7 +191,7 @@ class SinLlmTests(TestCase):
 
     def test_sin_llm_el_corte_de_montos_sigue_determinista(self):
         with patch(
-            'munitramites.services.chatbot.llm.requests.post',
+            'munitramites.services.chatbot.llm.groq.requests.post',
         ) as post:
             rta = responder('¿cuánto cuesta el trámite de renovación '
                             'del DNI?')

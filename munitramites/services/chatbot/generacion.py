@@ -2,13 +2,12 @@
 
 `PlantillaLocal` arma el texto con las plantillas del sitio a partir de
 los fragmentos recuperados: sin dependencias, sin costo, sin internet y
-sin modelo propio. Si `CHATBOT_LLM='groq'`, el texto lo redacta
-el modelo de Groq (vía `llm.redactar`) con las MISMAS reglas metidas en
-el prompt
-del modelo: que los datos de trámites salgan solo del contexto, que cite
-los trámites y que diga «no dispongo» cuando no alcanza. Si el modelo
-no está disponible o se cae, se vuelve a la plantilla local sin que el
-ciudadano se entere.
+sin modelo propio. Si `CHATBOT_LLM='groq'` y `usar_llm=True`, el texto
+lo redacta el modelo de Groq (vía `llm.redactar`) con las MISMAS reglas
+metidas en el prompt: los datos de trámites salen solo del contexto, cita
+los trámites y dice «no dispongo» cuando no alcanza. Si el modelo no está
+disponible, se cae o no corresponde usarlo, se vuelve a la plantilla
+local sin que el ciudadano se entere.
 
 La redacción cumple los criterios del documento: contestar lo que
 preguntaron (con más de una variante, para no repetir siempre la misma
@@ -16,23 +15,20 @@ fórmula), citar el trámite fuente y decir «no dispongo de esa
 información» cuando el contexto no alcanza (precisión contextual,
 manejo de alucinaciones y cita de fuentes).
 
-Hay DOS puertas de entrada:
+Hay UNA sola puerta de entrada:
 
-    generar_respuesta(pregunta, fragmentos, historial)  con contexto
-    generar_sin_contexto(pregunta, historial)           sin contexto
+    generar_respuesta(pregunta, fragmentos, historial, usar_llm=True)
+        con contexto (el pipeline no llama acá si no recuperó fichas)
 
-En la primera, con el modelo activo el pedido sale PRIMERO hacia Groq
-—el modelo redacta con libertad citando lo que haya— y el corte
-determinista de montos recién corre si no hay modelo: una pregunta por
-un monto que el contexto no trae no puede redactarse la plantilla
-(pasó en vivo: «$50.000.000» por renovar el DNI) y el prompt del
-modelo prohíbe inventar cifras, así que con modelo alcanza con eso.
+Con el modelo activo el pedido sale PRIMERO hacia Groq —el modelo
+redacta citando lo que haya— y el corte determinista de montos recién
+corre si no hay modelo: una pregunta por un monto que el contexto no
+trae no puede redactarla la plantilla (pasó en vivo: «$50.000.000» por
+renovar el DNI) y el prompt del modelo prohíbe inventar cifras, así que
+con modelo alcanza con eso.
 
-La segunda es la charla libre: una consulta que no trajo ninguna ficha
-igual puede contestarse con el modelo («¿qué es este portal?»,
-preguntas generales, seguimientos sin datos) — nunca inventando fichas.
-Sin modelo devuelve None y el pipeline responde con su «no encontré»
-de siempre.
+`usar_llm=False` es para la barra de búsqueda pública: responde el RAG
+con plantillas y no gasta la API del proveedor.
 """
 
 import re
@@ -43,7 +39,6 @@ from . import llm
 __all__ = [
     'PlantillaLocal',
     'generar_respuesta',
-    'generar_sin_contexto',
 ]
 
 # Consultas de seguimiento corto («¿y el plazo?»): hasta acá la
@@ -185,16 +180,18 @@ def _sin_dato(pregunta):
     return _redaccion(_SIN_DATO, cita).format(consulta=cita)
 
 
-def generar_respuesta(pregunta, fragmentos, historial=()):
+def generar_respuesta(pregunta, fragmentos, historial=(), usar_llm=True):
     """Redacta la respuesta; nunca por encima de lo que está indexado.
 
-    Orden: primero el modelo —Groq, si está configurado—
+    Orden: primero el modelo —Groq, si está configurado y `usar_llm`—
     que redacta con libertad usando el contexto. Sin modelo (o si se
     cayó), el corte determinista de montos —si la pregunta pide un
     precio y el contexto no lo trae, «no dispongo» sin redactar— y
     después la plantilla local, que sólo repite datos del índice.
     """
-    texto = llm.redactar(pregunta, fragmentos, historial)
+    texto = (
+        llm.redactar(pregunta, fragmentos, historial) if usar_llm else None
+    )
     if texto:
         return texto
 
@@ -204,17 +201,3 @@ def generar_respuesta(pregunta, fragmentos, historial=()):
         return _sin_dato(pregunta)
 
     return PlantillaLocal().completar(pregunta, fragmentos, historial)
-
-
-def generar_sin_contexto(pregunta, historial=()):
-    """Sin fragmentos: con modelo, charla libre; sin modelo, None.
-
-    Es la puerta de respuesta abierta del asistente: una consulta que
-    el índice no pudo responder («¿qué es Munitramites?», una duda
-    general, un saludo con pregunta) no se contesta con la frase
-    pregrabada de «no encontré nada» si hay modelo — el prompt le
-    prohíbe inventar fichas, así que puede explicar, orientar y
-    conversar sin pasarse de la raya. Sin modelo (o si el modelo se
-    cae), el pipeline cae en su respuesta determinista de siempre.
-    """
-    return llm.redactar(pregunta, (), historial)

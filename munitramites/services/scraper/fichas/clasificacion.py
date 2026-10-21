@@ -7,8 +7,8 @@ desde el Centro de Trámites del panel.
 
 from munitramites.models import Municipio, Tema
 
-from .relevancia import sin_acentos
-from .vocabulario import TEMAS_POR_PALABRA
+from ..busqueda.relevancia import sin_acentos
+from ..busqueda.vocabulario import TEMAS_POR_PALABRA
 
 
 def tema_para(texto):

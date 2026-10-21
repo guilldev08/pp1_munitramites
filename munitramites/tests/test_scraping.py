@@ -14,7 +14,8 @@ from bs4 import BeautifulSoup
 from django.core.management import call_command
 
 from munitramites.models import Municipio, Organismo, Requisito, Tema, Tramite
-from munitramites.services.scraper import extraccion, relevancia
+from munitramites.services.scraper.busqueda import relevancia
+from munitramites.services.scraper.fichas import extraccion
 
 from .base import TestCase
 
@@ -82,7 +83,7 @@ class ScrapingTests(TestCase):
 
     def _correr(self):
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             side_effect=_fake_traer,
         ):
             call_command(
@@ -92,7 +93,7 @@ class ScrapingTests(TestCase):
 
     def test_importa_los_organismos_de_la_planilla(self):
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
         ):
             call_command(
                 'scrapear_sitios', csv=self.ruta, solo_organismos=True,
@@ -179,7 +180,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             side_effect=lambda url: paginas.get(url),
         ):
             call_command(
@@ -202,7 +203,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             return_value=None,
         ):
             salida = StringIO()
@@ -224,7 +225,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             side_effect=_fake_traer,
         ):
             call_command(
@@ -277,7 +278,7 @@ class ScrapingTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             side_effect=lambda url: paginas.get(url),
         ):
             call_command(
@@ -366,7 +367,7 @@ class RelevanciaTests(TestCase):
         self.addCleanup(os.unlink, ruta)
 
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             side_effect=lambda url: (
                 html if url == 'https://ejemplo.gob.ar/' else None
             ),
@@ -386,7 +387,7 @@ class _ScraperTestCase(TestCase):
         ruta = _csv('NOMBRE,OCUPACION,LINK_SITIO_OFICIAL\n' + filas)
         self.addCleanup(os.unlink, ruta)
         with patch(
-            'munitramites.services.scraper.rastreo.traer',
+            'munitramites.services.scraper.busqueda.rastreo.traer',
             side_effect=lambda url: paginas.get(url),
         ):
             call_command(

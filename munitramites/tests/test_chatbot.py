@@ -16,10 +16,11 @@ comportamiento del asistente.
 from types import SimpleNamespace
 from unittest import mock
 
+from django.test import override_settings
 from django.urls import reverse
 
 from munitramites.models import Consulta, Tramite
-from munitramites.services.chatbot import generacion, responder
+from munitramites.services.chatbot import generacion, llm, responder
 from munitramites.services.chatbot.generacion import PlantillaLocal
 
 from .base import TestCase, ciudadano, tramite
@@ -292,7 +293,44 @@ class BuscadorTests(TestCase):
             self.client.get(reverse('buscador_api'), {'q': '¿y el plazo?'})
 
         # Misma función que el chat, pero cada búsqueda se resuelve sola
-        r.assert_called_once_with('¿y el plazo?')
+        r.assert_called_once_with('¿y el plazo?', usar_llm=False)
+
+    @override_settings(CHATBOT_LLM='groq', GROQ_API_KEY='gsk_prueba')
+    def test_el_buscador_publico_no_gasta_la_api(self):
+        """Sin sesión, la barra responde con plantillas y no llama a Groq."""
+        tramite()
+        llm._ultimo_fallo = 0.0
+
+        with mock.patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+        ) as post:
+            r = self.client.get(reverse('buscador_api'),
+                                {'q': 'renovacion de DNI'})
+
+        self.assertTrue(r.json()['texto'])
+        post.assert_not_called()
+
+    @override_settings(CHATBOT_LLM='groq', GROQ_API_KEY='gsk_prueba')
+    def test_el_buscador_con_sesion_usa_el_modelo(self):
+        """Con sesión, la barra sí redacta con Groq (y no guarda charla)."""
+        tramite()
+        self.client.force_login(ciudadano(username='ana'))
+        llm._ultimo_fallo = 0.0
+
+        respuesta = mock.MagicMock()
+        respuesta.json.return_value = {
+            'choices': [{'message': {'content': 'Respuesta de prueba.'}}],
+        }
+        with mock.patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+            return_value=respuesta,
+        ) as post:
+            r = self.client.get(reverse('buscador_api'),
+                                {'q': 'renovacion de DNI'})
+
+        self.assertEqual(r.json()['texto'], 'Respuesta de prueba.')
+        post.assert_called_once()
+        self.assertEqual(self.client.session.get('chatbot', []), [])
 
     def test_el_json_sin_consulta_no_llama_al_pipeline(self):
         with mock.patch('munitramites.views.chatbot.responder') as r:

@@ -11,14 +11,17 @@ Reglas de la conversación:
     · saludo y «ayuda» se responden sin buscar en el índice (pero un
       saludo SEGUIDO de una pregunta no se traga la pregunta),
     · «limpiar» vacía la charla y «gracias»/«chau» tienen su respuesta,
-    · si el índice devuelve fragmentos, se citan los trámites fuente,
-    · si NO hay fragmentos por encima del umbral: con el LLM activo el
-      modelo contesta en libre —sin inventar fichas—; sin modelo, se
-      dice explícitamente que no se dispone de esa información (nunca
-      se inventa), citando lo que se preguntó y sin repetir siempre la
-      misma frase,
+    · si el índice devuelve fragmentos, se citan los trámites fuente y
+      el modelo redacta con ese contexto,
+    · si NO hay fragmentos por encima del umbral, NO se llama al modelo:
+      se dice explícitamente que no se dispone de esa información,
+      citando lo que se preguntó y sin repetir siempre la misma frase
+      (el asistente solo responde sobre trámites y no gasta la API en
+      consultas fuera de tema),
     · un seguimiento corto («¿y el plazo?») se busca junto con lo que se
       preguntó antes,
+    · la barra de búsqueda pública pasa `usar_llm=False`: responde el RAG
+      con plantillas y la API queda para usuarios logueados,
     · la charla no se guarda en la base: vive en la sesión del usuario.
 """
 
@@ -29,7 +32,6 @@ from .generacion import (
     _citar,
     _redaccion,
     generar_respuesta,
-    generar_sin_contexto,
 )
 from .recuperacion import buscar
 
@@ -160,7 +162,7 @@ def _sin_informacion(pregunta):
     return _redaccion(opciones, cita).format(consulta=cita)
 
 
-def responder(pregunta, historial=None):
+def responder(pregunta, historial=None, usar_llm=True):
     """Punto de entrada único del asistente.
 
     `historial` es la charla previa de la sesión (dicts con `rol` y
@@ -168,6 +170,9 @@ def responder(pregunta, historial=None):
     entender seguimientos cortos —con la pregunta anterior se sabe de
     qué trámite habla «¿y el plazo?»— y para que un seguimiento cite
     los trámites en vez de repetir la pregunta suelta.
+
+    `usar_llm=False` responde solo con plantillas: lo usa el buscador
+    público para que una visita sin sesión no gaste la API de Groq.
     """
     pregunta = (pregunta or '').strip()
 
@@ -208,19 +213,22 @@ def responder(pregunta, historial=None):
         encontrados = buscar(f'{pregunta} {previas}')
 
     if not encontrados:
-        # Sin contexto: con el LLM activo, el modelo charla libre
-        # («¿qué es este portal?», preguntas generales) sin poder
-        # inventar fichas; sin modelo, el «no encontré» de siempre —
-        # criterio «manejo de alucinaciones», con la consulta a la
-        # vista y sin repetir siempre la misma frase.
-        texto = generar_sin_contexto(pregunta, historial) or _sin_informacion(
-            pregunta,
-        )
-        return {'texto': texto, 'tramites': [], 'fragmentos': []}
+        # Sin contexto no se llama al modelo: el asistente solo responde
+        # sobre trámites y una consulta que el índice no reconoce no
+        # justifica gastar la API. Se contesta con el «no encontré» de
+        # siempre —criterio «manejo de alucinaciones», con la consulta a
+        # la vista y sin repetir siempre la misma frase.
+        return {
+            'texto': _sin_informacion(pregunta),
+            'tramites': [],
+            'fragmentos': [],
+        }
 
     fragmentos = [f for f, _ in encontrados]
     return {
-        'texto': generar_respuesta(pregunta, fragmentos, historial),
+        'texto': generar_respuesta(
+            pregunta, fragmentos, historial, usar_llm=usar_llm,
+        ),
         'tramites': _tramites_fuente(fragmentos),
         'fragmentos': fragmentos,
     }

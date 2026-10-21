@@ -12,8 +12,10 @@ from django.db import transaction
 
 from munitramites.models import Enlace, Requisito, Tramite
 
-from . import clasificacion, extraccion, planilla, rastreo
-from .relevancia import normalizar, normalizar_url
+from . import planilla
+from .busqueda import rastreo
+from .busqueda.relevancia import normalizar, normalizar_url
+from .fichas import clasificacion, extraccion
 
 # Cuántas páginas de entrada se siguen por sitio (la home ya se miró):
 # los portales esconden las fichas a dos o tres clicks.

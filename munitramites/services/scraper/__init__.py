@@ -7,13 +7,13 @@ Tres etapas, misma idea que services/chatbot/:
                    LINK_SITIO_OFICIAL) y crea los organismos que falten.
                    Idempotente.
 
-    2. RASTREO     services/scraper/rastreo.py + relevancia.py
+    2. RASTREO     services/scraper/busqueda/
                    Visita cada sitio, puntúa los links y sigue solo los
                    que huelen a trámite. Si el portal esconde los
                    trámites detrás de una «puerta» (Servicios, Trámites,
                    Turnos…), entra y busca también ahí.
 
-    3. EXTRACCION  services/scraper/extraccion.py + clasificacion.py
+    3. EXTRACCION  services/scraper/fichas/
                    De la ficha saca título, descripción y requisitos, y
                    deduce tema, municipio y modalidad.
 

@@ -195,7 +195,8 @@ DEFAULT_FROM_EMAIL = 'no-responder@munitramites.test'
 # modelo ni servicio.
 
 # Fragmentos que se recuperan por consulta y se pasan como contexto para
-# redactar la respuesta.
+# redactar la respuesta. Para ver el contexto exacto que se manda:
+# `manage.py ver_contexto "consulta"`.
 CHATBOT_TOP_K = 4
 # Puntaje minimo para considerar que un fragmento responde la pregunta.
 # Por debajo, el asistente responde que no dispone de esa informacion.

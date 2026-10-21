@@ -129,6 +129,11 @@ def buscador_api(request):
     la sesión: lo que se escribe en la barra de búsqueda no queda en la
     charla del modal (privacidad) ni la ensucia con búsquedas sueltas.
 
+    El modelo SOLO redacta con sesión iniciada: una visita anónima
+    recibe la respuesta de las plantillas. Así la barra pública no
+    gasta la API de Groq (y el asistente, sin contexto de trámites, ni
+    siquiera intenta llamarla).
+
     Sin JavaScript no se usa este JSON: el <noscript> del listado lleva a
     /chatbot/?q=… que responde la misma pregunta en la página del chat.
     """
@@ -136,7 +141,7 @@ def buscador_api(request):
     if not q:
         return JsonResponse({'texto': '', 'tramites': []})
 
-    rta = responder(q)
+    rta = responder(q, usar_llm=request.user.is_authenticated)
     return JsonResponse({
         'texto': rta['texto'],
         'tramites': [

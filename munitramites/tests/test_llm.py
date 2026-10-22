@@ -4,9 +4,9 @@ El modelo NUNCA se toca de verdad en los tests: se simula la API de
 Groq con mocks y se reactiva `CHATBOT_LLM` con override_settings
 (settings.py lo apaga en los tests). Lo que se prueba acá es el
 contrato entre el pipeline y el modelo: que redacte con contexto, que
-pueda charlar en libre cuando NO hay contexto (sin inventar fichas),
-que caiga en la plantilla si el modelo no está o no corresponde usarlo,
-y que un fallo no se pague en cada mensaje.
+pueda explicar o redirigir cuando NO hay contexto (sin salirse de los
+trámites ni inventar fichas), que caiga en la plantilla si el modelo no
+está o no corresponde usarlo, y que un fallo no se pague en cada mensaje.
 """
 
 from unittest.mock import MagicMock, patch
@@ -125,8 +125,8 @@ class LlmTests(TestCase):
 
         self.assertTrue(rta['texto'].startswith('Encontré'))
 
-    def test_sin_contexto_el_llm_contesta_en_libre(self):
-        """Sin fichas el modelo puede orientar/charlar, sin inventar."""
+    def test_sin_contexto_el_llm_contesta_con_alcance(self):
+        """Sin fichas el modelo explica o redirige, sin inventar."""
         with patch(
             'munitramites.services.chatbot.llm.groq.requests.post',
             return_value=_respuesta_modelo(
@@ -144,12 +144,18 @@ class LlmTests(TestCase):
         self.assertEqual(rta['tramites'], [])
 
         # Se le avisa explícitamente que NO hay contexto, para que
-        # pueda charlar pero no se invente fichas.
+        # pueda explicar o redirigir, pero no se invente fichas.
         cuerpo = post.call_args.kwargs['json']
         self.assertIn('sin resultados',
                       cuerpo['messages'][1]['content'])
         self.assertIn('¿qué es Munitramites?',
                       cuerpo['messages'][1]['content'])
+
+        # El prompt mantiene el alcance: solo trámites; un tema ajeno
+        # no se responde, se redirige en una oración.
+        sistema = cuerpo['messages'][0]['content']
+        self.assertIn('ALCANCE', sistema)
+        self.assertIn('NO la respondas', sistema)
 
     def test_consulta_corta_no_gasta_la_api(self):
         """Con «g» no hay nada que el modelo pueda hacer: no se llama."""

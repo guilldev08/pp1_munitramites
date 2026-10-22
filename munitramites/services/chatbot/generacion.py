@@ -6,9 +6,10 @@ sin modelo propio. Si `CHATBOT_LLM='groq'` y `usar_llm=True`, el texto
 lo redacta el modelo de Groq (vía `llm.redactar`) con las MISMAS reglas
 metidas en el prompt: los datos de trámites salen solo del contexto,
 cita los trámites y, si no alcanza, lo dice con sus palabras. También
-puede contestar consultas generales (qué es el portal, cómo buscar) de
-forma natural. Si el modelo no está disponible, se cae o no corresponde
-usarlo, se vuelve a la plantilla local sin que el ciudadano se entere.
+puede explicar el portal (qué es, cómo buscar) de forma natural; si la
+pregunta es de otro tema, la redirige en una oración sin responderla.
+Si el modelo no está disponible, se cae o no corresponde usarlo, se
+vuelve a la plantilla local sin que el ciudadano se entere.
 
 La redacción cumple los criterios del documento: contestar lo que
 preguntaron (con más de una variante, para no repetir siempre la misma
@@ -21,7 +22,7 @@ Hay DOS puertas de entrada:
     generar_respuesta(pregunta, fragmentos, historial, usar_llm=True)
         con contexto (fichas recuperadas por el RAG)
     generar_sin_contexto(pregunta, historial, usar_llm=True)
-        sin contexto (charla general, consulta sin ficha)
+        sin contexto (consulta sobre el portal o tema ajeno)
 
 Con el modelo activo el pedido sale PRIMERO hacia Groq —el modelo
 redacta citando lo que haya— y el corte determinista de montos recién
@@ -211,12 +212,12 @@ def generar_sin_contexto(pregunta, historial=(), usar_llm=True):
     """Sin fragmentos: con modelo contesta en libre; sin modelo, None.
 
     Es la puerta de respuesta abierta del asistente: una consulta que
-    el índice no pudo responder («¿qué es Munitramites?», una duda
-    general, un saludo con pregunta) no se contesta con la frase
-    pregrabada si hay modelo: el prompt le prohíbe inventar fichas,
-    pero puede explicar, orientar y conversar breve y naturalmente.
-    Sin modelo (o si el modelo se cae), el pipeline cae en su respuesta
-    determinista de siempre.
+    el índice no pudo responder («¿qué es Munitramites?», cómo buscar,
+    una duda sobre el portal) no se contesta con la frase pregrabada si
+    hay modelo. El prompt le prohíbe inventar fichas y le marca el
+    alcance: explica el portal o redirige con naturalidad si el tema es
+    ajeno, sin responderlo. Sin modelo (o si el modelo se cae), el
+    pipeline cae en su respuesta determinista de siempre.
 
     `usar_llm=False` (la barra de búsqueda pública) no llama a la API
     y devuelve None para que el pipeline use la plantilla.

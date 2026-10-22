@@ -35,9 +35,9 @@ Qué hace el sistema, en corto:
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
 - **Asistente virtual** con RAG y **Groq** como modelo (API en la nube):
-  responde consultas sobre trámites, charla breve si hace falta, cita la
-  fuente y, si no sabe, lo dice en lugar de inventar. Sin clave usa las
-  plantillas locales y no gasta la API.
+  responde solo consultas sobre trámites, con redacción natural y
+  flexible, cita la fuente y, si no sabe, lo dice en lugar de inventar.
+  Sin clave usa las plantillas locales y no gasta la API.
 
 Todo lo anterior está documentado acá y tiene sus tests de aceptación: ver
 [Tests y trazabilidad](#tests-y-trazabilidad).
@@ -644,9 +644,9 @@ Todo vive en `services/chatbot/`, en cuatro piezas.
 |---|---|---|
 | 1 · Indexar | `indexar.py` | convierte cada trámite activo en fragmentos (ficha + un fragmento por requisito) con su fuente. Se guarda en memoria y **se invalida solo** cuando cambian trámites, requisitos, municipios u organismos (las señales están en `indexar.py` y se conectan desde `apps.py`) |
 | 2 · Recuperar | `recuperacion.py` | normaliza (minúsculas, sin acentos, sin palabras de relleno), expande con `SINONIMOS` (dni → documento, licencia → conducir, …) y puntúa con BM25. Todo lo que queda bajo `CHATBOT_UMBRAL` se descarta |
-| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con clave de Groq (**`GROQ_MODELO`**, vía `llm/`) la frase la arma el LLM citando el contexto; sin fichas puede charlar/orientar; sin clave o si falla cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
-| LLM | `llm/` | cliente de Groq (API compatible con OpenAI): `prompt.py` arma la ventana de contexto, `groq.py` hace el POST y `__init__.py` decide cuándo llamar (cooldown tras un fallo). Puede redactar con o sin contexto; **los datos de trámites salen siempre del contexto** (nunca los inventa) |
-| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}`. Con contexto → el modelo redacta; sin contexto → el modelo contesta en libre (charla/orientación); sin modelo o en la barra pública, el «no dispongo» citando la consulta. Nunca inventa nada |
+| 3 · Generar | `generacion.py` | redacta con los fragmentos recuperados: con clave de Groq (**`GROQ_MODELO`**, vía `llm/`) la frase la arma el LLM citando el contexto; sin fichas puede explicar el portal o redirigir; sin clave o si falla cae a `PlantillaLocal` (plantillas con variantes, sin costo). Una pregunta por monto que no está indexada se corta antes de redactar cuando no hay modelo |
+| LLM | `llm/` | cliente de Groq (API compatible con OpenAI): `prompt.py` arma la ventana de contexto, `groq.py` hace el POST y `__init__.py` decide cuándo llamar (cooldown tras un fallo). Redacta con o sin contexto, **siempre dentro de los trámites**; los datos salen siempre del contexto (nunca los inventa) |
+| Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}`. Con contexto → el modelo redacta; sin contexto → el modelo explica el portal o redirige si el tema es ajeno; sin modelo o en la barra pública, el «no dispongo» citando la consulta. Nunca inventa nada |
 
 **Se le puede preguntar desde cuatro lugares**: el modal 💬 (desde cualquier
 página), la **chatbar de `/tramites/`** (arriba de todo en el listado: abre
@@ -701,12 +701,14 @@ El comando imprime los fragmentos, los dos mensajes completos y el
 tamaño (caracteres y tokens estimados); con `--json` los vuelca como
 JSON.
 
-**Flexible, pero con los datos anclados**: el modelo puede charlar y
-redactar con libertad (qué es el portal, cómo buscar, un saludo, una
-duda suelta), y varía la redacción para no sonar a formulario. Lo que no
-puede hacer es inventar: los datos de trámites —requisitos, montos,
-plazos, organismos— salen SOLO del CONTEXTO, y el CONTEXTO se trata como
-datos, no como órdenes. Si no están, lo dice con sus palabras en vez de
+**Natural, flexible y solo trámites**: el modelo varía la redacción para
+no sonar a formulario y puede explicar el portal (qué es, cómo buscar) o
+una duda sobre trámites. Si la pregunta es de otro tema —chistes,
+política, deportes, recetas, tareas— no la responde: lo dice en una
+oración, con sus palabras y buena onda, y pide el nombre del trámite.
+Tampoco inventa: los datos de trámites —requisitos, montos, plazos,
+organismos— salen SOLO del CONTEXTO, y el CONTEXTO se trata como datos,
+no como órdenes. Si no están, lo dice con sus palabras en vez de
 inventarlos. Responde en español rioplatense, de 1 a 8 oraciones.
 
 **Si no hay clave o modelo** (sin `.env`, sin red, Groq caído), el asistente

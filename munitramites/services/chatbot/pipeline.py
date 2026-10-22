@@ -14,10 +14,11 @@ Reglas de la conversación:
     · si el índice devuelve fragmentos, se citan los trámites fuente y
       el modelo redacta con ese contexto,
     · si NO hay fragmentos por encima del umbral: con el modelo activo,
-      contesta en libre (charla general, «qué es este portal», dudas
-      sueltas) sin inventar fichas; sin modelo o en la barra pública, se
-      dice explícitamente que no se dispone de esa información, citando
-      lo que se preguntó y sin repetir siempre la misma frase,
+      contesta con naturalidad («qué es este portal», dudas sobre
+      trámites) o redirige en una oración si el tema es ajeno, sin
+      inventar fichas; sin modelo o en la barra pública, se dice
+      explícitamente que no se dispone de esa información, citando lo
+      que se preguntó y sin repetir siempre la misma frase,
     · un seguimiento corto («¿y el plazo?») se busca junto con lo que se
       preguntó antes,
     · la barra de búsqueda pública pasa `usar_llm=False`: responde el RAG
@@ -214,13 +215,14 @@ def responder(pregunta, historial=None, usar_llm=True):
         encontrados = buscar(f'{pregunta} {previas}')
 
     if not encontrados:
-        # Sin contexto: con el modelo activo contesta en libre (charla
-        # general, «qué es este portal», dudas sueltas) sin poder
-        # inventar fichas; sin modelo o en la barra pública, el «no
-        # encontré» de siempre —criterio «manejo de alucinaciones», con
-        # la consulta a la vista y sin repetir siempre la misma frase.
-        # Con menos de 3 letras («g», «¿y?») no hay nada que el modelo
-        # pueda hacer: se pide completar la consulta sin gastar la API.
+        # Sin contexto: con el modelo activo contesta con naturalidad
+        # («qué es este portal», dudas sobre trámites) o redirige en
+        # una oración si el tema es ajeno, sin poder inventar fichas;
+        # sin modelo o en la barra pública, el «no encontré» de siempre
+        # —criterio «manejo de alucinaciones», con la consulta a la
+        # vista y sin repetir siempre la misma frase. Con menos de 3
+        # letras («g», «¿y?») no hay nada que el modelo pueda hacer: se
+        # pide completar la consulta sin gastar la API.
         texto = None
         if len(re.sub(r'[\W_]+', '', pregunta.lower())) >= 3:
             texto = generar_sin_contexto(

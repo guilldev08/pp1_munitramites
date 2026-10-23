@@ -48,8 +48,8 @@ from django.db.models import Count
 from django.utils.html import format_html
 
 from .models import (
-    Consulta, Enlace, Municipio, Organismo, Perfil, Requisito, Tema,
-    Tramite,
+    Consulta, Direccion, Enlace, Municipio, Organismo, Perfil, Requisito,
+    Tema, Tramite,
 )
 
 # --- La marca del panel -------------------------------------------------------
@@ -114,7 +114,8 @@ class SinAutogestion:
 
 # --- Base de los modelos del negocio ----------------------------------------
 class BaseAdmin(admin.ModelAdmin):
-    """Base de Trámites, Consultas, Municipios, Organismos, Requisitos y Enlaces.
+    """Base de Trámites, Consultas, Municipios, Organismos, Requisitos,
+    Enlaces y Direcciones.
 
     Amigable: columnas con significado, filtros, buscador y «—» en las celdas
     vacías. Cerrado: el borrado queda para el superusuario; quien es solo
@@ -191,6 +192,30 @@ class EnlaceInline(admin.TabularInline):
     fields = ['orden', 'nombre', 'url']
 
 
+class DireccionInline(admin.TabularInline):
+    """Sedes de atención del trámite: varias por trámite y por municipio."""
+
+    model = Direccion
+    extra = 1
+    fields = ['lugar', 'municipio', 'direccion']
+    autocomplete_fields = ['municipio']
+    ordering = ['municipio__nombre', 'lugar']
+
+
+@admin.register(Direccion)
+class DireccionAdmin(BaseAdmin):
+    """Direcciones de atención, con su municipio y su trámite."""
+
+    list_display = ['id', 'tramite', 'lugar', 'municipio', 'direccion']
+    list_filter = ['municipio']
+    search_fields = [
+        'lugar', 'direccion', 'tramite__titulo', 'municipio__nombre',
+    ]
+    list_select_related = ['tramite', 'municipio']
+    autocomplete_fields = ['tramite', 'municipio']
+    ordering = ['tramite', 'municipio__nombre', 'lugar']
+
+
 @admin.register(Enlace)
 class EnlaceAdmin(BaseAdmin):
     list_display = ['id', 'tramite', 'nombre', 'url', 'orden']
@@ -234,6 +259,10 @@ class TemaAdmin(BaseAdmin):
 class TramiteAdmin(BaseAdmin):
     """El catálogo público: alta, edición, filtros y publicación masiva."""
 
+    def get_queryset(self, request):
+        # La búsqueda por direcciones puede repetir filas: se deduplica.
+        return super().get_queryset(request).distinct()
+
     list_display = [
         'id', 'titulo', 'tema_pildora', 'modalidad_pildora',
         'municipio', 'organismo', 'destacado', 'activo',
@@ -241,6 +270,8 @@ class TramiteAdmin(BaseAdmin):
     list_filter = ['tema', 'modalidad', 'municipio', 'organismo', 'destacado', 'activo']
     search_fields = [
         'titulo', 'descripcion', 'organismo__nombre', 'municipio__nombre',
+        'direcciones__lugar', 'direcciones__direccion',
+        'direcciones__municipio__nombre',
     ]
     list_select_related = ['tema', 'municipio', 'organismo']
     list_editable = ['destacado', 'activo']
@@ -250,7 +281,7 @@ class TramiteAdmin(BaseAdmin):
     # Acciones masivas: publicar / dar de baja sin entrar a cada ficha.
     # Ojo: el borrado real (delete_selected) solo lo ve el superusuario.
     actions = ['activar', 'desactivar']
-    inlines = [EnlaceInline, RequisitoInline]
+    inlines = [EnlaceInline, RequisitoInline, DireccionInline]
     fieldsets = (
         ('Datos principales', {
             'fields': ('titulo', 'tema', 'modalidad', 'descripcion'),

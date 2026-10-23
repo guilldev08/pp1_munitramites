@@ -9,7 +9,7 @@ información».
 
 from django.urls import reverse
 
-from munitramites.models import Enlace, Requisito, Tema
+from munitramites.models import Direccion, Enlace, Requisito, Tema
 
 from .base import TestCase, administrador, ciudadano, municipio, organismo, tramite
 
@@ -141,6 +141,30 @@ class ListadoTests(TestCase):
         r = self.client.get(reverse('tramites'), {'municipio': municipio('Obera').pk})
         self.assertContains(r, 'Licencia de conducir')
 
+    def test_filtra_por_el_municipio_de_una_direccion(self):
+        """Un trámite compartido aparece por cualquiera de sus sedes."""
+        t = tramite()  # municipio principal: Posadas
+        obera = municipio('Obera')
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Oberá', municipio=obera,
+            direccion='Ruta 14 km 2',
+        )
+
+        r = self.client.get(reverse('tramites'), {'municipio': obera.pk})
+
+        self.assertContains(r, 'Renovacion de DNI')
+
+    def test_busca_por_lugar_o_direccion(self):
+        t = tramite()
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Costanera', municipio=t.municipio,
+            direccion='Av. Costanera 500',
+        )
+
+        for texto in ('Sede Costanera', 'Costanera 500'):
+            r = self.client.get(reverse('tramites'), {'q': texto})
+            self.assertContains(r, 'Renovacion de DNI', msg_prefix=texto)
+
     def test_busca_tambien_por_requisito(self):
         tramite()  # tiene «DNI en vigor y formulario completado»
 
@@ -193,11 +217,69 @@ class FichaTests(TestCase):
         t.delete()
         self.assertEqual(Requisito.objects.filter(tramite=t.pk).count(), 0)
 
+    def test_muestra_las_direcciones_agrupadas_por_municipio(self):
+        t = tramite()
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Centro', municipio=t.municipio,
+            direccion='Av. Mitre 100',
+        )
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Oberá', municipio=municipio('Obera'),
+            direccion='Ruta 14 km 2',
+        )
+
+        r = self.client.get(reverse('tramite_detalle', args=[t.pk]))
+
+        self.assertContains(r, 'Direcciones de atención')
+        self.assertContains(r, 'Sede Centro')
+        self.assertContains(r, 'Sede Oberá')
+        self.assertContains(r, 'Av. Mitre 100')
+        self.assertContains(r, 'Ruta 14 km 2')
+        self.assertContains(r, 'Obera')
+
+    def test_sin_direcciones_usa_la_del_organismo(self):
+        t = tramite()
+
+        r = self.client.get(reverse('tramite_detalle', args=[t.pk]))
+
+        self.assertContains(r, 'Direcciones de atención')
+        self.assertContains(r, t.organismo.direccion)
+        self.assertContains(r, 'Todavía no se cargaron sedes adicionales')
+
+
+class DireccionTests(TestCase):
+    """La tabla de direcciones: varias sedes por trámite y por municipio."""
+
+    def test_un_tramite_puede_tener_varias_direcciones(self):
+        t = tramite()
+        centro = Direccion.objects.create(
+            tramite=t, lugar='Sede Centro', municipio=t.municipio,
+            direccion='Av. Mitre 100',
+        )
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Oberá', municipio=municipio('Obera'),
+            direccion='Ruta 14 km 2',
+        )
+
+        self.assertEqual(t.direcciones.count(), 2)
+        self.assertEqual(str(centro), 'Sede Centro — Posadas')
+
+    def test_borrar_el_tramite_borra_sus_direcciones(self):
+        t = tramite()
+        d = Direccion.objects.create(
+            tramite=t, lugar='Sede Centro', municipio=t.municipio,
+            direccion='Av. Mitre 100',
+        )
+
+        t.delete()
+
+        self.assertFalse(Direccion.objects.filter(pk=d.pk).exists())
+
 
 class AdminTramitesTests(TestCase):
     """RF-07: el administrador gestiona los trámites desde /panel/."""
 
-    def test_el_admin_puede_editar_requisitos_y_enlaces(self):
+    def test_el_admin_puede_editar_requisitos_enlaces_y_direcciones(self):
         admin = administrador()
         t = tramite()
 
@@ -207,9 +289,10 @@ class AdminTramitesTests(TestCase):
         )
 
         self.assertEqual(r.status_code, 200)
-        # Los inlines del panel: requisitos y enlaces oficiales
+        # Los inlines del panel: requisitos, enlaces y direcciones
         self.assertContains(r, 'Requisitos')
         self.assertContains(r, 'Enlaces oficiales')
+        self.assertContains(r, 'Direcciones de atención')
 
     def test_sin_staff_no_entra_al_panel(self):
         comun = ciudadano(username='comun')
@@ -235,6 +318,21 @@ class ApiTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()['count'], 1)
         self.assertEqual(r.json()['tramites'][0]['titulo'], 'Renovacion de DNI')
+
+    def test_incluye_las_direcciones(self):
+        t = tramite()
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Oberá', municipio=municipio('Obera'),
+            direccion='Ruta 14 km 2',
+        )
+
+        datos = self.client.get(reverse('api_tramites')).json()['tramites'][0]
+
+        self.assertEqual(datos['direcciones'], [{
+            'lugar': 'Sede Oberá',
+            'municipio': 'Obera',
+            'direccion': 'Ruta 14 km 2',
+        }])
 
 
 class TemasTests(TestCase):

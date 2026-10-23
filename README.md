@@ -206,7 +206,7 @@ piezas lo componen:
 | Pieza | Archivo | Qué aporta |
 |---|---|---|
 | Vistas y permisos | `munitramites/views/panel.py` + `munitramites/middleware.py` | decoradores `solo_administrador` y `solo_gestor_de_cuentas` (Usuarios), dashboard con accesos, CRUD de trámites, centro de consultas, usuarios y temas; el middleware manda a `/panel/` a todo usuario de gestión que pise `/admin/` |
-| Formularios | `munitramites/forms.py` | `TramitePanelForm` con los inlines `RequisitoFormSet` / `EnlaceFormSet`, `UsuarioPanelForm` y `UsuarioRolForm` (con el campo `rol` de tres opciones, **sin** `is_superuser`), `RespuestaConsultaForm`, `TemaForm` |
+| Formularios | `munitramites/forms.py` | `TramitePanelForm` con los inlines `RequisitoFormSet` / `EnlaceFormSet` / `DireccionFormSet`, `UsuarioPanelForm` y `UsuarioRolForm` (con el campo `rol` de tres opciones, **sin** `is_superuser`), `RespuestaConsultaForm`, `TemaForm` |
 | Plantillas y estilos | `munitramites/templates/panel/` + `static/css/app.css` (sección «PANEL DE ADMINISTRACIÓN») | `base_panel.html` con la barra de pestañas («Usuarios» solo aparece para quien gestiona cuentas) y una plantilla por sección; pestañas, filtros, filas de inlines y etiquetas de rol heredando los dos temas |
 
 ### Qué se hace desde `/panel/`
@@ -214,7 +214,7 @@ piezas lo componen:
 | Sección | URL | Qué permite |
 |---|---|---|
 | Resumen | `/panel/` | tarjetas con los números del día y atajos (la de Usuarios solo aparece para el rol administrador; los de `/admin/` solo los ve el superusuario) |
-| Centro de Trámites | `/panel/tramites/` | listar todos/activos/inactivos, alta y edición con requisitos y enlaces, activar / desactivar / destacar |
+| Centro de Trámites | `/panel/tramites/` | listar todos/activos/inactivos, alta y edición con requisitos, enlaces y direcciones (varias sedes por trámite), activar / desactivar / destacar |
 | Centro de Consultas | `/panel/consultas/` | ver las de todos los ciudadanos, filtrar por estado y responder (RF-10) |
 | Usuarios | `/panel/usuarios/` | buscar, crear cuentas con cualquiera de los tres roles, cambiar roles, suspender y eliminar (RF-11); reservada al rol administrador |
 | Temas | `/panel/temas/` | alta de temas con el conteo de trámites de cada uno (RF-07) |
@@ -228,6 +228,11 @@ Lo que el panel **no** hace, a propósito:
   «Cambiar mi contraseña») **ni la del superusuario**.
 - **No gestiona organismos ni municipios**: esas tablas viven en
   `/admin/`, reservado al superusuario.
+- **Las direcciones de atención sí se cargan desde el Centro de Trámites**:
+  cada trámite puede tener varias sedes, cada una con su municipio y su
+  dirección (tabla `MUNITRAMITES_DIRECCION`, «DIRECCIONES» en el diagrama).
+  Si un trámite no tiene filas, la ficha pública muestra la dirección del
+  organismo responsable como respaldo.
 
 ### El admin de Django (`/admin/`)
 
@@ -445,7 +450,7 @@ munitramites/
         │   ├── base_panel.html     #    base del panel: título + pestañas
         │   ├── dashboard.html      #    resumen y accesos (/panel/)
         │   ├── tramites_lista.html #    Centro de Trámites
-        │   ├── tramite_form.html   #    alta/edición + requisitos y enlaces
+        │   ├── tramite_form.html   #    alta/edición + requisitos, enlaces y direcciones
         │   ├── consultas_lista.html#    Centro de Consultas
         │   ├── consulta_detalle.html #  ver y responder (RF-10)
         │   ├── usuarios_lista.html #    cuentas con roles (RF-11)
@@ -608,7 +613,7 @@ en esta tabla.
 | **RF-01** Registro de usuario | `views/cuenta.py::registro` (usuario, correo y clave: sin datos personales) | `test_auth.RegistroTests` · `test_auth.PerfilTests` (editar su correo) |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
 | **RF-03** Gestión de roles | `models.Perfil.rol` (corriente / administrativo / administrador) con `is_staff` sincronizado + `forms.UsuarioRolForm` | `test_roles` · `test_panel.UsuariosTests` · `test_admin` |
-| **RF-07** Administrar trámites | `/panel/tramites/` (con Requisitos y Enlaces) | `test_panel.CentroDeTramitesTests` · `test_tramites` · `test_roles` |
+| **RF-07** Administrar trámites | `/panel/tramites/` (con Requisitos, Enlaces y Direcciones) | `test_panel.CentroDeTramitesTests` · `test_tramites` · `test_roles` |
 | **RF-08** Enviar consultas | `views/consultas.py::consulta_nueva` | `test_consultas` |
 | **RF-09** Enviar sugerencias | mismo formulario, `tipo = sugerencia` | `test_consultas` |
 | **RF-10** Gestionar consultas | `/panel/consultas/<id>/` + `/consultas/<id>/` | `test_panel.CentroDeConsultasTests` · `test_consultas.GestionDelAdminTests` |
@@ -813,6 +818,7 @@ Luego escribí SQL y cerrá con `quit;`.
 | `TRAMITE` | 8 | seed |
 | `REQUISITO` | 32 | seed |
 | `ENLACE` | 5 | botones con nombre y URL que carga el seed (el panel los agrega, edita y borra); los campos viejos `enlace_turnos` / `enlace_oficial` quedan solo como respaldo |
+| `DIRECCION` | 0+ | sedes de atención que se cargan desde el panel: lugar, municipio y dirección; un trámite puede tener varias |
 | `CONSULTA` | 3+ | seed + formularios (incluye el prefijo `Soporte: `) |
 | `PERFIL` | 1+ | se crea con el registro (guarda el rol; su id es un UUID) |
 | `AUTH_USER` | 2 | Django (usuarios) |

@@ -19,8 +19,8 @@ from unittest import mock
 from django.test import override_settings
 from django.urls import reverse
 
-from munitramites.models import Consulta, Tramite
-from munitramites.services.chatbot import generacion, llm, responder
+from munitramites.models import Consulta, Direccion, Tramite
+from munitramites.services.chatbot import generacion, indexar, llm, responder
 from munitramites.services.chatbot.generacion import PlantillaLocal
 
 from .base import TestCase, ciudadano, tramite
@@ -38,6 +38,31 @@ class PipelineTests(TestCase):
         self.assertEqual(rta['tramites'][0].titulo, 'Renovacion de DNI')
         self.assertTrue(rta['texto'])
         self.assertTrue(rta['fragmentos'])
+
+    def test_el_indice_incluye_las_direcciones(self):
+        t = tramite()
+        Direccion.objects.create(
+            tramite=t, lugar='Sede Costanera', municipio=t.municipio,
+            direccion='Av. Costanera 500',
+        )
+
+        indexar.invalidar()
+        ficha = next(
+            f for f in indexar.obtener_indice() if f.tipo == 'ficha'
+        )
+
+        self.assertIn('Sede Costanera', ficha.texto)
+        self.assertIn('Av. Costanera 500', ficha.texto)
+
+    def test_el_indice_usa_la_direccion_del_organismo_como_respaldo(self):
+        t = tramite()
+
+        indexar.invalidar()
+        ficha = next(
+            f for f in indexar.obtener_indice() if f.tipo == 'ficha'
+        )
+
+        self.assertIn(t.organismo.direccion, ficha.texto)
 
     def test_no_inventar_respuesta_sin_contexto(self):
         tramite()

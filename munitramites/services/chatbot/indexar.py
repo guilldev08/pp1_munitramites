@@ -3,7 +3,8 @@
 El índice es una lista plana de `Fragmento`. Cada fragmento guarda de dónde
 vino (`tramite_id`) para que la respuesta siempre pueda CITAR LA FUENTE.
 
-    ficha      → título + descripción + tema + modalidad + municipio + organismo
+    ficha      → título + descripción + tema + modalidad + municipio +
+                 organismo + direcciones de atención
     requisito  → un fragmento por requisito, con el título del trámite
 
 El índice se construye una vez y se guarda en memoria; cualquier alta o
@@ -14,7 +15,7 @@ hay que tocar para reemplazarlo por un indice externo (pgvector, FAISS…).
 
 from dataclasses import dataclass
 
-from ...models import Municipio, Organismo, Requisito, Tramite
+from ...models import Direccion, Municipio, Organismo, Requisito, Tramite
 
 __all__ = ['Fragmento', 'conectar_senales', 'invalidar', 'obtener_indice']
 
@@ -35,11 +36,18 @@ def _construir():
     tramites = (
         Tramite.objects.filter(activo=True)
         .select_related('municipio', 'organismo', 'tema')
-        .prefetch_related('requisitos')
+        .prefetch_related('requisitos', 'direcciones__municipio')
     )
 
     fragmentos = []
     for t in tramites:
+        direcciones = '; '.join(
+            f'{d.lugar} ({d.municipio.nombre}): {d.direccion}'
+            for d in t.direcciones.all()
+        ) or (
+            f'dirección del organismo: {t.organismo.direccion} '
+            f'({t.municipio.nombre})'
+        )
         fragmentos.append(Fragmento(
             id=f't{t.pk}',
             tramite_id=t.pk,
@@ -51,6 +59,7 @@ def _construir():
                 f'Modalidad: {t.get_modalidad_display()}. '
                 f'Municipio: {t.municipio.nombre}. '
                 f'Organismo responsable: {t.organismo.nombre}. '
+                f'Direcciones de atención: {direcciones}. '
                 f'Requisitos: '
                 + '; '.join(r.descripcion for r in t.requisitos.all()) + '.'
             ),
@@ -88,7 +97,7 @@ def conectar_senales():
     """Se engancha a los cambios de datos (se llama desde apps.ready())."""
     from django.db.models.signals import post_delete, post_save
 
-    for modelo in (Tramite, Requisito, Municipio, Organismo):
+    for modelo in (Tramite, Requisito, Direccion, Municipio, Organismo):
         post_save.connect(
             invalidar, sender=modelo, dispatch_uid=f'indice_save_{modelo.__name__}'
         )

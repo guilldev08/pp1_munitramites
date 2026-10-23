@@ -6,7 +6,8 @@ Estructura del dominio:
     Municipio ──┐
                 ├──► Tramite ──► Requisito
     Organismo ──┘        ├──► Enlace  (botones de la ficha, los edita el admin)
-    Tema ────────────────┘
+    Tema ────────────────┤
+                          ├──► Direccion ──► Municipio
                           └──► Consulta ──► User ──► Perfil (rol)
 
 Todas las tablas viven en Firebird. Después de tocar este archivo:
@@ -117,6 +118,41 @@ class Tramite(models.Model):
 
     def __str__(self):
         return self.titulo
+
+
+class Direccion(models.Model):
+    """Una dirección de atención de un trámite (1 a N).
+
+    Un trámite puede atenderse en varias sedes y en distintos municipios.
+    Cada fila guarda el nombre del lugar, su municipio y la dirección
+    física. `Tramite.municipio` sigue siendo el municipio principal; esta
+    tabla permite sumar todas las demás sedes sin duplicar el trámite.
+    """
+
+    tramite = models.ForeignKey(
+        Tramite, on_delete=models.CASCADE, related_name='direcciones'
+    )
+    lugar = models.CharField(
+        'lugar',
+        max_length=200,
+        help_text='Nombre de la sede, ej.: «Registro Civil Centro».',
+    )
+    municipio = models.ForeignKey(
+        Municipio, on_delete=models.PROTECT, related_name='direcciones'
+    )
+    direccion = models.CharField(
+        'dirección',
+        max_length=300,
+        help_text='Calle, número y localidad, ej.: «Av. Mitre 1234, Posadas».',
+    )
+
+    class Meta:
+        verbose_name = 'Dirección'
+        verbose_name_plural = 'Direcciones'
+        ordering = ['municipio__nombre', 'lugar', 'id']
+
+    def __str__(self):
+        return f'{self.lugar} — {self.municipio}'
 
 
 class Requisito(models.Model):

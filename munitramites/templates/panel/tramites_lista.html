@@ -116,6 +116,7 @@
               <span>{{ t.get_modalidad_display }}</span>
               <span>{{ t.municipio }}</span>
               <span>{{ t.organismo }}</span>
+              {% if t.direcciones.all %}<span>{{ t.direcciones.all|length }} dirección{{ t.direcciones.all|length|pluralize }}</span>{% endif %}
               <span class="texto-suave">Alta {{ t.creado|date:"d/m/Y" }}</span>
             </p>
           </div>

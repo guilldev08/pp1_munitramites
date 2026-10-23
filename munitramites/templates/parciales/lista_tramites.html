@@ -68,7 +68,7 @@
         <p>{{ t.descripcion|truncatewords:20 }}</p>
         <div class="tarjeta__meta">
           <span>🏛 {{ t.organismo.nombre }}</span>
-          <span>📍 {{ t.municipio.nombre }} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
+          <span>📍 {{ t.municipio.nombre }}{% if t.direcciones.all %} · {{ t.direcciones.all|length }} sede{{ t.direcciones.all|length|pluralize }}{% endif %} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
         </div>
       </a>
     {% endfor %}

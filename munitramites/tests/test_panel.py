@@ -17,7 +17,9 @@ import uuid
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from munitramites.models import Consulta, Perfil, Requisito, Tema, Tramite
+from munitramites.models import (
+    Consulta, Direccion, Perfil, Requisito, Tema, Tramite,
+)
 
 from .base import (
     TestCase, administrador, administrativo, ciudadano, municipio,
@@ -236,13 +238,15 @@ class CentroDeTramitesTests(TestCase):
         self.assertEqual(nuevo.municipio.nombre, 'Obera')
 
     def test_el_form_trae_filas_de_mas_y_boton_de_agregar(self):
-        """Tres filas vacías listas y un botón que clona más (requisitos y enlaces)."""
+        """Filas vacías listas y un botón que clona más en los tres inlines."""
         r = self.client.get(reverse('panel_tramite_nuevo'))
 
         self.assertContains(r, 'requisitos-2-descripcion')
         self.assertContains(r, 'enlaces-2-nombre')
+        self.assertContains(r, 'direcciones-1-lugar')
         self.assertContains(r, 'data-agregar-fila="requisitos"')
         self.assertContains(r, 'data-agregar-fila="enlaces"')
+        self.assertContains(r, 'data-agregar-fila="direcciones"')
         self.assertContains(r, 'requisitos-__prefix__-descripcion')
 
     def test_los_requisitos_se_numeran_solos_y_la_fila_borrada_sale(self):
@@ -253,6 +257,7 @@ class CentroDeTramitesTests(TestCase):
         self.assertContains(r, 'Requisito <span data-numero>1</span>')
         self.assertContains(r, 'data-aviso-borrado="requisito"')
         self.assertContains(r, 'data-aviso-borrado="enlace"')
+        self.assertContains(r, 'data-aviso-borrado="dirección"')
 
     def test_los_enlaces_no_son_campos_fijos(self):
         """Cada enlace se carga como botón con nombre y URL, no hardcodeado."""
@@ -293,6 +298,74 @@ class CentroDeTramitesTests(TestCase):
         self.assertEqual(
             nuevo.enlaces.first().url, 'https://turnos.ejemplo.gob.ar'
         )
+
+    def test_crea_un_tramite_con_varias_direcciones(self):
+        """Un trámite puede tener sedes en municipios distintos."""
+        obera = municipio('Obera')
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Trámite con dos sedes',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'presencial',
+            'municipio': municipio().pk,
+            'organismo': organismo().pk,
+            'descripcion': 'Se puede hacer en dos municipios.',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+            'direcciones-TOTAL_FORMS': '2', 'direcciones-INITIAL_FORMS': '0',
+            'direcciones-MIN_NUM_FORMS': '0',
+            'direcciones-MAX_NUM_FORMS': '1000',
+            'direcciones-0-lugar': 'Sede Centro',
+            'direcciones-0-municipio': municipio().pk,
+            'direcciones-0-direccion': 'Av. Mitre 100',
+            'direcciones-1-lugar': 'Sede Oberá',
+            'direcciones-1-municipio': obera.pk,
+            'direcciones-1-direccion': 'Ruta 14 km 2',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Trámite con dos sedes')
+        self.assertEqual(nuevo.direcciones.count(), 2)
+        self.assertEqual(
+            nuevo.direcciones.get(lugar='Sede Oberá').municipio, obera
+        )
+
+    def test_edita_y_borra_una_direccion(self):
+        t = tramite()
+        d = Direccion.objects.create(
+            tramite=t, lugar='Sede vieja', municipio=t.municipio,
+            direccion='Calle Falsa 123',
+        )
+
+        r = self.client.post(
+            reverse('panel_tramite_editar', args=[t.pk]), {
+                'titulo': t.titulo, 'tema': t.tema.pk,
+                'modalidad': t.modalidad, 'municipio': t.municipio.pk,
+                'organismo': t.organismo.pk, 'descripcion': t.descripcion,
+                'destacado': '', 'activo': 'on',
+                'requisitos-TOTAL_FORMS': '0',
+                'requisitos-INITIAL_FORMS': '0',
+                'requisitos-MIN_NUM_FORMS': '0',
+                'requisitos-MAX_NUM_FORMS': '1000',
+                'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+                'enlaces-MIN_NUM_FORMS': '0',
+                'enlaces-MAX_NUM_FORMS': '1000',
+                'direcciones-TOTAL_FORMS': '1',
+                'direcciones-INITIAL_FORMS': '1',
+                'direcciones-MIN_NUM_FORMS': '0',
+                'direcciones-MAX_NUM_FORMS': '1000',
+                'direcciones-0-id': str(d.pk),
+                'direcciones-0-lugar': d.lugar,
+                'direcciones-0-municipio': d.municipio.pk,
+                'direcciones-0-direccion': d.direccion,
+                'direcciones-0-DELETE': 'on',
+            },
+        )
+
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(Direccion.objects.filter(pk=d.pk).exists())
 
     def test_solo_pasa_el_tramite_si_los_datos_no_cierran(self):
         total_antes = Tramite.objects.count()

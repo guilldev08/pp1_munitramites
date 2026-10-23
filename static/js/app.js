@@ -441,7 +441,7 @@
       Arranque
       -------------------------------------------------------------------- */
   /* --------------------------------------------------------------------
-     Filas de los formsets del panel (+ Agregar requisito/enlace):
+     Filas de los formsets del panel (+ Agregar requisito/enlace/dirección):
      clonan la plantilla <template data-vacio="..."> y suben TOTAL_FORMS.
      Además numeran las filas visibles (data-numerar) y sacan de la lista
      la fila marcada «Eliminar», con un «Deshacer» para volver atrás.
@@ -480,11 +480,12 @@
     aviso.hidden = !marcadas;
     if (!marcadas) return;
     var singular = aviso.getAttribute('data-aviso-borrado') || 'fila';
+    var plural = aviso.getAttribute('data-aviso-plural') || singular + 's';
     var texto = aviso.querySelector('[data-texto]');
     if (texto) {
       texto.textContent = marcadas === 1
-        ? '1 ' + singular + ' marcado para eliminar.'
-        : marcadas + ' ' + singular + 's marcados para eliminar.';
+        ? '1 ' + singular + ' para eliminar.'
+        : marcadas + ' ' + plural + ' para eliminar.';
     }
   }
 

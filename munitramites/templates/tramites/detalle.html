@@ -34,7 +34,7 @@
     <aside class="tr-destacados" aria-label="Resumen del trámite">
       <div class="tr-tile" style="--c:#1f6fd1;--c2:#3a93f2"><small>Requisitos a presentar</small><b>{{ tramite.requisitos.count }}</b></div>
       <div class="tr-tile" style="--c:#14864f;--c2:#25b873"><small>Modalidad</small><b>{{ tramite.get_modalidad_display }}</b></div>
-      <div class="tr-tile" style="--c:#c8353f;--c2:#f0606a"><small>Municipio</small><b>{{ tramite.municipio.nombre }}</b></div>
+      <div class="tr-tile" style="--c:#c8353f;--c2:#f0606a"><small>Municipio principal</small><b>{{ tramite.municipio.nombre }}</b></div>
     </aside>
   </div>
 </section>
@@ -46,6 +46,29 @@
         <div class="panel">
           <h3 class="mt-0">Descripción</h3>
           <p class="texto-suave">{{ tramite.descripcion }}</p>
+        </div>
+
+        <div class="panel">
+          <h3 class="mt-0">Direcciones de atención</h3>
+          {% if tramite.direcciones.all %}
+            {% regroup tramite.direcciones.all by municipio as grupos %}
+            {% for grupo in grupos %}
+              <div class="direccion-grupo">
+                <h4 class="direccion-grupo__municipio">{{ grupo.grouper }}</h4>
+                <ul class="lista-limpia">
+                  {% for d in grupo.list %}
+                    <li>
+                      <strong>{{ d.lugar }}</strong><br>
+                      <span class="texto-suave">{{ d.direccion }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="texto-suave mb-1">📍 {{ tramite.organismo.direccion }} · {{ tramite.municipio.nombre }}</p>
+            <p class="texto-suave texto-chico mb-0">Todavía no se cargaron sedes adicionales para este trámite.</p>
+          {% endif %}
         </div>
 
         <div class="panel">
@@ -93,7 +116,8 @@
           <dl class="datos">
             <div><dt>Tema</dt><dd>{{ tramite.tema }}</dd></div>
             <div><dt>Modalidad</dt><dd>{{ tramite.get_modalidad_display }}</dd></div>
-            <div><dt>Municipio</dt><dd>{{ tramite.municipio.nombre }}</dd></div>
+            <div><dt>Municipio principal</dt><dd>{{ tramite.municipio.nombre }}</dd></div>
+            <div><dt>Direcciones</dt><dd>{{ tramite.direcciones.count }}</dd></div>
             <div><dt>Requisitos</dt><dd>{{ tramite.requisitos.count }}</dd></div>
             <div><dt>Actualizado</dt><dd>{{ tramite.actualizado|hora_local|date:"d/m/Y" }}</dd></div>
           </dl>

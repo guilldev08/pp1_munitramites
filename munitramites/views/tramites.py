@@ -24,7 +24,7 @@ def contexto_lista_tramites(request):
     queryset = (
         Tramite.objects.filter(activo=True)
         .select_related('municipio', 'organismo', 'tema')
-        .prefetch_related('requisitos')
+        .prefetch_related('requisitos', 'direcciones')
     )
     queryset = filtros.filtrar(queryset)
 
@@ -56,7 +56,7 @@ def tramite_detalle(request, pk):
     """Ficha completa: organismo, requisitos y enlaces oficiales."""
     tramite = get_object_or_404(
         Tramite.objects.select_related('municipio', 'organismo', 'tema')
-        .prefetch_related('requisitos', 'enlaces'),
+        .prefetch_related('requisitos', 'enlaces', 'direcciones__municipio'),
         pk=pk, activo=True,
     )
     relacionados = (

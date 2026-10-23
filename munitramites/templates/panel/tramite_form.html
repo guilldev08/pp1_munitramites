@@ -3,9 +3,9 @@
 {% block panel_titulo %}{% if tramite.pk %}Editar trámite{% else %}Nuevo trámite{% endif %}{% endblock %}
 {% block panel_bajada %}
   {% if tramite.pk %}
-    Editando «{{ tramite.titulo }}». Los requisitos y enlaces se cargan abajo.
+    Editando «{{ tramite.titulo }}». Requisitos, enlaces y direcciones se cargan abajo.
   {% else %}
-    Completá los datos; requisitos y enlaces oficiales se cargan en la misma página.
+    Completá los datos; requisitos, enlaces oficiales y direcciones se cargan en la misma página.
   {% endif %}
 {% endblock %}
 {% block panel_acciones %}
@@ -164,6 +164,60 @@
         </template>
         <button class="boton boton--secundario boton--chico agregar-fila" type="button"
                 data-agregar-fila="enlaces">+ Agregar enlace</button>
+      </div>
+
+      <div class="panel">
+        <h3 class="mt-0">Direcciones de atención</h3>
+        <p class="texto-suave texto-chico">Un trámite puede tener varias sedes, incluso en municipios distintos. Cada fila lleva el nombre del lugar, su municipio y la dirección. Si no cargás ninguna, la ficha muestra la dirección del organismo responsable.</p>
+
+        {{ direcciones.management_form }}
+        {% if direcciones.non_form_errors %}
+          <div class="alerta alerta--error">
+            {% for e in direcciones.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="inline-filas" data-filas="direcciones">
+          {% for rf in direcciones %}
+            <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+              {% for campo in rf %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ campo }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <p class="texto-suave texto-chico" data-aviso-borrado="dirección" data-aviso-plural="direcciones" hidden>
+          <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
+        </p>
+
+        {# Fila vacía que clona el botón de abajo (ver app.js) #}
+        <template data-vacio="direcciones">
+          {% with rf=direcciones.empty_form %}
+            <div class="inline-fila">
+              {% for campo in rf %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                  </div>
+                {% else %}
+                  {{ campo }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endwith %}
+        </template>
+        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+                data-agregar-fila="direcciones">+ Agregar dirección</button>
       </div>
     </div>
   </div>

@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.forms import inlineformset_factory
 
 from .models import (
-    Consulta, Enlace, Municipio, Perfil, Requisito, Tema, Tramite,
+    Consulta, Direccion, Enlace, Municipio, Perfil, Requisito, Tema, Tramite,
 )
 
 
@@ -142,7 +142,7 @@ class TramiteFiltroForm(forms.Form):
         required=False,
         label='Buscar',
         widget=forms.TextInput(attrs={
-            'placeholder': 'Buscar trámite o requisito…',
+            'placeholder': 'Buscar trámite, requisito o dirección…',
             'type': 'search',
         }),
     )
@@ -176,11 +176,20 @@ class TramiteFiltroForm(forms.Form):
                 Q(titulo__icontains=datos['q'])
                 | Q(descripcion__icontains=datos['q'])
                 | Q(requisitos__descripcion__icontains=datos['q'])
+                | Q(direcciones__lugar__icontains=datos['q'])
+                | Q(direcciones__direccion__icontains=datos['q'])
+                | Q(direcciones__municipio__nombre__icontains=datos['q'])
             ).distinct()
         if datos['tema']:
             queryset = queryset.filter(tema_id=datos['tema'])
         if datos['municipio']:
-            queryset = queryset.filter(municipio_id=datos['municipio'])
+            # El municipio principal del trámite o cualquiera de sus sedes:
+            # así un trámite compartido aparece al filtrar por Oberá aunque
+            # su municipio principal sea Posadas.
+            queryset = queryset.filter(
+                Q(municipio_id=datos['municipio'])
+                | Q(direcciones__municipio_id=datos['municipio'])
+            ).distinct()
         if datos['modalidad']:
             queryset = queryset.filter(modalidad=datos['modalidad'])
         return queryset
@@ -210,11 +219,13 @@ class TemaForm(forms.ModelForm):
 class TramitePanelForm(forms.ModelForm):
     """Alta y edición de trámites desde el Centro de Trámites.
 
-    Los requisitos y los enlaces no viajan en este form: se cargan con
-    los formsets de acá abajo (`RequisitoFormSet` y `EnlaceFormSet`), que
-    se validan y se guardan juntos con el trámite. No hay campos fijos
-    para «turnos» ni «sitio oficial»: cada botón se carga con el nombre
-    que se le quiera dar y su URL.
+    Los requisitos, los enlaces y las direcciones no viajan en este form:
+    se cargan con los formsets de acá abajo (`RequisitoFormSet`,
+    `EnlaceFormSet` y `DireccionFormSet`), que se validan y se guardan
+    juntos con el trámite. No hay campos fijos para «turnos» ni «sitio
+    oficial»: cada botón se carga con el nombre que se le quiera dar y su
+    URL. `municipio` es el municipio principal; las sedes adicionales van
+    en Direcciones.
     """
 
     class Meta:
@@ -223,6 +234,7 @@ class TramitePanelForm(forms.ModelForm):
             'titulo', 'tema', 'modalidad', 'municipio', 'organismo',
             'descripcion', 'destacado', 'activo',
         ]
+        labels = {'municipio': 'Municipio principal'}
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'placeholder': 'Ej.: Renovación del DNI',
@@ -280,11 +292,40 @@ RequisitoFormSet = inlineformset_factory(
     can_delete=True,
 )
 
+class DireccionInlineForm(forms.ModelForm):
+    """Fila de dirección: sede, municipio y dirección física."""
+
+    class Meta:
+        model = Direccion
+        fields = ['lugar', 'municipio', 'direccion']
+        labels = {
+            'lugar': 'Lugar',
+            'municipio': 'Municipio',
+            'direccion': 'Dirección',
+        }
+        widgets = {
+            'lugar': forms.TextInput(attrs={
+                'placeholder': 'Ej.: Registro Civil Centro',
+            }),
+            'direccion': forms.TextInput(attrs={
+                'placeholder': 'Ej.: Av. Mitre 1234, Posadas',
+            }),
+        }
+
+
 EnlaceFormSet = inlineformset_factory(
     Tramite, Enlace,
     form=EnlaceInlineForm,
     fields=['nombre', 'url'],
     extra=3,
+    can_delete=True,
+)
+
+DireccionFormSet = inlineformset_factory(
+    Tramite, Direccion,
+    form=DireccionInlineForm,
+    fields=['lugar', 'municipio', 'direccion'],
+    extra=2,
     can_delete=True,
 )
 

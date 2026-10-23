@@ -49,6 +49,10 @@
 .tr .requisitos li{counter-increment:r;display:flex;gap:14px;align-items:flex-start;padding:12px 14px;background:var(--cd2);border:1px solid transparent;border-radius:10px;transition:transform .2s,border-color .2s,background .2s}
 .tr .requisitos li::before{content:counter(r);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:700;color:#052414;background:var(--ve)}
 .tr .requisitos li:hover{transform:translateX(5px);border-color:var(--ve);background:#1d2f4e}
+.tr .direccion-grupo + .direccion-grupo{margin-top:18px}
+.tr .direccion-grupo__municipio{font-size:.9rem;margin:0 0 8px;color:var(--az);text-transform:uppercase;letter-spacing:.06em}
+.tr .lista-limpia li{padding:10px 14px;background:var(--cd2);border-radius:10px}
+.tr .lista-limpia li + li{margin-top:8px}
 .tr .datos{margin:0}
 .tr .datos>div{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px dashed var(--ln)}
 .tr .datos>div:last-child{border:0}

@@ -1,0 +1,732 @@
+pk_tramite	organismo	tramite	orden	requisito	alertas
+265	Administración Tributaria de Misiones (ATM)	Alta de Certificado Fiscal para Contratar (SR345)	1	Ingresar con CUIT y clave fiscal Nivel 2.	
+265	Administración Tributaria de Misiones (ATM)	Alta de Certificado Fiscal para Contratar (SR345)	2	Registrar inscripción en Ingresos Brutos.	
+265	Administración Tributaria de Misiones (ATM)	Alta de Certificado Fiscal para Contratar (SR345)	3	El certificado tiene una vigencia de 120 días.	
+258	Administración Tributaria de Misiones (ATM)	Alta, modificación o cese de actividades (SR311)	1	Completar el formulario SR311 con el motivo: inscripción, modificación de datos o cese.	formulario
+258	Administración Tributaria de Misiones (ATM)	Alta, modificación o cese de actividades (SR311)	2	Adjuntar la documentación correspondiente al Legajo Único.	
+258	Administración Tributaria de Misiones (ATM)	Alta, modificación o cese de actividades (SR311)	3	Presentar el formulario online y aguardar la notificación en la Ventanilla Electrónica.	formulario,sistema
+257	Administración Tributaria de Misiones (ATM)	Cambio de nivel de clave fiscal	1	Contar con clave fiscal Nivel 1.	
+257	Administración Tributaria de Misiones (ATM)	Cambio de nivel de clave fiscal	2	Adjuntar por Legajo Único la documentación requerida en el Artículo 5 de la RG 14/2023.	
+257	Administración Tributaria de Misiones (ATM)	Cambio de nivel de clave fiscal	3	Ingresar a la Extranet, menú Contribuyente, para gestionar el cambio.	navegacion
+257	Administración Tributaria de Misiones (ATM)	Cambio de nivel de clave fiscal	4	Aguardar la notificación en la Ventanilla Electrónica.	
+269	Administración Tributaria de Misiones (ATM)	Cambio de titular o contribuyente inmobiliario (SR308)	1	Identificarse con CUIT y Clave de Identificación Tributaria.	
+269	Administración Tributaria de Misiones (ATM)	Cambio de titular o contribuyente inmobiliario (SR308)	2	Presentar documentación que acredite la titularidad: cesión de derechos, boleto de compraventa, adjudicación de EBY o IPRODHA, permiso de ocupación, título de propiedad o sentencia judicial por usucapión.	
+270	Administración Tributaria de Misiones (ATM)	Certificado de libre deuda inmobiliario (SR309)	1	Identificarse con CUIT y Clave de Identificación Tributaria.	
+270	Administración Tributaria de Misiones (ATM)	Certificado de libre deuda inmobiliario (SR309)	2	El formulario puede ser solicitado por escribanos, abogados o martilleros.	formulario
+264	Administración Tributaria de Misiones (ATM)	Constancia de cumplimiento de obligaciones fiscales (SR322)	1	Ingresar con CUIT y clave fiscal Nivel 2.	
+264	Administración Tributaria de Misiones (ATM)	Constancia de cumplimiento de obligaciones fiscales (SR322)	2	Registrar inscripción en Ingresos Brutos.	
+264	Administración Tributaria de Misiones (ATM)	Constancia de cumplimiento de obligaciones fiscales (SR322)	3	Solicitar el certificado cuando la facturación supere los $250.000.	
+260	Administración Tributaria de Misiones (ATM)	Declaración Jurada anual de Ingresos Brutos (SR320)	1	Poseer clave fiscal Nivel 2.	
+260	Administración Tributaria de Misiones (ATM)	Declaración Jurada anual de Ingresos Brutos (SR320)	2	Registrar inscripción en el impuesto sobre los Ingresos Brutos.	
+260	Administración Tributaria de Misiones (ATM)	Declaración Jurada anual de Ingresos Brutos (SR320)	3	Tener presentadas las declaraciones juradas mensuales sin observaciones.	
+259	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de Ingresos Brutos (SR318)	1	Estar inscripto como contribuyente directo en Ingresos Brutos.	
+259	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de Ingresos Brutos (SR318)	2	Identificarse con CUIT y Clave de Identificación Tributaria.	
+259	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de Ingresos Brutos (SR318)	3	Consultar el calendario de vencimientos del tributo en el portal de ATM.	sistema
+262	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de agente de percepción (SR129)	1	Estar inscripto como contribuyente en el impuesto.	
+262	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de agente de percepción (SR129)	2	Identificarse con CUIT y Clave de Identificación Tributaria.	
+262	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de agente de percepción (SR129)	3	Consultar el calendario de vencimientos del tributo.	
+261	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de agente de retención (SR128)	1	Estar inscripto como contribuyente en el impuesto.	
+261	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de agente de retención (SR128)	2	Identificarse con CUIT y Clave de Identificación Tributaria.	
+261	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de agente de retención (SR128)	3	Consultar el calendario de vencimientos del tributo.	
+263	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de pagos a cuenta (SR343)	1	Estar inscripto como contribuyente en el impuesto.	
+263	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de pagos a cuenta (SR343)	2	Identificarse con CUIT y Clave de Identificación Tributaria.	
+263	Administración Tributaria de Misiones (ATM)	Declaración Jurada mensual de pagos a cuenta (SR343)	3	Consultar el calendario de vencimientos del tributo.	
+266	Administración Tributaria de Misiones (ATM)	Emisión de Certificado Fiscal para Contratar (SR348)	1	Ingresar con CUIT y clave fiscal Nivel 2.	
+266	Administración Tributaria de Misiones (ATM)	Emisión de Certificado Fiscal para Contratar (SR348)	2	Registrar inscripción en Ingresos Brutos.	
+266	Administración Tributaria de Misiones (ATM)	Emisión de Certificado Fiscal para Contratar (SR348)	3	Contar con un SR345 vigente.	
+266	Administración Tributaria de Misiones (ATM)	Emisión de Certificado Fiscal para Contratar (SR348)	4	El vencimiento del SR349 coincide con el del SR345.	
+267	Administración Tributaria de Misiones (ATM)	Exclusiones, compensaciones y devoluciones (SF178)	1	Contar con clave fiscal y Domicilio Fiscal Electrónico constituido.	
+267	Administración Tributaria de Misiones (ATM)	Exclusiones, compensaciones y devoluciones (SF178)	2	Seleccionar el motivo de la solicitud: exclusión, reducción, compensación, cesión, devolución o reintegro.	
+267	Administración Tributaria de Misiones (ATM)	Exclusiones, compensaciones y devoluciones (SF178)	3	Presentar la documentación en PDF que exige el motivo, con un máximo de 5 MB.	
+268	Administración Tributaria de Misiones (ATM)	Solicitud de exención de Sellos (SR352)	1	Poseer clave fiscal Nivel 2.	
+268	Administración Tributaria de Misiones (ATM)	Solicitud de exención de Sellos (SR352)	2	Tener constituido el Domicilio Fiscal Electrónico.	
+268	Administración Tributaria de Misiones (ATM)	Solicitud de exención de Sellos (SR352)	3	Adjuntar la documentación en PDF, con un máximo de 5 MB.	
+268	Administración Tributaria de Misiones (ATM)	Solicitud de exención de Sellos (SR352)	4	Se recomienda usar Mozilla Firefox para el trámite.	
+321	Dirección General de Personas Jurídicas y Registro Público	Cambio de domicilio de asociaciones y fundaciones	1	Si el estatuto solo indica la localidad: acta de comisión directiva que fija el nuevo domicilio social.	
+321	Dirección General de Personas Jurídicas y Registro Público	Cambio de domicilio de asociaciones y fundaciones	2	Presentar copia del acta certificada por el Presidente o Secretario.	
+321	Dirección General de Personas Jurídicas y Registro Público	Cambio de domicilio de asociaciones y fundaciones	3	Acompañar nota comunicando el cambio de domicilio.	
+321	Dirección General de Personas Jurídicas y Registro Público	Cambio de domicilio de asociaciones y fundaciones	4	Abonar la tasa correspondiente.	
+321	Dirección General de Personas Jurídicas y Registro Público	Cambio de domicilio de asociaciones y fundaciones	5	Si el estatuto indica un domicilio preciso: convocar Asamblea General Extraordinaria para modificar el artículo 1 del estatuto.	
+321	Dirección General de Personas Jurídicas y Registro Público	Cambio de domicilio de asociaciones y fundaciones	6	Presentar el acta o testimonio de la asamblea con la nota de cambio de domicilio y el pago de la tasa.	
+320	Dirección General de Personas Jurídicas y Registro Público	Declaración jurada de beneficiario final	1	Completar el Anexo I de Declaración Jurada sobre Beneficiario Final.	formulario
+320	Dirección General de Personas Jurídicas y Registro Público	Declaración jurada de beneficiario final	2	Informar datos del beneficiario: nombre, documento, CUIT/CUIL/CDI, domicilio, nacionalidad, estado civil, profesión y porcentaje de participación.	
+320	Dirección General de Personas Jurídicas y Registro Público	Declaración jurada de beneficiario final	3	Informar datos de la entidad: denominación, matrícula, folio, año y CUIT.	
+320	Dirección General de Personas Jurídicas y Registro Público	Declaración jurada de beneficiario final	4	En cadenas de titularidad, describir la cadena hasta la persona humana con control final.	
+320	Dirección General de Personas Jurídicas y Registro Público	Declaración jurada de beneficiario final	5	Acompañar estatutos, registros de acciones o participaciones, contratos y transferencias que acrediten la cadena.	
+320	Dirección General de Personas Jurídicas y Registro Público	Declaración jurada de beneficiario final	6	Informar toda modificación dentro de los 30 días corridos de producida.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	1	Nota de presentación con nombre, DNI, CUIL/CUIT, nacionalidad, estado civil, edad, profesión y domicilios particular y comercial.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	2	Indicar el rubro al que se dedicará y aclarar el domicilio fiscal aunque coincida con el particular.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	3	Firma del recurrente certificada ante escribano.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	4	Certificado de antecedentes ante la Jefatura de Policía del interesado.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	5	Constancia de inscripción ante AFIP.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	6	Pago de la tasa administrativa.	
+319	Dirección General de Personas Jurídicas y Registro Público	Matrícula de comerciante	7	Si el rubro es despachante de aduana: copia certificada del título universitario.	
+322	Dirección General de Personas Jurídicas y Registro Público	Reserva de nombre para sociedades	1	Completar el formulario Solicitud de Reserva de Nombre para Sociedades.	formulario
+322	Dirección General de Personas Jurídicas y Registro Público	Reserva de nombre para sociedades	2	Indicar el tipo societario y, si ya está inscripta, la matrícula.	
+322	Dirección General de Personas Jurídicas y Registro Público	Reserva de nombre para sociedades	3	Informar los datos de la persona autorizada para la prosecución del trámite.	
+322	Dirección General de Personas Jurídicas y Registro Público	Reserva de nombre para sociedades	4	Proponer tres opciones de denominación, distintas entre sí y en orden de preferencia, con el tipo societario.	
+322	Dirección General de Personas Jurídicas y Registro Público	Reserva de nombre para sociedades	5	Informar los datos de los socios, con un mínimo de dos salvo sociedades unipersonales.	
+322	Dirección General de Personas Jurídicas y Registro Público	Reserva de nombre para sociedades	6	Abonar la tasa administrativa y presentar en la Dirección de Sociedades Comerciales y Registro Público.	
+323	Dirección General de Personas Jurídicas y Registro Público	Rúbrica de libros societarios	1	Completar el formulario de rúbrica de libros por duplicado.	formulario
+323	Dirección General de Personas Jurídicas y Registro Público	Rúbrica de libros societarios	2	Informar los datos de la entidad y el domicilio legal.	
+323	Dirección General de Personas Jurídicas y Registro Público	Rúbrica de libros societarios	3	Informar los datos del autorizado para el trámite: nombre, CUIL/CUIT, domicilio y contacto.	
+323	Dirección General de Personas Jurídicas y Registro Público	Rúbrica de libros societarios	4	Detallar los libros presentados: actas, diario, IVA compra, IVA venta, inventario y registro de asistencia a asamblea.	
+323	Dirección General de Personas Jurídicas y Registro Público	Rúbrica de libros societarios	5	Firmar el formulario el presidente de la entidad.	formulario
+323	Dirección General de Personas Jurídicas y Registro Público	Rúbrica de libros societarios	6	Abonar la tasa administrativa.	
+292	Energía de Misiones S.A.	Adhesión al débito automático	1	DNI del titular o autorización con poder y DNI del autorizado.	
+292	Energía de Misiones S.A.	Adhesión al débito automático	2	Constancia de CUIT y documentación societaria que acredite la representación, cuando corresponda.	
+292	Energía de Misiones S.A.	Adhesión al débito automático	3	Comprobante con número de cuenta bancaria y CBU emitido por home banking, sucursal o cajero automático.	
+287	Energía de Misiones S.A.	Baja del servicio eléctrico	1	La conexión no debe poseer deuda, aunque el requisito no es excluyente.	
+287	Energía de Misiones S.A.	Baja del servicio eléctrico	2	DNI del titular o autorización con poder ante escribano o juez de paz y DNI del autorizado.	
+287	Energía de Misiones S.A.	Baja del servicio eléctrico	3	Constancia de CUIT y documentación societaria que acredite la representación, cuando corresponda.	
+287	Energía de Misiones S.A.	Baja del servicio eléctrico	4	El trámite no tiene costo.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	1	Pertenecer a la categoría residencial.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	2	Tener un sueldo inferior al Salario Mínimo Vital y Móvil vigente.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	3	No poseer deuda con la empresa.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	4	No tener más de una conexión.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	5	Renovar el beneficio cada 6 meses.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	6	Presentar DNI o autorización con poder y DNI del autorizado.	
+288	Energía de Misiones S.A.	Beneficio para jubilados y pensionados	7	Presentar el recibo de sueldo del mes inmediato anterior.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	1	Datos del usuario anterior: factura de consumo o número de conexión.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	2	Disponer del pilar reglamentario en condiciones técnicas óptimas.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	3	Si no es propietario, abonar el depósito de garantía correspondiente.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	4	DNI del nuevo titular o autorización con poder y DNI del autorizado.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	5	Constancia de CUIT y documentación societaria que acredite la representación, cuando corresponda.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	6	Título de propiedad, boleto de compra o documento que acredite la propiedad, sellado por ATM.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	7	Contrato de locación o comodato sellado por ATM.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	8	Certificación de número de finca expedida por la Municipalidad.	
+286	Energía de Misiones S.A.	Cambio de titularidad del servicio eléctrico	9	Abonar el arancel de $30.000.	
+289	Energía de Misiones S.A.	Devolución del depósito de garantía	1	No poseer deuda.	
+289	Energía de Misiones S.A.	Devolución del depósito de garantía	2	Haber dado de baja la conexión.	
+289	Energía de Misiones S.A.	Devolución del depósito de garantía	3	Solicitar la devolución después de los 45 días de pedir la baja.	
+289	Energía de Misiones S.A.	Devolución del depósito de garantía	4	Especificar la forma de devolución: cancelación de comprobante, crédito en otra conexión o transferencia bancaria.	
+290	Energía de Misiones S.A.	Devolución por pago doble	1	Especificar la forma de devolución: cancelación de comprobante, crédito en otra conexión o transferencia bancaria.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	1	Ubicación exacta del inmueble con punto GPS, sin excepción.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	2	Puesto de medición listo para la conexión según la R.G.S.E. vigente.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	3	No poseer deudas de servicios públicos ni actas de infracción.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	4	Abonar el anticipo del arancel del proyecto e inspección según la potencia solicitada.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	5	DNI del titular o autorización con poder y DNI del autorizado.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	6	Constancia de CUIT y documentación societaria que acredite la representación, cuando corresponda.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	7	Título de propiedad, boleto de compra o documento que acredite la propiedad, sellado por ATM.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	8	Certificación de número de finca expedida por la Municipalidad.	
+293	Energía de Misiones S.A.	Factibilidad eléctrica	9	Formulario B: Declaración Jurada de Cargas de Propiedad Horizontal, cuando corresponda.	formulario
+293	Energía de Misiones S.A.	Factibilidad eléctrica	10	Plano eléctrico o plano de loteo aprobado por la Municipalidad; para loteo, plano aprobado por agrimensor.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	1	Disponer del pilar reglamentario monofásico o trifásico en condiciones técnicas óptimas.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	2	Si no es propietario, abonar el depósito de garantía según categoría y potencia.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	3	DNI del titular o autorización con poder ante escribano o juez de paz y DNI del autorizado.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	4	Constancia de CUIT no excluyente y documentación societaria que acredite la representación.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	5	Título de propiedad, boleto de compra o documento que acredite la propiedad, sellado por ATM.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	6	Contrato de locación o comodato sellado y timbrado por ATM.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	7	Certificación de número de finca expedida por la Municipalidad.	
+285	Energía de Misiones S.A.	Habilitación inicial del servicio eléctrico	8	Abonar el arancel: monofásico $100.000; trifásico de 1 a 10 kW $150.000; de 11 a 299 kW $300.000; media tensión $450.000.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	1	DNI original del paciente, último ejemplar, para obtener el número de trámite.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	2	Si el paciente es menor: partida de nacimiento y DNI de ambos padres o tutores.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	3	Constancia de CUIL si no figura en el DNI.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	4	Formulario FRECS completo, con firma y aclaración del paciente, padre, madre o tutor.	formulario
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	5	Certificado del médico tratante con patología, equipamiento y estudios médicos de no más de un año.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	6	Factura del servicio eléctrico del domicilio del paciente, con dirección coincidente con el formulario y el DNI.	formulario
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	7	Si el titular no es el paciente: documentación que acredite el vínculo.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	8	Certificado de domicilio si el domicilio real no coincide con el del DNI.	
+295	Energía de Misiones S.A.	Registro de Electrodependientes (RECS)	9	Estudio de sueño si el diagnóstico es apnea.	
+291	Energía de Misiones S.A.	Revisión de factura	1	No requiere documentación según el portal de Energía de Misiones.	sistema
+294	Energía de Misiones S.A.	Tarifa Social provincial	1	Ser jubilado o pensionado por un monto equivalente a dos veces el haber mínimo nacional.	
+294	Energía de Misiones S.A.	Tarifa Social provincial	2	Tener empleo en relación de dependencia con remuneración bruta menor o igual a 2 salarios mínimos vitales y móviles.	
+294	Energía de Misiones S.A.	Tarifa Social provincial	3	Ser titular de programas sociales o estar inscripto en el Monotributo Social.	
+294	Energía de Misiones S.A.	Tarifa Social provincial	4	Estar incorporado al régimen especial de servicio doméstico o percibir seguro de desempleo.	
+294	Energía de Misiones S.A.	Tarifa Social provincial	5	No ser titular de más de un inmueble.	
+294	Energía de Misiones S.A.	Tarifa Social provincial	6	No poseer automotores de hasta 10 años de antigüedad, aeronaves o embarcaciones de lujo.	
+294	Energía de Misiones S.A.	Tarifa Social provincial	7	No figurar en el padrón de fallecidos.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	1	Fotocopia del DNI, anverso y reverso, de todos los integrantes del grupo familiar conviviente.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	2	Si hay integrantes con discapacidad: certificación del Ministerio de Salud Pública de Misiones.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	3	Fotocopia del CUIL.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	4	Título de propiedad, permiso de ocupación de Tierras o boleto de compraventa ante escribano.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	5	Fotocopia de una boleta de servicio del titular con el domicilio declarado completo y claro.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	6	Recibos de sueldo, pensión o asignación familiar del grupo familiar.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	7	CBU emitida por ventanilla del banco si cobra por cajero automático.	
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Arreglo Mi Casa	8	Trabajadores independientes: declaración jurada de todos los ingresos ante Juzgado de Paz.	
+277	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficio para Personas Trasplantadas	1	Presentar nota formal en mesa de entrada, por duplicado.	
+277	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficio para Personas Trasplantadas	2	Presentar la credencial para trasplantados de INCUCAI.	
+277	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficio para Personas Trasplantadas	3	Fotocopia del DNI del solicitante.	
+277	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficio para Personas Trasplantadas	4	Estar al día con las cuotas del beneficio.	
+277	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficio para Personas Trasplantadas	5	El subsidio rige mientras esté vigente la credencial de INCUCAI; en viviendas sustentables se reduce al 10%.	
+278	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficios para Personas con CUD	1	Presentar nota formal en mesa de entrada, por duplicado.	
+278	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficios para Personas con CUD	2	Presentar el Certificado Único de Discapacidad (CUD).	
+278	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficios para Personas con CUD	3	Fotocopia del DNI del solicitante.	
+278	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficios para Personas con CUD	4	Estar al día con las cuotas del beneficio.	
+278	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Beneficios para Personas con CUD	5	Para renovar: presentar la nota y el certificado del nuevo CUD en trámite antes del vencimiento.	
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cambio de Titular de la Vivienda	1	El solicitante debe ser parte del grupo familiar original de la adjudicación.	
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cambio de Titular de la Vivienda	2	La vivienda debe estar al día en el pago de las cuotas.	
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cambio de Titular de la Vivienda	3	El nuevo titular debe presentar ingresos y garantías para continuar el pago.	
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cambio de Titular de la Vivienda	4	Presentar nota formal en mesa de entrada, por duplicado.	
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cambio de Titular de la Vivienda	5	Persona casada: sentencia de divorcio con separación de bienes.	
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cambio de Titular de la Vivienda	6	Unión de hecho: renuncia del condominio ante escribano público.	
+280	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación Anticipada	1	Presentar nota formal en mesa de entrada, por duplicado.	
+280	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación Anticipada	2	Fotocopia de la boleta de cancelación total intervenida por el banco.	
+280	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación Anticipada	3	Fotocopia del DNI del titular del beneficio.	
+279	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación por Fallecimiento	1	Presentar nota formal en mesa de entrada, por duplicado.	
+279	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación por Fallecimiento	2	Fotocopia del acta de defunción con certificado original del Registro o acta con sello digital.	
+279	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación por Fallecimiento	3	Fotocopia del DNI del denunciante, anverso y reverso.	
+279	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Cancelación por Fallecimiento	4	Estar al día con las cuotas de amortización.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	1	Inscribirse en el municipio o centro de atención del IPRODHA.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	2	Fotocopia del DNI, anverso y reverso, de todos los integrantes del grupo familiar conviviente.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	3	Fotocopia del acta de matrimonio o certificado de unión convivencial.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	4	Fotocopia del dominio: título, boleto de compraventa certificado, permiso de ocupación actualizado o constancia de ocupación de Tierras.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	5	Factura de venta de productos de la chacra, recibo de haberes o declaración jurada de ingresos expedida por la Policía.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	6	Constancia de CBU de caja de ahorro; si no posee, garante solidario.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	7	Contar con servicio de energía y presentar factura del proveedor.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	8	Contar con agua de red, perforación, vertiente o pozo.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	9	No haber sido beneficiado por ningún programa del IPRODHA.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	10	Aceptar el pago en 360 cuotas mensuales o 30 cuotas anuales.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	11	Toda la documentación debe estar certificada por Policía, Juzgado, Escribano o Intendente.	
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas Rurales	12	El municipio, cooperativa o asociación presenta nota al Presidente del IPRODHA, plano georreferenciado, resolución del representante técnico y fichas de inscripción.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	1	Ficha de inscripción del grupo familiar.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	2	Fotocopia del DNI, anverso y reverso, de todos los integrantes del grupo familiar conviviente.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	3	El municipio debe presentar la documentación de dominio de los terrenos.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	4	Ordenanza del Concejo Deliberante que dona los terrenos a favor del IPRODHA.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	5	Documentación que acredite la factibilidad de los servicios públicos.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	6	Planos de ubicación del inmueble con coordenadas geográficas.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	7	Propuesta de urbanización y loteo.	
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construcción de Viviendas de Gestión Compartida	8	Ordenanza del Concejo Deliberante que autoriza el descuento en la coparticipación municipal.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	1	El titular no debe superar los 60 años de edad.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	2	Fotocopia del DNI, anverso y reverso, de todos los integrantes del grupo familiar conviviente.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	3	Partidas de nacimiento de los hijos menores; al menos un integrante debe tener menos de 18 años al entregar la vivienda.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	4	Acta de matrimonio o certificado de unión convivencial; si está en trámite, certificado de convivencia policial.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	5	Divorciados: sentencia de divorcio. Disolución del grupo familiar anterior: sentencia o constancia de trámite iniciado.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	6	Padre o madre solo con hijos a cargo: partida de nacimiento y certificado de convivencia, o constancia judicial de guarda.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	7	Constancia del Registro de la Propiedad de que el titular, cónyuge o concubino no es titular de una vivienda.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	8	Título de propiedad del lote a construir.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	9	Trabajadores en relación de dependencia: recibo de sueldo y CBU; empleados públicos con descuento por planilla.	formulario
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	10	Trabajadores independientes: formulario SR318 de Rentas, comprobantes de Ingresos Brutos y pagos de monotributo o autónomos de los últimos 3 meses.	formulario
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	11	Ex beneficiarios de Lotes con Servicio: codeudor con relación laboral dependiente del Estado nacional, provincial o municipal.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	12	Alternativa para otros postulantes: garantía hipotecaria sobre el terreno o codeudor con relación laboral estatal.	
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Construyo Mi Casa	13	Toda la documentación debe estar certificada por escribano, juez de paz o comisaría.	
+282	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Denuncia de Siniestro en la Vivienda	1	Presentar nota formal en mesa de entrada, por duplicado.	
+282	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Denuncia de Siniestro en la Vivienda	2	Estar al día con las cuotas del beneficio.	
+282	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Denuncia de Siniestro en la Vivienda	3	Presentar la exposición policial del siniestro.	
+282	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Denuncia de Siniestro en la Vivienda	4	En caso de incendio, adjuntar el informe de los bomberos.	
+282	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Denuncia de Siniestro en la Vivienda	5	Fotocopia del DNI del solicitante.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	1	Ser ciudadano argentino o extranjero con residencia legal debidamente probada y con hijos nacidos en el país.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	2	Haber vivido de forma permanente y habitual en la localidad donde se inscribe.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	3	Prioridad para grupos familiares con hijos menores o con integrantes con discapacidad.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	4	Contar con ingresos suficientes para pagar la vivienda y mantener la calidad de vida.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	5	Presentar codeudor y bancarización de ingresos que aseguren el cumplimiento de las obligaciones.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	6	Informar un domicilio electrónico fidedigno: las convocatorias se envían únicamente por correo.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	7	Actualizar la inscripción cada 360 días corridos antes de la convocatoria.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	8	No haber sido adjudicatario de vivienda ni beneficiario de un préstamo social, salvo nuevo grupo familiar con cesión de derechos.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	9	Acreditar judicialmente la tenencia de los hijos menores de edad.	
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Inscripción en el Registro de Demanda General de Viviendas	10	Ningún integrante del grupo conviviente puede ser propietario de una vivienda o de un inmueble realizable equivalente.	
+276	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Mediación entre Terceros para Regularización Dominial	1	Los terrenos deben ser de dominio particular y estar ocupados por grupos de personas o familias por más de 5 años.	
+276	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Mediación entre Terceros para Regularización Dominial	2	El titular dominial debe solicitar la intervención mediante nota dirigida al Presidente del IPRODHA.	
+276	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Mediación entre Terceros para Regularización Dominial	3	Acompañar documentación acreditante del dominio y titularidad: título, plano de mensura y documentación para determinar las fracciones.	
+276	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Mediación entre Terceros para Regularización Dominial	4	Se formará un expediente administrativo con los análisis técnicos y dominiales.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	1	Presentar por escrito el pedido fundado, explicando los motivos de la ausencia.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	2	Si el solicitante es casado, ambos cónyuges deben firmar; igual criterio para condominios o grupos familiares.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	3	Concubinos no declarados en la adjudicación: certificado de convivencia expedido por la Justicia de Paz.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	4	Presentar certificado de traslado laboral o certificado de salud de un centro de alta complejidad que justifique el traslado.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	5	Copias y originales del DNI de la persona o grupo que ocupará la vivienda; no pueden tener un beneficio IPRODHA activo.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	6	Ser adjudicatario de un plan de venta.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	7	Estar al día con el pago de las cuotas.	
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Permiso de Custodia o Guarda de la Vivienda	8	Firmar el formulario modelo del IPRODHA el adjudicatario y el custodio de la vivienda.	formulario
+283	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Renuncia a la Vivienda	1	Presentar nota formal en mesa de entrada, por duplicado.	
+283	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Renuncia a la Vivienda	2	Si existe convenio de pago por deuda de recapitalización, cancelarlo en su totalidad.	
+283	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Renuncia a la Vivienda	3	Si la vivienda tiene título de propiedad, otorgar poder especial e irrevocable a favor del IPRODHA para el distracto notarial.	
+283	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Renuncia a la Vivienda	4	Presentar libre deuda de servicios: luz, agua e impuestos.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	1	Nota de solicitud de certificación por duplicado, firmada por el responsable o apoderado.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	2	Copia del DNI del responsable, propietario o apoderado de la institución.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	3	Copia del CUIT del establecimiento o institución.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	4	Copia del título del profesional.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	5	Copia certificada de la matrícula profesional.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	6	Copia del certificado anterior si se trata de una renovación.	
+311	Ministerio de Salud Pública de Misiones	Certificación de establecimiento no generador de residuos patológicos	7	Presentar todo por duplicado en la Dirección de Saneamiento Ambiental; el trámite es gratuito.	
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	1	Antes de iniciar, identificar el tipo de equipo o servicio y descargar el formulario aplicable.	formulario
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	2	Presentar la nota modelo de inicio de trámite dirigida a la Dirección de Saneamiento Ambiental.	
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	3	Formulario 01 para rayos X convencional, arco en C, odontológico o panorámico.	formulario
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	4	Formulario 02 para unidad móvil o medicina preocupacional; 03 para resonancia magnética.	formulario
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	5	Formulario 04 para medicina nuclear, radioterapia, acelerador lineal, braquiterapia, PET/CT o cámara gamma.	formulario
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	6	Formulario 05 para equipos mixtos PET/CT; 06 para láser/IPL; 07 para rayos X de uso industrial.	formulario
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	7	Reunir la documentación técnica, profesional y de seguridad que exige el formulario correspondiente.	formulario
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	8	Cumplir la Ley Nacional 17.557 y la Ley Provincial XVII N° 58, Cap. IX, Art. 38, inc. 19.	
+309	Ministerio de Salud Pública de Misiones	Habilitación de servicio de radiodiagnóstico y equipos emisores de radiaciones	9	La presentación completa y ordenada facilita la evaluación técnica y administrativa.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	1	Nota de solicitud por duplicado, firmada por el titular, apoderado o representante legal.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	2	Formulario de solicitud de inscripción con todas las hojas firmadas y en A4.	formulario
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	3	Copia certificada del contrato social, estatuto o DNI, según corresponda.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	4	Acreditación de la personería del representante legal o apoderado firmante.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	5	Fotocopia del DNI, título y constancia de matriculación del director técnico.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	6	El director técnico debe ser ingeniero químico, bioquímico o farmacéutico.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	7	Fotocopia del título de propiedad o contrato de locación de la estructura edilicia.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	8	Comprobantes de CUIT, DGI y DGR.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	9	Planos de planta y cortes con instalaciones sanitarias.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	10	Habilitación municipal de la estructura edilicia.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	11	Organigrama de la empresa.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	12	Contrato con el establecimiento habilitado que actuará como tercerista, si corresponde.	
+307	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento de higiene personal, cosméticos y perfumes	13	El trámite es gratuito y se presenta por duplicado en carpeta colgante oficio.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	1	Nota de solicitud de inscripción por duplicado, firmada por el titular, apoderado o representante legal.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	2	Formulario de solicitud de inscripción por duplicado, todas las hojas firmadas y en tamaño A4.	formulario
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	3	Fotocopia del DNI de los propietarios, representante legal y director técnico.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	4	Fotocopia del título y matrícula del director técnico, que debe ser ingeniero químico, bioquímico o farmacéutico.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	5	Número de CUIT del establecimiento.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	6	Planos del establecimiento: vista y corte.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	7	Fotocopia de inscripción en Aduana para importadores o exportadores.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	8	Fotocopia del estatuto o contrato social; si es unipersonal, certificado de domicilio.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	9	Fotocopia de la habilitación municipal del local.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	10	Fotocopia del contrato con los titulares de depósitos, si corresponde.	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	11	Declaración de cumplimiento de los requisitos mínimos de BPM y BPC (Resolución 708/98).	
+305	Ministerio de Salud Pública de Misiones	Inscripción de establecimiento elaborador de productos domisanitarios	12	El trámite es gratuito y se presenta en la Dirección de Saneamiento Ambiental.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	1	Nota de solicitud por duplicado, firmada por el titular, apoderado o representante legal.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	2	Formulario de solicitud de inscripción por duplicado, todas las hojas firmadas y en A4.	formulario
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	3	Proyecto de rótulos por triplicado, en el formato en que irán en el recipiente.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	4	Contrato con el establecimiento habilitado tercerista y con cada establecimiento interviniente.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	5	Declaración jurada de uso de marcas.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	6	Declaración jurada de contenidos netos y medidas.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	7	Memoria descriptiva y operativa del proceso de elaboración.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	8	Métodos de control de calidad y especificaciones fisicoquímicas.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	9	Grado de pureza, procedencia, identidad, concentración y toxicidad de impurezas.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	10	Métodos analíticos, estudios de estabilidad, efectividad y toxicológicos.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	11	Tiempo de vida útil y ensayos de laboratorio de materias primas y producto terminado.	
+308	Ministerio de Salud Pública de Misiones	Inscripción de producto de higiene personal, cosméticos y perfumes	12	Protocolos de análisis fisicoquímicos, microbiológicos y biológicos según las propiedades declaradas.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	1	Nota de solicitud por duplicado, firmada por el titular, apoderado o representante legal.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	2	Formulario de solicitud de inscripción por duplicado, todas las hojas firmadas y en A4.	formulario
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	3	Rótulos por triplicado, en el formato en que irán en el recipiente.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	4	Para productos importados: rótulo original y 3 fotocopias.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	5	Fotocopia legalizada del certificado de libre venta en el país de origen.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	6	Fotocopia de inscripción en la Administración Nacional de Aduanas.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	7	Cartas cruzadas de vinculación entre el titular del producto y el establecimiento registrado.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	8	Acreditación de personería jurídica.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	9	Método de elaboración y métodos de control de calidad.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	10	Especificaciones fisicoquímicas de materias primas y producto terminado.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	11	Grado de pureza, procedencia, identidad, concentración y toxicidad de impurezas.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	12	Métodos analíticos, estudios de estabilidad, ensayos de efectividad y estudios toxicológicos.	
+306	Ministerio de Salud Pública de Misiones	Inscripción de producto domisanitario	13	Tiempo de vida útil y ensayos de laboratorio de materias primas y producto terminado.	
+310	Ministerio de Salud Pública de Misiones	Renovación de habilitación de equipos de rayos X, RMI y otros	1	Presentar la nota modelo de inicio de trámite.	
+310	Ministerio de Salud Pública de Misiones	Renovación de habilitación de equipos de rayos X, RMI y otros	2	Completar el Formulario 08 de renovación de habilitación de equipos de rayos X, RMI y otros.	formulario
+310	Ministerio de Salud Pública de Misiones	Renovación de habilitación de equipos de rayos X, RMI y otros	3	Reunir la documentación técnica, profesional y de seguridad que exige el formulario.	formulario
+310	Ministerio de Salud Pública de Misiones	Renovación de habilitación de equipos de rayos X, RMI y otros	4	Cumplir la normativa nacional y provincial de protección radiológica.	
+331	Municipalidad de Oberá	Carnet sanitario	1	Presentar la ficha médica certificada por un profesional; vence a los 15 días.	
+331	Municipalidad de Oberá	Carnet sanitario	2	Presentar el DNI original.	
+331	Municipalidad de Oberá	Carnet sanitario	3	La foto digital se toma en el mismo lugar y el mismo día del inicio.	
+331	Municipalidad de Oberá	Carnet sanitario	4	El trámite es personal y se inicia en la oficina de Seguridad Alimentaria, Bolivia 530.	
+331	Municipalidad de Oberá	Carnet sanitario	5	El carnet tiene vigencia de 1 año.	
+332	Municipalidad de Oberá	Castración de mascotas	1	Ser mayor de edad.	
+332	Municipalidad de Oberá	Castración de mascotas	2	Presentar DNI.	
+332	Municipalidad de Oberá	Castración de mascotas	3	Tener domicilio real en el ejido municipal de Oberá.	
+332	Municipalidad de Oberá	Castración de mascotas	4	Solicitar turno telefónico los lunes de 6:30 a 8:30 al 3755 400798.	
+324	Municipalidad de Oberá	Habilitación comercial con local	1	Completar el Formulario 03 de Prefactibilidad.	formulario
+324	Municipalidad de Oberá	Habilitación comercial con local	2	Persona física: Formulario 03 y 04 completo con sellado de rentas.	formulario
+324	Municipalidad de Oberá	Habilitación comercial con local	3	Persona física: DNI frente y dorso.	
+324	Municipalidad de Oberá	Habilitación comercial con local	4	Persona física: constancia de inscripción en AFIP y en Rentas.	
+324	Municipalidad de Oberá	Habilitación comercial con local	5	Persona física: permiso de ocupación del local comercial.	
+324	Municipalidad de Oberá	Habilitación comercial con local	6	Persona física: autorización de uso, comodato o contrato de alquiler.	
+324	Municipalidad de Oberá	Habilitación comercial con local	7	Persona jurídica: Formulario 03 y 05 completo con sellado de rentas.	formulario
+324	Municipalidad de Oberá	Habilitación comercial con local	8	Persona jurídica: DNI frente y dorso del socio gerente o director.	
+324	Municipalidad de Oberá	Habilitación comercial con local	9	Persona jurídica: constancias de inscripción en AFIP y Rentas de la sociedad.	
+324	Municipalidad de Oberá	Habilitación comercial con local	10	Persona jurídica: contrato de constitución social y último pago en caja autónomo del socio gerente.	
+324	Municipalidad de Oberá	Habilitación comercial con local	11	Persona jurídica: permiso de ocupación y autorización de uso, comodato o alquiler.	
+324	Municipalidad de Oberá	Habilitación comercial con local	12	Profesionales: título y matrícula del colegio habilitante.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	1	Persona física: completar el Formulario 1.	formulario
+325	Municipalidad de Oberá	Habilitación comercial sin local	2	Persona física: DNI primera y segunda hoja.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	3	Persona física: constancia de inscripción en AFIP y en Rentas.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	4	Persona física: sellado de rentas.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	5	Persona física: boleta de servicio.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	6	Persona jurídica: completar el Formulario 2.	formulario
+325	Municipalidad de Oberá	Habilitación comercial sin local	7	Persona jurídica: DNI primera y segunda hoja del socio gerente o director.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	8	Persona jurídica: constancias de inscripción en AFIP y Rentas de la sociedad.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	9	Persona jurídica: sellado de rentas.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	10	Persona jurídica: contrato de constitución social.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	11	Persona jurídica: último pago en caja autónomo del socio gerente.	
+325	Municipalidad de Oberá	Habilitación comercial sin local	12	Profesionales: título y matrícula del colegio habilitante.	
+330	Municipalidad de Oberá	Libre deuda de inmueble	1	Factura o número de partida del inmueble.	
+330	Municipalidad de Oberá	Libre deuda de inmueble	2	Datos del dueño: nombre, apellido y DNI.	
+330	Municipalidad de Oberá	Libre deuda de inmueble	3	Estar al día con la Tasa de Inmueble.	
+330	Municipalidad de Oberá	Libre deuda de inmueble	4	Libre deuda de alumbrado público de CELO.	
+329	Municipalidad de Oberá	Libre deuda de patente del automotor	1	Verificar que estén canceladas las obligaciones del impuesto automotor y las infracciones de tránsito.	
+329	Municipalidad de Oberá	Libre deuda de patente del automotor	2	Abonar el derecho de oficina.	
+329	Municipalidad de Oberá	Libre deuda de patente del automotor	3	Tener el dominio del vehículo.	
+329	Municipalidad de Oberá	Libre deuda de patente del automotor	4	Puede realizarlo el titular o un gestor, en Jujuy 58, planta baja, o por correo electrónico.	
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	1	DNI original con domicilio real en Oberá; si se extravió, DNI digital o constancia de inicio del nuevo DNI con foto sellada por el Registro.	
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	2	Menores de edad: autorización firmada por padres o tutores ante escribano público y partida de nacimiento.	
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	3	Boleta del CENAT con comprobante de pago; tiene validez de 60 días.	
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	4	Presentar la boleta impresa en Jujuy 58 para el alta en el sistema nacional y el registro de foto y firma.	sistema
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	5	Completar el FUT: declaración jurada de afecciones, curso teórico y práctico.	
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	6	Ficha médica con sello de validez de 30 días.	
+326	Municipalidad de Oberá	Licencia de conducir por primera vez de 16 a 21 años	7	Presentar DNI, boleta CENAT y FUT aprobado para finalizar la carga y el pago del original.	
+327	Municipalidad de Oberá	Licencia de conducir por primera vez para mayores de 21 años	1	DNI original con domicilio real en Oberá; alternativa: DNI digital o constancia de DNI en trámite con foto sellada.	
+327	Municipalidad de Oberá	Licencia de conducir por primera vez para mayores de 21 años	2	Boleta del CENAT con comprobante de pago; tiene validez de 60 días.	
+327	Municipalidad de Oberá	Licencia de conducir por primera vez para mayores de 21 años	3	Presentar la boleta impresa en Jujuy 58 para el alta en el sistema nacional y el registro de foto y firma.	sistema
+327	Municipalidad de Oberá	Licencia de conducir por primera vez para mayores de 21 años	4	Completar el FUT: declaración jurada de afecciones, curso teórico y práctico.	
+327	Municipalidad de Oberá	Licencia de conducir por primera vez para mayores de 21 años	5	Ficha médica con sello de validez de 30 días.	
+327	Municipalidad de Oberá	Licencia de conducir por primera vez para mayores de 21 años	6	Presentar DNI, boleta CENAT y FUT aprobado para finalizar la carga y el pago del original.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	1	DNI original con domicilio real en Oberá.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	2	Licencia Nacional de Conducir vigente.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	3	Boleta del CENAT con comprobante de pago; tiene validez de 60 días.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	4	Presentar la boleta impresa en Jujuy 58 para el alta en el sistema nacional y el FUT.	sistema
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	5	Ficha médica con sello de validez de 30 días.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	6	Dentro de los 45 días previos al vencimiento no se realiza examen teórico-práctico si no hay infracciones.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	7	Hasta 90 días después del vencimiento: examen teórico. Más de 90 días: examen teórico y práctico.	
+328	Municipalidad de Oberá	Renovación de licencia nacional de conducir	8	Categorías D1, D2, D3 y D4: certificado de antecedentes penales RNR.	
+245	Municipalidad de Posadas	Alta municipal de rodados 0 km	1	Título original o constancia de asignación de título del Registro Nacional del Parque Automotor.	
+245	Municipalidad de Posadas	Alta municipal de rodados 0 km	2	Factura de compra original.	
+245	Municipalidad de Posadas	Alta municipal de rodados 0 km	3	DNI del contribuyente.	
+244	Municipalidad de Posadas	Alta municipal de rodados usados	1	Título original, constancia de asignación de título o informe histórico de titularidad del Registro Nacional del Parque Automotor.	
+244	Municipalidad de Posadas	Alta municipal de rodados usados	2	Certificado de libre deuda y baja del municipio de origen.	
+244	Municipalidad de Posadas	Alta municipal de rodados usados	3	DNI del contribuyente.	
+236	Municipalidad de Posadas	Cambio de categoría de baldío a edificado	1	Presentar copia del plano aprobado.	
+236	Municipalidad de Posadas	Cambio de categoría de baldío a edificado	2	Presentar final de obra total o parcial, según corresponda.	
+238	Municipalidad de Posadas	Certificación para inicio de comodato precario	1	Formulario de Solicitud de Inspección con los datos catastrales del inmueble o datos que permitan su ubicación.	formulario
+238	Municipalidad de Posadas	Certificación para inicio de comodato precario	2	Certificado de domicilio expedido por la Policía de la Provincia.	
+238	Municipalidad de Posadas	Certificación para inicio de comodato precario	3	Abonar el cobro del certificado.	
+246	Municipalidad de Posadas	Certificado de baja del automotor por cambio de radicación	1	Título original o informe histórico de titularidad del Registro Nacional del Parque Automotor.	
+246	Municipalidad de Posadas	Certificado de baja del automotor por cambio de radicación	2	Tener el impuesto pago al día si la transferencia se hace dentro de Misiones.	
+246	Municipalidad de Posadas	Certificado de baja del automotor por cambio de radicación	3	Si el vehículo se radica fuera de la provincia, abonar el total del año fiscal en curso.	
+246	Municipalidad de Posadas	Certificado de baja del automotor por cambio de radicación	4	Presentar informe de multas vigente del Tribunal Municipal de Faltas.	
+253	Municipalidad de Posadas	Certificado de funcionamiento comercial	1	Plano de arquitectura con detalle funcional, propuesta y ubicación del equipamiento a instalar.	
+253	Municipalidad de Posadas	Certificado de funcionamiento comercial	2	Plano en planta acotado con niveles, cortes, vistas y alturas.	
+253	Municipalidad de Posadas	Certificado de funcionamiento comercial	3	Instalación eléctrica: detalle de tablero, circuitos y ubicación de bocas, tomas y tableros.	
+253	Municipalidad de Posadas	Certificado de funcionamiento comercial	4	Instalación sanitaria: plano acotado con artefactos, cámaras de inspección y conexión a cloaca o pozo absorbente.	
+253	Municipalidad de Posadas	Certificado de funcionamiento comercial	5	Instalación de gas: plano acotado con artefactos, almacenamiento y distribución; certificado de auditoría de gas.	
+253	Municipalidad de Posadas	Certificado de funcionamiento comercial	6	Toda la documentación tiene carácter de declaración jurada y debe estar firmada por profesional habilitado.	
+241	Municipalidad de Posadas	Certificado de libre deuda del automotor	1	Tener el impuesto automotor pago al día.	
+241	Municipalidad de Posadas	Certificado de libre deuda del automotor	2	Presentar un informe de multas vigente emitido por el Tribunal Municipal de Faltas.	
+235	Municipalidad de Posadas	Certificado final de obra	1	Planilla para Final de Obra por duplicado con los datos del expediente de construcción aprobado y firmada por el solicitante.	formulario
+235	Municipalidad de Posadas	Certificado final de obra	2	Conjuntos habitacionales: certificación final de infraestructuras y aprobación final de la Dirección de Ingeniería (Ord. N° 102/96).	
+235	Municipalidad de Posadas	Certificado final de obra	3	Planos de instalaciones complementarias aprobadas: electricidad, salubridad y gas, según el caso.	
+235	Municipalidad de Posadas	Certificado final de obra	4	Plano de instalación electromecánica aprobada, si existe.	
+235	Municipalidad de Posadas	Certificado final de obra	5	Certificado de auditoría de gas para instalaciones de GLP.	
+235	Municipalidad de Posadas	Certificado final de obra	6	Verificación de obra existente: planillas por duplicado de Constancia de Obra Terminada firmadas por el profesional.	
+235	Municipalidad de Posadas	Certificado final de obra	7	Declaración Jurada para propiedad horizontal, cuando corresponda.	
+235	Municipalidad de Posadas	Certificado final de obra	8	Constancia de conexión cloacal de SAMSA si existe red habilitada.	
+235	Municipalidad de Posadas	Certificado final de obra	9	Certificado de inspección de instalaciones contra incendio de Bomberos para edificios, locales, clubes y sitios con público.	
+243	Municipalidad de Posadas	Denuncia de venta del automotor	1	Formulario de denuncia de venta o constancia online.	formulario,sistema
+243	Municipalidad de Posadas	Denuncia de venta del automotor	2	Recibo con código de verificación emitido por la Dirección Nacional del Registro del Parque Automotor.	
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	1	Nota original y copia solicitando la exclusión con el formulario de solicitud.	formulario
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	2	Copia del DNI del firmante y documentación que acredite representación o personería.	
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	3	Constancia de inscripción en AFIP y en DGR Misiones o Convenio Multilateral.	
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	4	Detalle de operaciones gravadas de los últimos 6 meses y proyección de los próximos 12, certificado por contador público.	
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	5	Detalle de percepciones y retenciones del período, certificado por contador público.	
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	6	Evolución del saldo a favor de los últimos 6 meses, certificada por contador público.	
+249	Municipalidad de Posadas	Exclusión del DIRySC por saldos a favor	7	Detalle de deudas pendientes con el organismo fiscal por distintos tributos.	
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	1	Formulario de Solicitud de Certificado de No Retención y/o Percepción Provisorio.	formulario
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	2	Detalle de las percepciones y retenciones sufridas.	
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	3	Copia del DNI del firmante.	
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	4	Documentación que acredite representación o personería.	
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	5	Constancia de inscripción en AFIP.	
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	6	Constancia de inscripción en DGR Misiones o en Convenio Multilateral.	
+248	Municipalidad de Posadas	Exclusión del régimen de retención y percepción del DIRySC	7	Profesionales liberales: título universitario y matrícula.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	1	Contar con un profesional habilitado para la gestión y el registro de la obra.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	2	Registrar el usuario propio y el del profesional autorizado en el sistema GOP.	sistema
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	3	Fotocopias de DNI certificadas por escribano o funcionario municipal.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	4	Título de propiedad, boleto o variante que acredite la titularidad.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	5	Constancia de número de finca y certificación de firmas.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	6	Constancia de aprovisionamiento de agua y cloaca.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	7	Constancia de habilitación profesional.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	8	Mensura o acta de amojonamiento y visado de pago del Colegio de Agrimensores.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	9	Plano de arquitectura, relevamiento fotográfico y planos de servicios contra incendio.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	10	Constancia de pago del visado de documentación de servicios contra incendio.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	11	Plano de estructuras portantes y memorias de cálculo.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	12	Plano de instalaciones complementarias.	
+234	Municipalidad de Posadas	Inicio de trámite de obra en el sistema GOP	13	Para registraciones: Declaración Jurada de las Obras Existentes.	
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	1	Formulario de solicitud de inscripción como agente.	formulario
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	2	Formulario DJ-01A.	formulario
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	3	Copia del DNI de quien suscribe el formulario.	formulario
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	4	Documentación que acredite representación o personería: poder, acta de designación de autoridades o similar.	
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	5	Constancia de inscripción en AFIP.	
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	6	Constancia de inscripción en DGR Misiones o en Convenio Multilateral (Padrón Web con clave fiscal).	
+247	Municipalidad de Posadas	Inscripción como agente de retención y percepción del DIRySC	7	Inscribirse dentro de los 15 días del mes siguiente a haber superado el monto mínimo.	
+252	Municipalidad de Posadas	Inscripción en el Registro de Administradores de Consorcios	1	Nota de solicitud con carácter de declaración jurada.	
+252	Municipalidad de Posadas	Inscripción en el Registro de Administradores de Consorcios	2	Datos de identidad completos; personas jurídicas: contrato social, modificaciones y última designación de autoridades.	
+252	Municipalidad de Posadas	Inscripción en el Registro de Administradores de Consorcios	3	CUIT o CUIL con constancia vigente y copia del DNI.	
+252	Municipalidad de Posadas	Inscripción en el Registro de Administradores de Consorcios	4	Domicilio real y/o especial en Posadas.	
+252	Municipalidad de Posadas	Inscripción en el Registro de Administradores de Consorcios	5	Teléfono y correo electrónico actualizados.	
+252	Municipalidad de Posadas	Inscripción en el Registro de Administradores de Consorcios	6	Acta de Asamblea certificada con la designación del administrador, datos del consorcio y cantidad de unidades funcionales.	
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	1	Último ejemplar del DNI con domicilio en Posadas, original y copia.	
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	2	Tener 1 año de antigüedad en la clase de auto B1-B2.	
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	3	Presentar la licencia anterior.	
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	4	Apto psicológico y examen psicofísico en la sede del CAV Hiper.	
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	5	Clases D1, D2 y D3: antecedentes penales nacionales con validez de 30 días.	
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	6	La licencia profesional interjurisdiccional se tramita online en seguridadvial.gob.ar y el psicofísico se hace en prestadores habilitados por la ANSV.	sistema
+254	Municipalidad de Posadas	Licencia de conducir para clases profesionales C, D y E	7	Límite de edad para solicitarla por primera vez: 65 años.	
+237	Municipalidad de Posadas	Ocupación de la vía pública con vallado de obra	1	Nota dirigida a la Dirección de Obras Privadas con número de expediente, ubicación, propietario, profesional responsable y plazo de ocupación.	
+237	Municipalidad de Posadas	Ocupación de la vía pública con vallado de obra	2	Croquis técnico del vallado firmado por el profesional: planta, vista, dimensiones y superficie de ocupación.	
+237	Municipalidad de Posadas	Ocupación de la vía pública con vallado de obra	3	El vallado debe cumplir el punto 4.1 del Código de Edificación Municipal.	
+237	Municipalidad de Posadas	Ocupación de la vía pública con vallado de obra	4	La documentación se agrega al expediente de obra indicado en la nota.	
+239	Municipalidad de Posadas	Plan Mejor Vivir	1	Carpeta Especial con Nota Aclaratoria de presentación para cumplir los requerimientos del Plan Mejor Vivir.	
+239	Municipalidad de Posadas	Plan Mejor Vivir	2	Listado de beneficiarios visado por IPRODHA con el titular de la carpeta.	
+239	Municipalidad de Posadas	Plan Mejor Vivir	3	Planta, vista y corte de lo ejecutado, original y copias, aclarando los rubros en que se actuó.	
+239	Municipalidad de Posadas	Plan Mejor Vivir	4	Abonar el ítem especial con monto fijo previsto en la Resolución N° 77/04.	
+242	Municipalidad de Posadas	Plan de pagos del automotor	1	DNI del titular registral del dominio.	
+242	Municipalidad de Posadas	Plan de pagos del automotor	2	Boleta de servicio del vehículo.	
+242	Municipalidad de Posadas	Plan de pagos del automotor	3	Formulario SR-388 impreso, Certificación de domicilio fiscal electrónico.	formulario
+255	Municipalidad de Posadas	Primera licencia de conducir para clases particulares A, B y G	1	Presentarse en mesa de entrada del centro de emisión con el DNI y la documentación según la condición del solicitante.	
+255	Municipalidad de Posadas	Primera licencia de conducir para clases particulares A, B y G	2	Generar el Formulario Único de Trámite (FUT) en el box de atención.	formulario
+255	Municipalidad de Posadas	Primera licencia de conducir para clases particulares A, B y G	3	Realizar el examen psicofísico en la oficina médica.	
+255	Municipalidad de Posadas	Primera licencia de conducir para clases particulares A, B y G	4	Realizar el curso de Educación Vial y aprobar los exámenes teórico y práctico.	
+255	Municipalidad de Posadas	Primera licencia de conducir para clases particulares A, B y G	5	Abonar la boleta del costo de la licencia en Caja y presentar la documentación para la impresión.	
+255	Municipalidad de Posadas	Primera licencia de conducir para clases particulares A, B y G	6	La licencia emitida se visualiza en la aplicación Mi Argentina.	sistema
+250	Municipalidad de Posadas	Recolección de ramas y residuos	1	Informar en Inspección General, en el subsuelo de la Municipalidad o en la delegación más cercana, la cantidad de metros cúbicos a retirar.	
+250	Municipalidad de Posadas	Recolección de ramas y residuos	2	Abonar el canon de la Ordenanza Tributaria XVII/N° 15.	
+250	Municipalidad de Posadas	Recolección de ramas y residuos	3	El Director de Recolección coordina con el contribuyente la fecha del servicio.	
+256	Municipalidad de Posadas	Renovación de licencia de conducir para clases particulares A, B y G	1	Presentarse en mesa de entrada del centro de emisión con el DNI y la documentación según la condición del solicitante.	
+256	Municipalidad de Posadas	Renovación de licencia de conducir para clases particulares A, B y G	2	Generar el Formulario Único de Trámite (FUT) en el box de atención.	formulario
+256	Municipalidad de Posadas	Renovación de licencia de conducir para clases particulares A, B y G	3	Realizar el examen psicofísico en la oficina médica.	
+256	Municipalidad de Posadas	Renovación de licencia de conducir para clases particulares A, B y G	4	Abonar la boleta del costo de la licencia en Caja.	
+256	Municipalidad de Posadas	Renovación de licencia de conducir para clases particulares A, B y G	5	Presentar la documentación y aguardar la impresión; la licencia queda disponible en Mi Argentina.	
+251	Municipalidad de Posadas	Solicitud de poda de arbolado urbano	1	Iniciar expediente con la Nota de Solicitud de Poda en mesa de entrada o en la delegación más cercana.	
+251	Municipalidad de Posadas	Solicitud de poda de arbolado urbano	2	Recibir la boleta de inspección de arbolado de los inspectores ambientales.	
+251	Municipalidad de Posadas	Solicitud de poda de arbolado urbano	3	Abonar el canon correspondiente a la Ordenanza Tributaria.	
+251	Municipalidad de Posadas	Solicitud de poda de arbolado urbano	4	Esperar el operativo integral de poda o coordinar con un podador urbano artesanal inscripto.	
+251	Municipalidad de Posadas	Solicitud de poda de arbolado urbano	5	Para corte al ras: la Dirección de Restauración Ambiental emite una ficha técnica que decide si corresponde.	
+240	Municipalidad de Posadas	Visado de expediente de mensura	1	Presentar el expediente de mensura y el plano aprobado que obra en el Archivo de Obras Públicas.	
+240	Municipalidad de Posadas	Visado de expediente de mensura	2	Contar con el final de obra otorgado por la Dirección de Obras Privadas.	
+240	Municipalidad de Posadas	Visado de expediente de mensura	3	Para propiedad horizontal, los planos deben coincidir con la inspección y no presentar situaciones antirreglamentarias.	
+240	Municipalidad de Posadas	Visado de expediente de mensura	4	Para fraccionamiento simple, el planteo debe encuadrarse en la Ordenanza de Fraccionamiento.	
+240	Municipalidad de Posadas	Visado de expediente de mensura	5	Las observaciones se informan a la Dirección de Catastro para su gestión.	
+336	Municipalidad de Puerto Iguazú	Ampliación de categoría de licencia de conducir	1	Fotocopia del DNI, ambos lados, con domicilio en Puerto Iguazú.	
+336	Municipalidad de Puerto Iguazú	Ampliación de categoría de licencia de conducir	2	Carnet anterior o vencido.	
+336	Municipalidad de Puerto Iguazú	Ampliación de categoría de licencia de conducir	3	Para las clases C, D y E se debe haber obtenido la clase B al menos un año antes.	
+336	Municipalidad de Puerto Iguazú	Ampliación de categoría de licencia de conducir	4	Las licencias profesionales se otorgan por un período máximo de 2 años.	
+337	Municipalidad de Puerto Iguazú	Duplicado o triplicado de licencia de conducir	1	Fotocopia del DNI, ambos lados, con domicilio en Puerto Iguazú.	
+337	Municipalidad de Puerto Iguazú	Duplicado o triplicado de licencia de conducir	2	Constancia policial de extravío.	
+337	Municipalidad de Puerto Iguazú	Duplicado o triplicado de licencia de conducir	3	Abonar $423,40 por duplicado o actualización de datos.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	1	Completar la Solicitud de Habilitación e Inscripción o Traslado con ramo principal, ramos anexos, nombre del negocio, CUIT y domicilio.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	2	Persona física: copia del DNI del titular o representante legal con domicilio en Puerto Iguazú.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	3	Persona física: comprobante de inscripción en DGR y AFIP con domicilio en Puerto Iguazú, o constancia de puntos de venta y domicilios.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	4	Persona física: manifestación de bienes certificada por Contador Público Nacional.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	5	Persona física: título de propiedad o contrato de locación con manzana, lote y partida, firmas certificadas y sellado por DGR.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	6	Persona física: certificado de domicilio comercial.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	7	Persona jurídica: contrato social o estatuto inscripto en el Registro Público de Comercio.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	8	Persona jurídica: último balance o balance inicial certificado por Contador Público Nacional.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	9	Persona jurídica: acta de designación de autoridades y, si corresponde, acta de instalación de la sucursal en Puerto Iguazú.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	10	Persona jurídica: fijar domicilio fiscal en Puerto Iguazú.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	11	Si actúa un apoderado: acreditar la personería con poder notarial.	
+340	Municipalidad de Puerto Iguazú	Habilitación e inscripción o traslado de comercio	12	Una vez obtenida la habilitación, inscribirse en el Registro de Comercio Interior en Av. Victoria Aguirre 396.	
+338	Municipalidad de Puerto Iguazú	Libreta sanitaria por primera vez	1	Examen médico completo: clínico y bioquímico.	
+338	Municipalidad de Puerto Iguazú	Libreta sanitaria por primera vez	2	Fotocopia del DNI, ambos lados.	
+338	Municipalidad de Puerto Iguazú	Libreta sanitaria por primera vez	3	Constancia de domicilio si el DNI no tiene el domicilio real.	
+338	Municipalidad de Puerto Iguazú	Libreta sanitaria por primera vez	4	Una foto tipo carnet de 4x4.	
+338	Municipalidad de Puerto Iguazú	Libreta sanitaria por primera vez	5	Curso de BPM, POES y MIP optativo; el examen es obligatorio.	
+338	Municipalidad de Puerto Iguazú	Libreta sanitaria por primera vez	6	Completar el anexo de examen médico con los resultados clínicos y de laboratorio.	formulario
+333	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para mayores de edad	1	Fotocopia del DNI, ambos lados, con domicilio en Puerto Iguazú.	
+333	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para mayores de edad	2	Asistir al curso de capacitación.	
+333	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para mayores de edad	3	Rendir el examen teórico del Manual del Conductor.	
+333	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para mayores de edad	4	Rendir el examen práctico de manejo.	
+333	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para mayores de edad	5	Realizar el examen psicofísico.	
+333	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para mayores de edad	6	La licencia tarda de 4 a 5 días hábiles en tramitarse.	
+334	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para menores de 16 y 17 años	1	Fotocopia del DNI, ambos lados, con domicilio en Puerto Iguazú.	
+334	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para menores de 16 y 17 años	2	Acta de nacimiento autorizada por juzgado o escribanía.	
+334	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para menores de 16 y 17 años	3	Presencia de los padres.	
+334	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para menores de 16 y 17 años	4	Autorización del representante legal conforme al Art. 11 de la Ley 24.449.	
+334	Municipalidad de Puerto Iguazú	Licencia de conducir por primera vez para menores de 16 y 17 años	5	Cumplir el curso de capacitación y los exámenes teórico, práctico y psicofísico del otorgamiento.	
+339	Municipalidad de Puerto Iguazú	Renovación de libreta sanitaria	1	Examen médico completo: clínico y bioquímico.	
+339	Municipalidad de Puerto Iguazú	Renovación de libreta sanitaria	2	Libreta sanitaria anterior.	
+339	Municipalidad de Puerto Iguazú	Renovación de libreta sanitaria	3	Curso de BPM, POES y MIP optativo; el examen es obligatorio.	
+339	Municipalidad de Puerto Iguazú	Renovación de libreta sanitaria	4	Completar el anexo de examen médico con los resultados clínicos y de laboratorio.	formulario
+335	Municipalidad de Puerto Iguazú	Renovación de licencia de conducir	1	Fotocopia del DNI, ambos lados, con domicilio en Puerto Iguazú.	
+335	Municipalidad de Puerto Iguazú	Renovación de licencia de conducir	2	Carnet anterior o vencido.	
+335	Municipalidad de Puerto Iguazú	Renovación de licencia de conducir	3	La licencia puede renovarse antes de la fecha de vencimiento.	
+335	Municipalidad de Puerto Iguazú	Renovación de licencia de conducir	4	Si cambió de domicilio, debe acreditar domicilio en Puerto Iguazú o presentar constancia de DNI en trámite.	
+314	Policía de Misiones	Certificado de convivencia	1	Concurrir a la dependencia policial con DNI.	
+314	Policía de Misiones	Certificado de convivencia	2	Informar el domicilio real y efectivo y la fecha desde la que convive.	
+314	Policía de Misiones	Certificado de convivencia	3	Aportar los datos de la persona con quien convive: nombre, tipo y número de documento y vínculo.	
+314	Policía de Misiones	Certificado de convivencia	4	Presentar 2 testigos con DNI y domicilio.	
+314	Policía de Misiones	Certificado de convivencia	5	Firmar el formulario el solicitante y los testigos.	formulario
+312	Policía de Misiones	Certificado de domicilio con testigos	1	Concurrir a la dependencia policial con DNI.	
+312	Policía de Misiones	Certificado de domicilio con testigos	2	Informar nacionalidad, número de DNI, edad y ocupación.	
+312	Policía de Misiones	Certificado de domicilio con testigos	3	Aportar el domicilio real y efectivo que se certificará.	
+312	Policía de Misiones	Certificado de domicilio con testigos	4	Presentar 2 testigos con DNI y domicilio declarado.	
+312	Policía de Misiones	Certificado de domicilio con testigos	5	Firmar el formulario el solicitante y ambos testigos.	formulario
+313	Policía de Misiones	Certificado de domicilio sin testigos	1	Concurrir a la dependencia policial con DNI.	
+313	Policía de Misiones	Certificado de domicilio sin testigos	2	El domicilio declarado debe constar en el DNI del solicitante.	
+313	Policía de Misiones	Certificado de domicilio sin testigos	3	Informar nacionalidad, número de DNI, edad y ocupación.	
+313	Policía de Misiones	Certificado de domicilio sin testigos	4	Firmar el formulario de solicitud.	formulario
+317	Policía de Misiones	Certificado de residencia para extranjeros	1	Concurrir a la dependencia policial con DNI.	
+317	Policía de Misiones	Certificado de residencia para extranjeros	2	Informar nacionalidad, DNI, edad y ocupación.	
+317	Policía de Misiones	Certificado de residencia para extranjeros	3	Aportar el domicilio real y efectivo.	
+317	Policía de Misiones	Certificado de residencia para extranjeros	4	Presentar 2 testigos con DNI, nacionalidad, edad y ocupación.	
+317	Policía de Misiones	Certificado de residencia para extranjeros	5	Los testigos deben tener domicilio en la jurisdicción del requirente.	
+317	Policía de Misiones	Certificado de residencia para extranjeros	6	Firmar el formulario el solicitante y los testigos.	formulario
+315	Policía de Misiones	Certificado de supervivencia con testigos	1	Concurrir a la dependencia policial con DNI.	
+315	Policía de Misiones	Certificado de supervivencia con testigos	2	Informar nacionalidad, DNI, edad y domicilio real y efectivo.	
+315	Policía de Misiones	Certificado de supervivencia con testigos	3	Presentar 2 testigos con DNI, nacionalidad y edad, o un apoderado.	
+315	Policía de Misiones	Certificado de supervivencia con testigos	4	Firmar el formulario el solicitante, los testigos o el apoderado.	formulario
+316	Policía de Misiones	Certificado de supervivencia sin testigos	1	Concurrir a la dependencia policial con DNI.	
+316	Policía de Misiones	Certificado de supervivencia sin testigos	2	El domicilio real y efectivo debe constar en el DNI.	
+316	Policía de Misiones	Certificado de supervivencia sin testigos	3	Informar nacionalidad, DNI y edad.	
+316	Policía de Misiones	Certificado de supervivencia sin testigos	4	Firmar el formulario de solicitud.	formulario
+318	Policía de Misiones	Constancia policial por extravío	1	Concurrir a la dependencia policial con DNI.	
+318	Policía de Misiones	Constancia policial por extravío	2	Informar nacionalidad, edad, estado civil y domicilio.	
+318	Policía de Misiones	Constancia policial por extravío	3	Detallar el documento u objeto extraviado.	
+318	Policía de Misiones	Constancia policial por extravío	4	Firmar la constancia ante el funcionario policial.	
+208	Registro Provincial de las Personas	Actualización de DNI a los 14 años	1	El menor debe estar presente y puede realizar el trámite solo.	
+208	Registro Provincial de las Personas	Actualización de DNI a los 14 años	2	Presentar el DNI.	
+208	Registro Provincial de las Personas	Actualización de DNI a los 14 años	3	Abonar la tasa de $10.000.	
+207	Registro Provincial de las Personas	Actualización de DNI de 5 a 8 años	1	Padre, madre o tutor presente con DNI en mano.	
+207	Registro Provincial de las Personas	Actualización de DNI de 5 a 8 años	2	El menor debe estar presente.	
+207	Registro Provincial de las Personas	Actualización de DNI de 5 a 8 años	3	Presentar el DNI del menor.	
+207	Registro Provincial de las Personas	Actualización de DNI de 5 a 8 años	4	Los menores nacidos en Misiones no necesitan presentar acta de nacimiento.	
+207	Registro Provincial de las Personas	Actualización de DNI de 5 a 8 años	5	Abonar la tasa de $10.000.	
+209	Registro Provincial de las Personas	Actualización de DNI para mayores de 18 años	1	Presentar el DNI en mano.	
+209	Registro Provincial de las Personas	Actualización de DNI para mayores de 18 años	2	Presentar el acta de nacimiento.	
+209	Registro Provincial de las Personas	Actualización de DNI para mayores de 18 años	3	Presentar el DNI de uno de los padres o de dos testigos argentinos, mayores de 18 años y al menos 5 años mayores.	
+209	Registro Provincial de las Personas	Actualización de DNI para mayores de 18 años	4	Completar el Formulario de Información Sumaria.	formulario
+219	Registro Provincial de las Personas	Adición de apellido materno	1	Presentar el acta de nacimiento del menor.	
+219	Registro Provincial de las Personas	Adición de apellido materno	2	Presentar el acta de nacimiento de la madre.	
+219	Registro Provincial de las Personas	Adición de apellido materno	3	Presentar el DNI del menor y fotocopia del DNI de la madre.	
+219	Registro Provincial de las Personas	Adición de apellido materno	4	Menores de 13 años: madre y padre presentes. De 13 a 17 años: madre presente.	
+219	Registro Provincial de las Personas	Adición de apellido materno	5	Abonar la tasa correspondiente y tramitar un nuevo DNI.	
+204	Registro Provincial de las Personas	Cambio de domicilio en el DNI	1	Informar la dirección exacta que se consignará en el DNI.	
+204	Registro Provincial de las Personas	Cambio de domicilio en el DNI	2	Abonar la tasa de $10.000.	
+204	Registro Provincial de las Personas	Cambio de domicilio en el DNI	3	Los menores de edad nacidos en Misiones no necesitan presentar acta de nacimiento.	
+204	Registro Provincial de las Personas	Cambio de domicilio en el DNI	4	El DNI llega al domicilio informado en 15 días hábiles aproximadamente.	
+223	Registro Provincial de las Personas	Cese de unión convivencial	1	Completar el Formulario de Cese de Unión Convivencial.	formulario
+223	Registro Provincial de las Personas	Cese de unión convivencial	2	Presencia de ambos convivientes.	
+223	Registro Provincial de las Personas	Cese de unión convivencial	3	Abonar la tasa de $17.100.	
+206	Registro Provincial de las Personas	DNI Cero Año	1	Presentar el acta de nacimiento.	
+206	Registro Provincial de las Personas	DNI Cero Año	2	Realizar la inscripción del nacimiento en la localidad donde nació el bebé.	
+206	Registro Provincial de las Personas	DNI Cero Año	3	El DNI no tiene costo.	
+206	Registro Provincial de las Personas	DNI Cero Año	4	Entrega estimada: 15 días hábiles.	
+205	Registro Provincial de las Personas	DNI Exprés	1	Presentar el último ejemplar del DNI.	
+205	Registro Provincial de las Personas	DNI Exprés	2	Abonar $26.000 con débito, crédito o billetera virtual.	sistema
+205	Registro Provincial de las Personas	DNI Exprés	3	El DNI llega al domicilio informado o queda en la delegación si el correo no lo entrega.	
+210	Registro Provincial de las Personas	DNI para personas extranjeras	1	Acreditar residencia temporaria o permanente vigente, según el caso.	
+210	Registro Provincial de las Personas	DNI para personas extranjeras	2	Presentar el DNI anterior, si ya posee uno.	
+210	Registro Provincial de las Personas	DNI para personas extranjeras	3	Abonar $20.000 por nuevo ejemplar, primera identificación o actualización.	
+231	Registro Provincial de las Personas	Inscripción de acta de extraña jurisdicción	1	Presentar el acta correspondiente legalizada por la provincia de origen.	
+231	Registro Provincial de las Personas	Inscripción de acta de extraña jurisdicción	2	Si es del extranjero, debe estar apostillada y con traducción si está en otro idioma.	
+231	Registro Provincial de las Personas	Inscripción de acta de extraña jurisdicción	3	Completar el Formulario de Inscripción de Extraña Jurisdicción.	formulario
+231	Registro Provincial de las Personas	Inscripción de acta de extraña jurisdicción	4	Abonar $4.400.	
+231	Registro Provincial de las Personas	Inscripción de acta de extraña jurisdicción	5	Presentar en Chacra 32-33 o comunicarse por mail a rppmesadeentrada@gmail.com.	
+224	Registro Provincial de las Personas	Inscripción de defunción	1	Presentar el certificado médico expedido por el médico.	
+224	Registro Provincial de las Personas	Inscripción de defunción	2	Presentar el DNI físico del fallecido.	
+224	Registro Provincial de las Personas	Inscripción de defunción	3	Presentar fotocopia del DNI que se presenta.	
+224	Registro Provincial de las Personas	Inscripción de defunción	4	Realizar la inscripción dentro de los 2 días hábiles.	
+224	Registro Provincial de las Personas	Inscripción de defunción	5	Si se excede el plazo, solicitar la inscripción fuera de término conforme al Art. 60 de la Ley 26.413.	
+225	Registro Provincial de las Personas	Inscripción de divorcio	1	Presentar el oficio judicial o testimonio original.	
+225	Registro Provincial de las Personas	Inscripción de divorcio	2	Si se presenta desde otra provincia por correo, el documento debe tener firma digital.	
+225	Registro Provincial de las Personas	Inscripción de divorcio	3	Abonar $20.700.	
+225	Registro Provincial de las Personas	Inscripción de divorcio	4	El trámite tarda aproximadamente 5 días hábiles.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	1	Fotocopia de ambos DNI.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	2	Datos personales de ambos contrayentes: edad, nacionalidad, domicilio, lugar de nacimiento y profesión.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	3	Uno de los cónyuges debe poseer domicilio en la jurisdicción donde se celebrará el matrimonio.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	4	Fotocopia del acta de nacimiento de los hijos en común, si los hay.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	5	Datos de los padres de ambos contrayentes.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	6	2 testigos mayores de 18 años con fotocopia de DNI; 4 testigos si se celebra fuera de la oficina.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	7	Acta de matrimonio anterior con marginal de divorcio o acta de defunción, según corresponda.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	8	Presentar libreta de matrimonio civil y abonar las tasas respectivas.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	9	Presentar actas de nacimiento de los contrayentes, si las poseen.	
+220	Registro Provincial de las Personas	Inscripción de matrimonio	10	Menores de 16 años: dispensa de edad judicial. Menores de 18: DNI de los padres y presencia el día de la ceremonia.	
+217	Registro Provincial de las Personas	Inscripción de nacimiento de 14 a 18 años	1	Presentar certificado de edad presuntiva.	
+217	Registro Provincial de las Personas	Inscripción de nacimiento de 14 a 18 años	2	Presentar 2 testigos argentinos mayores de edad.	
+217	Registro Provincial de las Personas	Inscripción de nacimiento de 14 a 18 años	3	Puede realizarse en cualquier delegación cercana al domicilio.	
+216	Registro Provincial de las Personas	Inscripción de nacimiento dentro de los 40 días	1	Presentar el certificado médico del nacimiento.	
+216	Registro Provincial de las Personas	Inscripción de nacimiento dentro de los 40 días	2	Madre y padre con DNI.	
+216	Registro Provincial de las Personas	Inscripción de nacimiento dentro de los 40 días	3	Realizar la inscripción únicamente en la localidad donde nació el bebé.	
+230	Registro Provincial de las Personas	Inscripción tardía administrativa de nacimiento	1	Presentar el DNI del solicitante.	
+230	Registro Provincial de las Personas	Inscripción tardía administrativa de nacimiento	2	Presentar la documentación complementaria que indique la delegación.	
+230	Registro Provincial de las Personas	Inscripción tardía administrativa de nacimiento	3	El trámite no tiene límite de edad.	
+230	Registro Provincial de las Personas	Inscripción tardía administrativa de nacimiento	4	Puede iniciarse en cualquier delegación del Registro.	
+228	Registro Provincial de las Personas	Legalización de título	1	Presentar el título original en formato papel; no se legalizan fotocopias.	
+228	Registro Provincial de las Personas	Legalización de título	2	Sólo se legalizan títulos de la provincia de Misiones.	
+228	Registro Provincial de las Personas	Legalización de título	3	Abonar $8.200 por hoja.	
+228	Registro Provincial de las Personas	Legalización de título	4	Puede presentarlo el titular u otra persona sin autorización.	
+228	Registro Provincial de las Personas	Legalización de título	5	Títulos digitales: usar el ReFE. Para el exterior, enviar el pedido a legalizacionesrpp@gmail.com con el comprobante.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	1	Completar el Formulario de Declaración Jurada de Matrimonio y firmarlo en original.	formulario
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	2	Fotocopia certificada notarialmente del pasaporte o documento migratorio y constancia de ingreso al país.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	3	Acta notarial ante escribano público matriculado en Misiones con el domicilio de referencia y el plazo de estadía.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	4	Testigos: 2 si se celebra en la oficina y 4 en puntos turísticos.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	5	Abonar la tasa administrativa.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	6	Divorciados: acta de matrimonio con marginal de divorcio legalizada y apostillada con traducción.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	7	Viudos: acta de defunción y acta de matrimonio legalizadas y apostilladas.	
+221	Registro Provincial de las Personas	Matrimonio de extranjeros no residentes	8	Solicitar turno por correo y presentar los originales 5 días antes del enlace.	navegacion
+203	Registro Provincial de las Personas	Nuevo ejemplar de DNI	1	Abonar la tasa de $10.000.	
+203	Registro Provincial de las Personas	Nuevo ejemplar de DNI	2	Los menores de edad nacidos en Misiones no necesitan presentar acta de nacimiento.	
+203	Registro Provincial de las Personas	Nuevo ejemplar de DNI	3	El DNI llega al domicilio informado en 15 días hábiles aproximadamente.	
+203	Registro Provincial de las Personas	Nuevo ejemplar de DNI	4	Si el correo no encuentra a nadie, el DNI se retira en la delegación donde se hizo el trámite.	
+215	Registro Provincial de las Personas	Pasaporte Exprés	1	Presentarse con el último DNI.	
+215	Registro Provincial de las Personas	Pasaporte Exprés	2	Ser argentino.	
+215	Registro Provincial de las Personas	Pasaporte Exprés	3	Para pasaporte de menor: presentar la partida de nacimiento del menor.	
+215	Registro Provincial de las Personas	Pasaporte Exprés	4	Abonar $200.000.	
+213	Registro Provincial de las Personas	Pasaporte para mayores de edad	1	Presentarse con el último DNI.	
+213	Registro Provincial de las Personas	Pasaporte para mayores de edad	2	Ser argentino.	
+213	Registro Provincial de las Personas	Pasaporte para mayores de edad	3	Abonar $100.000.	
+213	Registro Provincial de las Personas	Pasaporte para mayores de edad	4	El pasaporte llega al domicilio en 15 días hábiles aproximadamente.	
+214	Registro Provincial de las Personas	Pasaporte para menores de edad	1	El menor debe estar presente con el último DNI.	
+214	Registro Provincial de las Personas	Pasaporte para menores de edad	2	Ser argentino.	
+214	Registro Provincial de las Personas	Pasaporte para menores de edad	3	Presentar la partida de nacimiento del menor.	
+214	Registro Provincial de las Personas	Pasaporte para menores de edad	4	Presentar el documento del padre o la madre.	
+214	Registro Provincial de las Personas	Pasaporte para menores de edad	5	Abonar $100.000.	
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	1	Completar el formulario de autorización con destino, plazos, motivos y datos del acompañante.	formulario
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	2	Acreditar el vínculo con acta de nacimiento o DNI/pasaporte del menor.	
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	3	Presentar el DNI del progenitor que autoriza.	
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	4	Presentar el DNI del acompañante autorizado, si corresponde.	
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	5	También se puede acreditar el vínculo con libreta de matrimonio con nacimiento asentado o testimonio judicial de adopción.	
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	6	Abonar $12.500.	
+229	Registro Provincial de las Personas	Permiso de viaje para menores dentro del país	7	Es un trámite personal: debe presentarse la madre, el padre o el representante legal.	
+218	Registro Provincial de las Personas	Reconocimiento de hijo o hija	1	Presentarse ambos padres con sus DNI.	
+218	Registro Provincial de las Personas	Reconocimiento de hijo o hija	2	El menor debe presentarse con DNI y acta de nacimiento.	
+218	Registro Provincial de las Personas	Reconocimiento de hijo o hija	3	Si se presenta solo el padre: 2 testigos mayores de edad que no sean familiares.	
+218	Registro Provincial de las Personas	Reconocimiento de hijo o hija	4	Abonar el arancel correspondiente con unificación de actas.	
+212	Registro Provincial de las Personas	Rectificación de DNI por acta modificada	1	Presentarse con el DNI que posee el error.	
+212	Registro Provincial de las Personas	Rectificación de DNI por acta modificada	2	Presentar el acta de nacimiento debidamente rectificada.	
+212	Registro Provincial de las Personas	Rectificación de DNI por acta modificada	3	Abonar $3.000 en efectivo en la delegación.	
+227	Registro Provincial de las Personas	Rectificación de actas de estado civil	1	Presentar el acta que se quiere rectificar.	
+227	Registro Provincial de las Personas	Rectificación de actas de estado civil	2	Presentar el DNI del titular del acta.	
+227	Registro Provincial de las Personas	Rectificación de actas de estado civil	3	Completar el Formulario de Rectificaciones, si corresponde.	formulario
+227	Registro Provincial de las Personas	Rectificación de actas de estado civil	4	Si el error está en el nombre o DNI de padre o madre: presentar el acta de nacimiento de esa persona.	
+227	Registro Provincial de las Personas	Rectificación de actas de estado civil	5	Abonar la tasa correspondiente.	
+227	Registro Provincial de las Personas	Rectificación de actas de estado civil	6	Iniciar en cualquier delegación o por mail a centralrectificacionesrpp@gmail.com.	
+233	Registro Provincial de las Personas	Registración de convención matrimonial	1	Presentar la escritura pública original y copia debidamente certificada por el escribano.	
+233	Registro Provincial de las Personas	Registración de convención matrimonial	2	Abonar la tasa de $51.100.	
+233	Registro Provincial de las Personas	Registración de convención matrimonial	3	Presentar en mesa de entradas del Registro, Chacra 32-33, primer piso.	
+232	Registro Provincial de las Personas	Registración de pacto convivencial	1	Presentar el instrumento privado con certificación de firmas.	
+232	Registro Provincial de las Personas	Registración de pacto convivencial	2	Abonar la tasa de $41.000.	
+232	Registro Provincial de las Personas	Registración de pacto convivencial	3	Presentar en mesa de entradas del Registro, Chacra 32-33.	
+211	Registro Provincial de las Personas	Reposición de DNI por dato incorrecto	1	Presentarse con el DNI que contiene el error.	
+211	Registro Provincial de las Personas	Reposición de DNI por dato incorrecto	2	Presentar el acta de nacimiento.	
+211	Registro Provincial de las Personas	Reposición de DNI por dato incorrecto	3	Abonar el arancel correspondiente.	
+211	Registro Provincial de las Personas	Reposición de DNI por dato incorrecto	4	El DNI se inutiliza y el nuevo ejemplar llega en 15 días hábiles aproximadamente.	
+226	Registro Provincial de las Personas	Solicitud de actas legalizadas	1	Abonar $3.200 por cada acta y conservar el número de comprobante de HELIPAGOS o MACROCLICK.	
+226	Registro Provincial de las Personas	Solicitud de actas legalizadas	2	Ingresar el DNI de la persona que solicita el acta.	
+226	Registro Provincial de las Personas	Solicitud de actas legalizadas	3	Completar tipo de acta, nombre, fecha, localidad y año; número, tomo y folio si se conocen.	
+226	Registro Provincial de las Personas	Solicitud de actas legalizadas	4	Si solicita un tercero, adjuntar autorización del titular con firma certificada por juzgado o escribano.	
+226	Registro Provincial de las Personas	Solicitud de actas legalizadas	5	Para acta de defunción, adjuntar foto del DNI del solicitante en el campo de autorización.	
+226	Registro Provincial de las Personas	Solicitud de actas legalizadas	6	Sólo se emiten actas de la provincia de Misiones.	
+222	Registro Provincial de las Personas	Unión convivencial	1	2 testigos mayores de edad con fotocopia de DNI, que no pueden ser familiares.	
+222	Registro Provincial de las Personas	Unión convivencial	2	DNI de ambos contrayentes con el mismo domicilio; sirve constancia de trámite.	
+222	Registro Provincial de las Personas	Unión convivencial	3	Estado civil soltero, viudo o divorciado; sin matrimonio ni unión convivencial vigente.	
+222	Registro Provincial de las Personas	Unión convivencial	4	Actas de nacimiento de los contrayentes, original y copia.	
+222	Registro Provincial de las Personas	Unión convivencial	5	Abonar la tasa de $17.100.	
+222	Registro Provincial de las Personas	Unión convivencial	6	Imprimir y presentar el formulario.	formulario
+303	SAMSA - Aguas de Misiones S.A.	Adhesión al débito automático de SAMSA	1	Número de tarjeta de débito o crédito, o constancia de CBU, según lo que se quiera adherir.	
+303	SAMSA - Aguas de Misiones S.A.	Adhesión al débito automático de SAMSA	2	Copia del DNI del titular de la tarjeta o cuenta bancaria.	
+303	SAMSA - Aguas de Misiones S.A.	Adhesión al débito automático de SAMSA	3	Firma del formulario de adhesión.	formulario
+304	SAMSA - Aguas de Misiones S.A.	Cambio de datos postales	1	Ser cliente existente.	
+304	SAMSA - Aguas de Misiones S.A.	Cambio de datos postales	2	Número de cuenta de la propiedad.	
+297	SAMSA - Aguas de Misiones S.A.	Cambio de titularidad del servicio de agua	1	Título de propiedad o boleto de compraventa certificado ante escribano.	
+297	SAMSA - Aguas de Misiones S.A.	Cambio de titularidad del servicio de agua	2	Posesión veinteñal, cuando corresponda.	
+297	SAMSA - Aguas de Misiones S.A.	Cambio de titularidad del servicio de agua	3	Fotocopia del DNI.	
+297	SAMSA - Aguas de Misiones S.A.	Cambio de titularidad del servicio de agua	4	Firma de la nota solicitando el cambio de titularidad.	
+297	SAMSA - Aguas de Misiones S.A.	Cambio de titularidad del servicio de agua	5	Casos particulares: certificado de adjudicación, contrato de comodato, cesión de derechos, contrato de alquiler u otros.	
+298	SAMSA - Aguas de Misiones S.A.	Constancia de servicio de agua y/o cloaca	1	Número de cuenta del inmueble, sin deuda vencida.	
+298	SAMSA - Aguas de Misiones S.A.	Constancia de servicio de agua y/o cloaca	2	Si no es cliente existente: presentar plano de mensura.	
+298	SAMSA - Aguas de Misiones S.A.	Constancia de servicio de agua y/o cloaca	3	Abonar el costo preestablecido según el código de facturación.	
+302	SAMSA - Aguas de Misiones S.A.	Convenio de pago de deuda	1	Título de propiedad, boleto de compraventa o certificado de adjudicación de IPRODHA.	
+302	SAMSA - Aguas de Misiones S.A.	Convenio de pago de deuda	2	DNI del propietario.	
+302	SAMSA - Aguas de Misiones S.A.	Convenio de pago de deuda	3	Solicitud de convenio de pago.	
+300	SAMSA - Aguas de Misiones S.A.	Corrección de datos de la cuenta	1	Certificado de finca expedido por la Municipalidad de Posadas para actualizar dirección, datos catastrales y número de inmueble.	
+300	SAMSA - Aguas de Misiones S.A.	Corrección de datos de la cuenta	2	Plano de mensura aprobado por la Dirección General de Catastro o informe del RPI.	
+300	SAMSA - Aguas de Misiones S.A.	Corrección de datos de la cuenta	3	Consumidores finales: DNI, LC, LE o CI.	
+300	SAMSA - Aguas de Misiones S.A.	Corrección de datos de la cuenta	4	Responsables inscriptos, exentos, monotributistas e IVA no alcanzado: CUIT con la inscripción respectiva.	
+300	SAMSA - Aguas de Misiones S.A.	Corrección de datos de la cuenta	5	Alta de cuenta: solicitud de conexión de agua y/o cloaca con documentación, o nota de aviso e inspección catastral para radio servido.	
+300	SAMSA - Aguas de Misiones S.A.	Corrección de datos de la cuenta	6	Baja de cuenta: informe RPI o DGC por duplicidad, mensura por unificación catastral o nota por toma de posesión de la EBY.	
+299	SAMSA - Aguas de Misiones S.A.	Libre deuda de SAMSA	1	Número de cuenta de la propiedad, que no debe registrar deuda.	
+299	SAMSA - Aguas de Misiones S.A.	Libre deuda de SAMSA	2	El trámite no tiene costo.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	1	Solicitar el presupuesto de los costos de conexión; se entrega dentro de las 48 horas.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	2	DNI del titular o responsable del inmueble, fotocopia y original para verificación.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	3	Título de propiedad o boleto de compraventa autenticado por escribano, fotocopia y original.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	4	Plano de mensura solicitado en Catastro de la Provincia.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	5	Estar libre de deuda en la cuenta de SAMSA o regularizarla antes de la conexión.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	6	Croquis sanitario del inmueble avalado por un profesional competente.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	7	Solicitud de conexión completada y firmada, formulario oficial que se retira en oficinas.	formulario
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	8	Comprobante de pago de derechos de conexión, abonado en tesorería o banco habilitado.	
+296	SAMSA - Aguas de Misiones S.A.	Solicitud de conexión domiciliaria de agua y cloaca	9	El trámite debe realizarlo el propietario del inmueble; la documentación incompleta no se recibe.	
+301	SAMSA - Aguas de Misiones S.A.	Solicitud de factibilidad para barrios	1	Plano del proyecto de obra.	
+301	SAMSA - Aguas de Misiones S.A.	Solicitud de factibilidad para barrios	2	Plano de mensura o croquis de ubicación de la obra.	

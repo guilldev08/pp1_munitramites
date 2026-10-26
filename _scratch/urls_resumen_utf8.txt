@@ -1,0 +1,87 @@
+﻿23 	 https://posadas.gob.ar/guiatramite 	 23 	 ├ìndice de la Gu├¡a de Tr├ímites municipal
+23 	 https://posadas.gob.ar/ajaxGuiatramiteDatos 	 23 	 Ficha idtramite=1: t├¡tulo, descripci├│n, requisitos y sede
+11 	 https://atmisiones.gob.ar/ingresos-brutos-autogestion/ 	 11 	 Procedimiento y requisitos del cambio de nivel de clave fiscal
+10 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/tramites-de-dni 	 10 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+9 	 https://www.obera.gob.ar/guia-de-tramites/ 	 9 	 ├ìndice de la gu├¡a de tr├ímites municipal
+7 	 https://policiamisiones.gob.ar/tramites-a-ciudadanos/ 	 7 	 ├ìndice de tr├ímites policiales que lista el tr├ímite y enlaza al formulario
+5 	 https://personasjuridicas.misiones.gob.ar/requisitos/ 	 5 	 ├ìndice de requisitos y modelos que enlaza el formulario o instructivo
+5 	 https://www.iguazu.gob.ar/tramites-de-transito/ 	 5 	 Requisitos y plazos del otorgamiento de licencia para mayores de edad
+4 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/nacimientos 	 4 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+3 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/tramites-de-pasaporte 	 3 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+3 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/matrimonios 	 3 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+2 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/union-convivencial 	 2 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+2 	 https://atmisiones.gob.ar/inmobiliario-autogestion/ 	 2 	 Descripci├│n, requisitos y documentaci├│n del formulario SR308
+2 	 https://salud.misiones.gob.ar/wp-content/uploads/2026/06/GUIA-DE-TRAMITES.pdf 	 2 	 Requisitos para establecimientos domisanitarios, presentaci├│n, costo y plazo
+2 	 https://salud.misiones.gob.ar/wp-content/uploads/2026/06/GUIA-DE-TRAMITES-2.pdf 	 2 	 Requisitos para establecimientos de higiene personal, cosm├®ticos y perfumes
+2 	 https://salud.misiones.gob.ar/wp-content/uploads/2020/06/Guia-Requisitos-Segun-equipo-de-RDX.pdf 	 2 	 Tipos de equipos, formularios y normativa de habilitaci├│n de radiodiagn├│stico
+2 	 https://www.iguazu.gob.ar/tramites-de-bromatologia/ 	 2 	 Requisitos de la libreta sanitaria por primera vez
+2 	 https://www.iguazu.gob.ar/libreta-sanitaria/ 	 2 	 Formulario de libreta sanitaria: datos del trabajador, otorgamiento y vencimient
+2 	 https://www.iguazu.gob.ar/anexo-examen-medico/ 	 2 	 Anexo de examen m├®dico: ex├ímenes cl├¡nicos y de laboratorio
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/matrimonios-extranjeros 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/defunciones 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/divorcio 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/solicitud-de-actas 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/rectificacion-de-actas 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/legalizacion-de-titulo 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/permiso-de-viaje 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/inscripcion-tardia-administrativa 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/extrana-jurisdiccion 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://atmisiones.gob.ar/sellos-autogestion/ 	 1 	 Descripci├│n, requisitos y consideraciones del formulario SR352
+1 	 https://iprodha.misiones.gob.ar/viviendas-2/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/construccion-de-viviendas-rurales-2/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/construccion-de-viviendas-de-gestion-compartida/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/arreglo-mi-casa/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/construyo-mi-casa/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/requisitos-mediacion-entre-terceros/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/beneficio-para-personas-trasplantadas/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/beneficios-cud/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/cancelacion-por-fallecimiento/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/cancelacion-anticipada/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/cambio-de-titular/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/denuncia-de-siniestro/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/renuncia-la-vivienda/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://iprodha.misiones.gob.ar/permiso-de-custodia-o-guarda/ 	 1 	 T├¡tulo, descripci├│n y requisitos del programa
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/19 	 1 	 Descripci├│n, aranceles y requisitos de la habilitaci├│n inicial
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/24 	 1 	 Descripci├│n, arancel y requisitos del cambio de titularidad
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/32 	 1 	 Descripci├│n, arancel y requisitos de la baja del servicio
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/33 	 1 	 Descripci├│n, condiciones y requisitos del beneficio jubilado y pensionado
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/65 	 1 	 Descripci├│n, condiciones y requisitos de la devoluci├│n del dep├│sito
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/66 	 1 	 Descripci├│n y requisitos de la devoluci├│n por pago doble
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/67 	 1 	 Descripci├│n y requisitos de la revisi├│n de factura
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/68 	 1 	 Descripci├│n y requisitos de la adhesi├│n al d├®bito autom├ítico
+1 	 https://clientes.energiademisiones.com.ar/clientes/tramites/listar-tramites/ver-tramite/69 	 1 	 Descripci├│n, aranceles y requisitos de factibilidad el├®ctrica
+1 	 https://www.energiademisiones.com.ar/tarifa-social/ 	 1 	 Criterios de elegibilidad y exclusi├│n de la Tarifa Social
+1 	 https://www.energiademisiones.com.ar/electrodependientes/ 	 1 	 Descripci├│n y requisitos de inscripci├│n y renovaci├│n del RECS
+1 	 https://samsa.com.ar/solicitud-conexion-domiciliaria/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/cambio-de-titularidad/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/constancia-de-servicio/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/libre-deuda/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/correccion-de-datos/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/solicitud-de-factibilidad-para-barrios/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/convenio-de-pago/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/adhesion-debito-automatico/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://samsa.com.ar/cambios-de-datos-postales/ 	 1 	 T├¡tulo, descripci├│n y requisitos del tr├ímite
+1 	 https://salud.misiones.gob.ar/wp-content/uploads/2026/06/GUIA-DE-TRAMITES-4.pdf 	 1 	 Requisitos y documentaci├│n para la certificaci├│n de no generador de residuos pat
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/09/Certificado-de-domicilio-con-testigos.pdf 	 1 	 Formulario y campos exigidos para el certificado de domicilio con testigos
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/09/Certificado-de-domicilio-sin-testigos.pdf 	 1 	 Formulario y condiciones del certificado de domicilio sin testigos
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/09/Certificado-de-convivencia-con-testigos-copia-copia.pdf 	 1 	 Formulario y datos exigidos para el certificado de convivencia
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/09/Certificado-de-supervivencia-con-testigos-1.pdf 	 1 	 Formulario y datos exigidos para el certificado de supervivencia con testigos
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/08/Supervivencia-sin-Testigos.pdf 	 1 	 Formulario y condiciones del certificado de supervivencia sin testigos
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/08/Certificado-de-Residencia-Extrangero.pdf 	 1 	 Formulario y requisitos del certificado de residencia para extranjeros
+1 	 https://policiamisiones.gob.ar/wp-content/uploads/2024/08/Constancia-Policial.pdf 	 1 	 Formulario y datos exigidos para la constancia policial por extrav├¡o
+1 	 https://personasjuridicas.misiones.gob.ar/wp-content/uploads/2022/05/PERSONAS-HUMANAS-QUE-REALIZAN-ACTIVIDAD-ECONOMICA.pdf 	 1 	 Requisitos para personas humanas que realizan actividad econ├│mica
+1 	 https://personasjuridicas.misiones.gob.ar/wp-content/uploads/2022/12/DGPJ-BENEFICIARIO-FINAL-06-12-2022.pdf 	 1 	 Formulario Anexo I, definici├│n, documentaci├│n respaldatoria y plazo de actualiza
+1 	 https://personasjuridicas.misiones.gob.ar/wp-content/uploads/2021/08/cambios-de-domicilio.pdf 	 1 	 Situaciones, actas y tr├ímite para el cambio de domicilio de asociaciones y funda
+1 	 https://personasjuridicas.misiones.gob.ar/wp-content/uploads/2024/05/Form-Reserva-de-Nombre-2024.docx 	 1 	 Formulario de reserva de nombre para sociedades y datos exigidos
+1 	 https://personasjuridicas.misiones.gob.ar/wp-content/uploads/2022/09/Modelo-de-Formulario-libros.pdf 	 1 	 Formulario de r├║brica de libros, datos de la entidad y detalle de libros
+1 	 https://www.obera.gob.ar/habilitacion-comercio-con-local/ 	 1 	 Requisitos para personas f├¡sicas y jur├¡dicas, formularios y observaciones
+1 	 https://www.obera.gob.ar/habilitacion-comercio-sin-local/ 	 1 	 Requisitos para personas f├¡sicas y jur├¡dicas y formularios descargables
+1 	 https://obera.gob.ar/servicios-municipal/licencia-por-primera-vez-de-16-a-21-anos/ 	 1 	 Requisitos, plazos y pasos para la primera licencia de 16 a 21 a├▒os
+1 	 https://obera.gob.ar/servicios-municipal/licencia-por-primera-vez-mas-de-21-anos/ 	 1 	 Requisitos, plazos y pasos para la primera licencia de mayores de 21 a├▒os
+1 	 https://www.obera.gob.ar/renovacion-licencia-nacional-de-conducir/ 	 1 	 Requisitos, plazos de renovaci├│n y ex├ímenes seg├║n vencimiento
+1 	 https://www.obera.gob.ar/solicitud-de-libre-deuda-de-patente/ 	 1 	 Requisitos, responsable y canales de presentaci├│n del libre deuda de patente
+1 	 https://www.obera.gob.ar/solicitud-de-libre-deuda-inmueble/ 	 1 	 Requisitos para el libre deuda de inmueble
+1 	 https://www.obera.gob.ar/carnet-sanitario/ 	 1 	 Requisitos, vigencia y sede del carnet sanitario
+1 	 https://www.obera.gob.ar/esterilizacion-quirurgica-de-mascotas/ 	 1 	 Requisitos, turnos y sede para la castraci├│n de mascotas
+1 	 https://www.iguazu.gob.ar/tramites-de-fiscalizacion/ 	 1 	 ├ìndice de tr├ímites de fiscalizaci├│n que enlaza la solicitud de habilitaci├│n
+1 	 https://www.iguazu.gob.ar/solicitud-de-habilitacion-e-inscripcion-o-traslado/ 	 1 	 Formulario y documentaci├│n exigida para personas f├¡sicas y jur├¡dicas

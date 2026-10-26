@@ -6,11 +6,11 @@ Sin frameworks de JavaScript, sin build step y sin servicios intermedios:
 **Django renderiza HTML en el servidor, habla con Firebird por ORM y maneja
 login, formularios y permisos con sus propios módulos.** El único archivo JS
 es `static/js/app.js` (JavaScript puro, sin dependencias): abre las pestañas
-emergentes de login/registro y de chat, manda las preguntas al asistente y
-voltea el tema claro/oscuro. Acompañan tres scripts chicos **inline** (se
-cargan con la página, sin pedir nada más): el de `base.html` que aplica el
-tema antes de pintar, el que deja `window.MT` a mano de las plantillas y el
-de `chatbot.html` que mantiene el historial abajo del todo.
+emergentes de login/registro y del asistente, maneja el historial y la barra
+lateral del chat, manda las preguntas y voltea el tema claro/oscuro.
+Acompañan dos scripts chicos **inline** (se cargan con la página, sin pedir
+nada más): el de `base.html` que aplica el tema antes de pintar y el que deja
+`window.MT` a mano de las plantillas.
 
 Qué hace el sistema, en corto:
 
@@ -35,8 +35,10 @@ Qué hace el sistema, en corto:
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
 - **Asistente virtual** con RAG y **Groq** como modelo (API en la nube):
-  responde solo consultas sobre trámites, con redacción natural y
-  flexible, cita la fuente y, si no sabe, lo dice en lugar de inventar.
+  vive en un modal que se abre desde cualquier página, guarda las
+  conversaciones de cada cuenta y enlaza las fichas dentro del texto de la
+  respuesta. Responde solo consultas sobre trámites, con redacción natural
+  y flexible, cita la fuente y, si no sabe, lo dice en lugar de inventar.
   Sin clave usa las plantillas locales y no gasta la API.
 
 Todo lo anterior está documentado acá y tiene sus tests de aceptación: ver
@@ -58,7 +60,6 @@ docker compose up -d --build
 |---|---|
 | http://localhost:8000/ | Landing pública a pantalla completa (sin barra superior): bienvenida, ingreso (con sesión o sin cuenta) y «¿Cómo funciona?» |
 | http://localhost:8000/tramites/ | Buscador de trámites |
-| http://localhost:8000/chatbot/ | Asistente virtual (página completa) |
 | http://localhost:8000/perfil/ | Datos personales (pide iniciar sesión) |
 | http://localhost:8000/soporte/ | Soporte (pide iniciar sesión) |
 | http://localhost:8000/panel/ | **Panel de administración** (Centro de Trámites, Centro de Consultas, usuarios y temas) |
@@ -68,8 +69,9 @@ docker compose up -d --build
 
 La primera vez tarda unos minutos (baja imágenes e instala dependencias).
 El asistente **ya funciona sin configuración**: sin clave de Groq
-responde con las plantillas locales del sitio. Para que redacte el
-modelo, pegá la clave en el `.env` de la raíz (ver
+responde con las plantillas locales del sitio. Se abre con el botón 💬 o
+con los enlaces «Preguntá» de las páginas; no tiene página propia. Para que
+redacte el modelo, pegá la clave en el `.env` de la raíz (ver
 [Cómo redacta](#cómo-redacta-y-por-qué-no-inventa)).
 
 ### Cargar los datos de ejemplo
@@ -286,10 +288,8 @@ Todo eso vive en `views/panel.py` (`solo_administrador`,
 | `/tramites/` | Listado con filtros y paginación; arriba de todo, la chatbar del asistente | público |
 | `/tramites/<id>/` | Ficha con requisitos, organismo y botones de enlaces | público |
 | `/soporte/` | Formulario de soporte + pedidos del usuario | sesión |
-| `/chatbot/` | Asistente (página completa, alternativa sin JS) | sesión (sin cuenta, el intento abre el modal de login) |
-| `/chatbot/api/` | JSON que usa la pestaña emergente del chat | sesión (el POST sin sesión contesta 403) |
+| `/chatbot/api/` | JSON que usa el modal del asistente (historial y conversaciones) | sesión (el POST sin sesión contesta 403) |
 | `/buscador/api/` | JSON del asistente para la barra «Buscar» (no guarda la charla) | público |
-| `/chatbot/limpiar/` | Vacía la charla de la sesión | sesión (el botón solo se muestra si hay sesión) |
 | `/consultas/` | Consultas del usuario (o todas, si es staff) | sesión |
 | `/consultas/nueva/` | Formulario de consulta | sesión |
 | `/registro/` · `/login/` | Modal de alta y de sesión, con la landing quedando detrás (también funciona como página) | público |
@@ -307,6 +307,10 @@ Todo eso vive en `views/panel.py` (`solo_administrador`,
 | `/admin/login/` | Login del admin | — |
 | `/api/tramites/` | JSON con los trámites | público |
 
+El asistente **no tiene página propia**: se usa desde el modal que se abre
+en cualquier página. Las viejas rutas `/chatbot/` y `/chatbot/limpiar/` ya
+no existen (el intento escrito `limpiar` sigue vaciando la charla actual).
+
 ### Piezas del layout
 
 `base.html` lleva la barra (Inicio · Trámites · Soporte + Ingresar) y **dos
@@ -318,15 +322,19 @@ navegación en el pie— y el resto del sitio la muestra normal:
 | Modal | Contenido | Se abre |
 |---|---|---|
 | `#modal-auth` | Pestañas **Ingresar** / **Crear cuenta** | clic en la barra, o solo al llegar a `/login/` y `/registro/` |
-| `#modal-chat` | Chat con el asistente | botón 💬 flotante, o link con `data-abrir="modal-chat"` |
+| `#modal-chat` | Chat con el asistente, hamburguesa y barra lateral con todas las conversaciones | botón 💬 flotante, la chatbar de `/tramites/`, o link con `data-abrir="modal-chat"` |
 
-Sin JavaScript todo sigue funcionando: los enlaces caen en `/login/` y
-`/registro/` (que abren el mismo modal del lado del servidor) y la barra del
-chat manda el POST a `/chatbot/`, que muestra la charla en la página.
+Sin JavaScript, los enlaces de login/registro caen en `/login/` y
+`/registro/` (que abren el mismo modal del lado del servidor). El asistente
+funciona solo con JavaScript: no hay página de chat alternativa.
 
 Con JavaScript, el modal muestra la pregunta de una vez y un
 **«Escribiendo…»** con `aria-live` mientras el servidor contesta; al
-llegar la respuesta se repinta el historial que devolvió el servidor.
+llegar la respuesta se repinta el historial que devolvió el servidor. La
+hamburguesa abre la barra lateral con todas las conversaciones (título y
+fecha), «+ Nuevo» crea otra y el modal recuerda conversación, scroll,
+borrador y estado de la barra en `sessionStorage`; al cerrar sesión se
+limpia.
 
 La barra también trae el **interruptor de tema** (🌙 / ☀️): voltea entre el
 tema claro y el oscuro, guarda la elección en `localStorage` y, si el usuario
@@ -358,9 +366,9 @@ munitramites/
 │   ├── css/sitio.css               # rediseño (portada + trámites) para todo el sitio
 │   ├── css/admin.css               # hoja de estilos del panel /admin/
 │   ├── css/landing.css             # portada a pantalla completa
-│   ├── css/tramites.css            # lista, ficha y chatbot (tema oscuro propio)
+│   ├── css/tramites.css            # lista y ficha (tema oscuro propio)
 │   ├── img/                        # andresito (portada) y banner de trámites
-│   └── js/app.js                   # modales + envío del chat (sin frameworks)
+│   └── js/app.js                   # modales + chat: barra lateral e historial (sin frameworks)
 └── munitramites/                   # ← TODO lo de Django está acá
     ├── settings.py                 #    configuración: BD, email, chatbot, idioma
     ├── urls.py                     #    rutas: acá se agregan las URL
@@ -376,7 +384,7 @@ munitramites/
     │   ├── __init__.py             #    reexporta todo → las URL no cambian
     │   ├── pagina.py               #    landing
     │   ├── tramites.py             #    listado y ficha
-    │   ├── chatbot.py              #    asistente (la lógica está en services/)
+    │   ├── chatbot.py              #    asistente (API del modal y de la barra; lógica en services/)
     │   ├── consultas.py            #    consultas, sugerencias y detalle
     │   ├── panel.py                #    panel /panel/: trámites, consultas, usuarios, temas
     │   ├── soporte.py              #    soporte
@@ -405,12 +413,12 @@ munitramites/
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (265)
+    ├── tests/                      #    tests de aceptación (288)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
     │   ├── test_scraping.py        #    scraper: relevancia + comando (sin red)
-    │   ├── test_chatbot.py         #    asistente: RAG y privacidad
+    │   ├── test_chatbot.py         #    asistente: RAG, fuentes e historial
     │   ├── test_llm.py             #    el cliente del LLM, con mocks (nunca toca el modelo)
     │   ├── test_consultas.py       #    RF-08/09/10
     │   ├── test_roles.py           #    ESP-02 · RF-03/11/13 (los tres roles)
@@ -435,7 +443,6 @@ munitramites/
         │   └── panel_resumen.html  #    las tarjetas (las arma panel_admin)
         ├── inicio.html             #    landing (también detrás de /login/ y /registro/)
         ├── soporte.html            #    soporte (solo con sesión)
-        ├── chatbot.html            #    asistente en página completa
         ├── parciales/
         │   ├── lista_tramites.html #    filtros + listado + paginación
         │   └── chat_historial.html #    burbujas del chat
@@ -533,7 +540,7 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 265 tests
+docker compose exec web python manage.py test --noinput         # correr los 288 tests
 docker compose exec web python manage.py ver_contexto "¿qué necesito para renovar el DNI?"  # ver el contexto que se manda a Groq
 
 docker compose logs -f web                                     # ver los pedidos a Groq
@@ -625,8 +632,8 @@ en esta tabla.
 | **IA — precisión contextual** | `services/chatbot/recuperacion.py` (BM25 + umbral) | `test_chatbot.PipelineTests` |
 | **IA - alucinaciones** | `services/chatbot/llm/prompt.py` (el prompt prohíbe inventar montos y citas) · `generacion.py` (sin modelo: el corte de montos contesta «no dispongo» por un precio que no está indexado) · `pipeline.py` (`_SIN_INFO`) | `test_chatbot` · `test_chatbot.AlucinacionesTests` · `test_llm` |
 | **IA — cita de fuentes** | `Fragmento.tramite_id` → enlace a la ficha | `test_chatbot` |
-| **IA — privacidad** | historial en `request.session`, nada en la BD | `test_chatbot.PrivacidadTests` |
-| **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar la sesión) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
+| **IA — historial y privacidad** | `ConversacionChat`/`MensajeChat`/`FuenteMensaje` en Firebird, filtrados por usuario; cada cuenta ve solo lo suyo | `test_chatbot.HistorialPersistenteTests` |
+| **IA — barra de búsqueda** | `views/chatbot.py::buscador_api` (mismo `responder()`, sin tocar el historial) · panel en `lista_tramites.html` + `app.js` | `test_chatbot.BuscadorTests` |
 | **RNF-01** Seguridad | sesión y contraseña de Django (`login_required`, CSRF, hasher), correos únicos, «cada uno ve lo suyo» | `test_roles` · `test_admin` · `test_consultas` |
 | **RNF-02** Usabilidad | plantillas con `label` y `help_text`, filtros en `/tramites/`, formularios con mensajes de error en español | `test_consultas` · `test_tramites` |
 | **RNF-03** Rendimiento | `select_related` + `prefetch_related`, 6 por página (`views/tramites.py::POR_PAGINA`) e índice BM25 en memoria | `test_rnf.RendimientoTests` (sin N+1 y caché del índice) · `test_tramites.ListadoTests.test_paga_de_a_seis_por_pagina` |
@@ -661,12 +668,26 @@ y la **barra de búsqueda del sitio**: lo que se escriba en «Buscar» filtra
 la lista y, arriba de los resultados, un panel con el mismo pipeline
 redacta la respuesta (`parciales/lista_tramites.html` + `app.js`). Ese
 panel sale por `/buscador/api/?q=…`, que llama al mismo `responder()` que
-el chat pero **sin tocar la sesión**: lo que se busca no queda en la charla
-(privacidad, verificado en vivo). Sin sesión iniciada ese panel responde
+el chat pero **sin tocar el historial**: lo que se busca no queda en la
+charla (privacidad, verificado en vivo). Sin sesión iniciada ese panel responde
 con plantillas —el modelo solo redacta para usuarios logueados—, así que
 una visita anónima no gasta la API de Groq. Sin JavaScript el panel muestra
 el enlace a `/chatbot/?q=…`, que responde la misma pregunta en el chat.
 Tests: `test_chatbot.BuscadorTests`.
+
+### Historial por usuario
+
+Cada cuenta tiene sus propias conversaciones, guardadas en Firebird
+(`ConversacionChat`, `MensajeChat` y `FuenteMensaje`). La página `/chatbot/`
+trae una barra lateral para cambiar de charla; el modal tiene un selector,
+«+ Nuevo» y «Vaciar». Los POST redirigen a `?c=<id>` para que refrescar no
+reenvíe la pregunta.
+
+El modelo no arma enlaces: `llm.limpiar_enlaces()` descarta Markdown, HTML y
+URLs que devuelva, y el servidor agrega al pie la fuente interna con el
+título de la ficha como texto del enlace (`Fuente: [título](/tramites/<pk>/)`).
+Tests: `test_chatbot.HistorialPersistenteTests` y
+`test_llm.LimpiarEnlacesTests`.
 
 ### Cómo redacta (y por qué no inventa)
 

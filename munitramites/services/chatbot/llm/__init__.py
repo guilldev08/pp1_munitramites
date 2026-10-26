@@ -30,6 +30,7 @@ mensaje de la charla pagaría el timeout completo en la cara del
 ciudadano.
 """
 
+import re
 import time
 
 import requests
@@ -43,8 +44,34 @@ __all__ = [
     'activo',
     'armar_mensajes',
     'armar_user',
+    'limpiar_enlaces',
     'redactar',
 ]
+
+# El modelo no debe devolver enlaces: el sistema agrega la fuente interna
+# con el título de la ficha como texto. Estos patrones son la red de
+# seguridad por si el proveedor igual manda Markdown, HTML o una URL suelta.
+_ENLACE_MARKDOWN = re.compile(
+    r'\[([^\]]+)\]\((?:https?://|/)[^)]+\)', re.IGNORECASE
+)
+_ENLACE_HTML = re.compile(r'<a\b[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
+_URL = re.compile(r'\b(?:https?://|www\.)\S+', re.IGNORECASE)
+
+
+def limpiar_enlaces(texto):
+    """Quita enlaces del texto del modelo y deja solo el texto visible.
+
+    No toca los enlaces que arma el sistema en la vista: esos se guardan
+    aparte, como `FuenteMensaje`. Acá se limpia únicamente la redacción
+    del modelo para que no invente URLs ni recomendaciones externas.
+    """
+    if not texto:
+        return texto
+
+    texto = _ENLACE_HTML.sub(r'\1', texto)
+    texto = _ENLACE_MARKDOWN.sub(r'\1', texto)
+    texto = _URL.sub('', texto)
+    return re.sub(r'[ \t]{2,}', ' ', texto).strip()
 
 # Segundos sin reintentar tras un fallo (ver docstring).
 COOLDOWN_FALLO = 60
@@ -62,7 +89,7 @@ def redactar(pregunta, fragmentos, historial=()):
     """La respuesta del modelo, o None si no hay modelo disponible.
 
     `fragmentos` son los Fragmento recuperados por el RAG (etapa 2) y
-    `historial` la charla de la sesión, para seguir el hilo en
+    `historial` la charla guardada, para seguir el hilo en
     seguimientos cortos («¿y el plazo?»). El pipeline solo llama acá
     con fragmentos: sin contexto no se gasta la API.
     """
@@ -81,6 +108,7 @@ def redactar(pregunta, fragmentos, historial=()):
         _ultimo_fallo = time.monotonic()
         return None
 
+    texto = limpiar_enlaces(texto)
     if not texto:
         _ultimo_fallo = time.monotonic()
         return None

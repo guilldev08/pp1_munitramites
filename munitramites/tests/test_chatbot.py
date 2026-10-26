@@ -5,7 +5,8 @@ Criterios de aceptación del documento:
     Precisión contextual ..... responde solo con la información indexada
     Manejo de alucinaciones .. si no sabe, lo dice en lugar de inventar
     Cita de fuentes .......... siempre enlaza el trámite del que habla
-    Privacidad ............... no almacena el historial de forma permanente
+    Historial ................ cada usuario tiene sus conversaciones guardadas
+    Privacidad ............... cada usuario solo puede abrir sus conversaciones
 
 La etapa 3 (generar) redacta con la plantilla local, anclada a los
 fragmentos: no hay red que simular, así que acá se prueba el
@@ -19,7 +20,9 @@ from unittest import mock
 from django.test import override_settings
 from django.urls import reverse
 
-from munitramites.models import Consulta, Direccion, Tramite
+from munitramites.models import (
+    ConversacionChat, Direccion, FuenteMensaje, Tramite,
+)
 from munitramites.services.chatbot import generacion, indexar, llm, responder
 from munitramites.services.chatbot.generacion import PlantillaLocal
 
@@ -173,6 +176,27 @@ class VistasChatbotTests(TestCase):
         self.assertEqual(historial[-1]['tramites'][0]['url'],
                          reverse('tramite_detalle', args=[Tramite.objects.first().pk]))
 
+    def test_la_respuesta_enlaza_dentro_del_texto(self):
+        tramite()
+        self.client.force_login(ciudadano(username='ana'))
+
+        r = self.client.post(reverse('chatbot_api'),
+                             {'mensaje': 'renovacion de DNI'})
+        respuesta = r.json()['historial'][-1]
+
+        # El texto no trae una sección de fuentes ni URLs: el enlace va
+        # en la primera aparición del título, dentro de la respuesta.
+        self.assertNotIn('Fuente:', respuesta['texto'])
+        self.assertNotIn('http', respuesta['texto'])
+        enlaces = [s for s in respuesta['segmentos'] if s['url']]
+        self.assertEqual(len(enlaces), 1)
+        self.assertEqual(enlaces[0]['texto'], 'Renovacion de DNI')
+        self.assertEqual(enlaces[0]['url'], respuesta['tramites'][0]['url'])
+        self.assertEqual(
+            ''.join(s['texto'] for s in respuesta['segmentos']),
+            respuesta['texto'],
+        )
+
     def test_el_historial_se_repite_en_las_siguientes_consultas(self):
         self.client.force_login(ciudadano(username='ana'))
         self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
@@ -180,35 +204,21 @@ class VistasChatbotTests(TestCase):
 
         self.assertEqual(len(r.json()['historial']), 2)
 
-    def test_vaciar_la_charla(self):
+    def test_la_api_ya_no_acepta_la_accion_limpiar(self):
         self.client.force_login(ciudadano(username='ana'))
         self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
-        self.client.post(reverse('chatbot_api'), {'accion': 'limpiar'})
 
-        r = self.client.get(reverse('chatbot_api'))
-        self.assertEqual(r.json()['historial'], [])
+        r = self.client.post(reverse('chatbot_api'), {'accion': 'limpiar'})
 
-    def test_pagina_del_chat_sin_javascript(self):
-        tramite()
-        self.client.force_login(ciudadano(username='ana'))
+        self.assertEqual(r.status_code, 400)
+        historial = self.client.get(reverse('chatbot_api')).json()['historial']
+        self.assertEqual(len(historial), 2)
 
-        r = self.client.post(reverse('chatbot'), {'mensaje': 'renovacion de DNI'})
-
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Renovacion de DNI')
-
-    def test_boton_de_vaciar_pide_sesion(self):
-        """La charla es privada: vaciarla exige estar identificado."""
-        r = self.client.post(reverse('chatbot_limpiar'))
-        self.assertEqual(r.status_code, 302)
-        self.assertIn(reverse('login'), r['Location'])
-
-    def test_sin_sesion_la_pagina_del_chat_manda_al_login(self):
-        """Sin cuenta no se llega al asistente: la puerta es /login/."""
-        r = self.client.get(reverse('chatbot'))
-
-        self.assertEqual(r.status_code, 302)
-        self.assertIn(reverse('login'), r['Location'])
+    def test_la_pagina_vieja_del_chat_ya_no_existe(self):
+        self.assertEqual(self.client.get('/chatbot/').status_code, 404)
+        self.assertEqual(
+            self.client.post('/chatbot/limpiar/').status_code, 404
+        )
 
     def test_sin_sesion_el_json_de_la_charla_devuelve_403(self):
         """El JavaScript del modal intercepta el 403 y abre el de login."""
@@ -217,12 +227,16 @@ class VistasChatbotTests(TestCase):
         self.assertEqual(r.status_code, 403)
         self.assertIn('error', r.json())
 
-    def test_el_boton_de_vaciar_se_muestra_con_sesion(self):
+    def test_el_modal_tiene_hamburguesa_y_lista_de_chats(self):
         self.client.force_login(ciudadano(username='ana'))
 
-        r = self.client.get(reverse('chatbot'))
+        r = self.client.get(reverse('tramites'))
 
-        self.assertContains(r, 'Vaciar chat')
+        self.assertContains(r, 'id="chat-hamburguesa"')
+        self.assertContains(r, 'id="chat-lista"')
+        self.assertContains(r, 'id="chat-nuevo"')
+        self.assertNotContains(r, 'chat-limpiar')
+        self.assertNotContains(r, 'Vaciar')
 
     def test_escribir_limpiar_vacia_la_charla(self):
         """La ayuda promete «limpiar» escrito a mano: tiene que funcionar."""
@@ -252,9 +266,9 @@ class VistasChatbotTests(TestCase):
             return_value={'texto': 'ok', 'tramites': [], 'fragmentos': []},
         ) as r:
             self.client.force_login(ciudadano(username='ana'))
-            self.client.post(reverse('chatbot'),
+            self.client.post(reverse('chatbot_api'),
                              {'mensaje': 'renovacion de DNI'})
-            self.client.post(reverse('chatbot'), {'mensaje': '¿y eso?'})
+            self.client.post(reverse('chatbot_api'), {'mensaje': '¿y eso?'})
 
         pregunta, historial = r.call_args.args
         self.assertEqual(pregunta, '¿y eso?')
@@ -272,8 +286,9 @@ class BuscadorTests(TestCase):
 
         self.assertContains(r, 'id="respuesta-ia"')
         self.assertContains(r, 'data-consulta="renovacion de DNI"')
-        # Sin JavaScript: enlace al chat con la misma consulta
-        self.assertContains(r, reverse('chatbot') + '?q=')
+        # El panel enlaza al modal del asistente con la misma consulta.
+        self.assertContains(r, 'data-abrir="modal-chat"')
+        self.assertContains(r, 'data-chat-pregunta="renovacion de DNI"')
 
         # El panel vive en el parcial compartido, pero la landing no lo
         # repite: el listado vive solo en /tramites/
@@ -288,17 +303,9 @@ class BuscadorTests(TestCase):
 
         self.assertNotContains(r, 'id="respuesta-ia"')
 
-    def test_el_enlace_sin_javascript_de_verdad_responde(self):
-        tramite()
-        self.client.force_login(ciudadano(username='ana'))
-
-        r = self.client.get(reverse('chatbot'), {'q': 'renovacion de DNI'})
-
-        self.assertEqual(r.status_code, 200)
-        self.assertContains(r, 'Renovacion de DNI')
-
     def test_el_json_del_buscador_responde_sin_guardar_la_charla(self):
         tramite()
+        self.client.force_login(ciudadano(username='ana'))
 
         r = self.client.get(reverse('buscador_api'),
                             {'q': 'renovacion de DNI'})
@@ -308,7 +315,12 @@ class BuscadorTests(TestCase):
         self.assertEqual(datos['tramites'][0]['titulo'], 'Renovacion de DNI')
         self.assertIn('url', datos['tramites'][0])
         # Privacidad: lo que se busca en la barra NO queda en la charla
-        self.assertEqual(self.client.session.get('chatbot', []), [])
+        self.assertEqual(
+            ConversacionChat.objects.filter(
+                usuario__username='ana'
+            ).count(),
+            0,
+        )
 
     def test_el_buscador_usa_el_mismo_pipeline_sin_historial(self):
         with mock.patch(
@@ -355,44 +367,221 @@ class BuscadorTests(TestCase):
 
         self.assertEqual(r.json()['texto'], 'Respuesta de prueba.')
         post.assert_called_once()
-        self.assertEqual(self.client.session.get('chatbot', []), [])
+        self.assertEqual(
+            ConversacionChat.objects.filter(
+                usuario__username='ana'
+            ).count(),
+            0,
+        )
 
     def test_el_json_sin_consulta_no_llama_al_pipeline(self):
         with mock.patch('munitramites.views.chatbot.responder') as r:
             resp = self.client.get(reverse('buscador_api'))
 
-        self.assertEqual(resp.json(), {'texto': '', 'tramites': []})
+        self.assertEqual(
+            resp.json(),
+            {'texto': '', 'tramites': [], 'segmentos': []},
+        )
         r.assert_not_called()
 
 
-class PrivacidadTests(TestCase):
-    """«Sin almacenar el historial conversacional de forma permanente»."""
+class HistorialPersistenteTests(TestCase):
+    """El historial queda en Firebird, separado por usuario."""
 
     def setUp(self):
-        # La charla es de la cuenta: sin sesión ni se llega a la API
-        self.client.force_login(ciudadano(username='ana'))
-
-    def test_la_charla_no_se_guarda_en_la_base(self):
+        self.user = ciudadano(username='ana')
+        self.client.force_login(self.user)
         tramite()
-        consultas_antes = Consulta.objects.count()
-        tramites_antes = Tramite.objects.count()
 
-        for pregunta in ('renovacion de DNI', 'partida de nacimiento'):
-            self.client.post(reverse('chatbot_api'), {'mensaje': pregunta})
-
-        self.assertEqual(Consulta.objects.count(), consultas_antes)
-        self.assertEqual(Tramite.objects.count(), tramites_antes)
-
-    def test_la_charla_se_pierde_al_cerrar_el_navegador(self):
-        tramite()
+    def test_la_charla_persiste_al_cerrar_el_navegador(self):
         self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
-        self.assertIn('chatbot', self.client.session)
+        self.assertNotIn('chatbot', self.client.session)
 
-        # Nueva sesión (como si el navegador se cerrara)
+        # Otra sesión del mismo usuario, como si abriera otro navegador.
         self.client.cookies.clear()
+        self.client.force_login(self.user)
         r = self.client.get(reverse('chatbot_api'))
 
+        self.assertEqual(len(r.json()['historial']), 2)
+        self.assertEqual(r.json()['historial'][0]['texto'], 'hola')
+
+    def test_cada_usuario_ve_solo_sus_conversaciones(self):
+        self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
+
+        otro = ciudadano(username='beto')
+        otro_cliente = self.client_class()
+        otro_cliente.force_login(otro)
+        r = otro_cliente.get(reverse('chatbot_api'))
+
         self.assertEqual(r.json()['historial'], [])
+        self.assertEqual(r.json()['conversaciones'], [])
+
+    def test_se_puede_crear_otra_conversacion_y_volver_a_la_anterior(self):
+        r = self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'renovacion de DNI'}
+        )
+        primera = r.json()['conversacion']['id']
+
+        r = self.client.post(reverse('chatbot_api'), {'accion': 'nueva'})
+        segunda = r.json()['conversacion']['id']
+        self.assertNotEqual(primera, segunda)
+        self.assertEqual(r.json()['historial'], [])
+
+        self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
+        r = self.client.get(
+            reverse('chatbot_api'), {'conversacion': primera}
+        )
+        self.assertEqual(r.json()['conversacion']['id'], primera)
+        self.assertEqual(len(r.json()['historial']), 2)
+
+    def test_la_respuesta_cita_la_ficha_interna(self):
+        r = self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'renovacion de DNI'}
+        )
+        datos = r.json()
+        conversacion = datos['conversacion']['id']
+        respuesta = datos['historial'][1]
+
+        self.assertEqual(respuesta['rol'], 'bot')
+        self.assertTrue(respuesta['tramites'])
+        fuente = respuesta['tramites'][0]
+        self.assertEqual(fuente['titulo'], 'Renovacion de DNI')
+        self.assertEqual(
+            fuente['url'],
+            reverse('tramite_detalle', args=[fuente['pk']]),
+        )
+        # El modelo no arma enlaces: el texto queda limpio y el servidor
+        # enlaza el título del trámite dentro de la respuesta.
+        self.assertNotIn('http', respuesta['texto'])
+        self.assertNotIn('Fuente:', respuesta['texto'])
+        enlaces = [s for s in respuesta['segmentos'] if s['url']]
+        self.assertTrue(enlaces)
+        self.assertEqual(enlaces[0]['texto'], 'Renovacion de DNI')
+        self.assertEqual(enlaces[0]['url'], fuente['url'])
+        self.assertEqual(
+            ''.join(s['texto'] for s in respuesta['segmentos']),
+            respuesta['texto'],
+        )
+        self.assertEqual(
+            FuenteMensaje.objects.filter(
+                mensaje__conversacion_id=conversacion
+            ).count(),
+            len(respuesta['tramites']),
+        )
+
+    def test_no_se_puede_abrir_la_conversacion_de_otro_usuario(self):
+        r = self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'mi documento secreto'}
+        )
+        primera = r.json()['conversacion']['id']
+
+        otro = ciudadano(username='beto')
+        otro_cliente = self.client_class()
+        otro_cliente.force_login(otro)
+
+        r = otro_cliente.get(
+            reverse('chatbot_api'), {'conversacion': primera}
+        )
+        self.assertIsNone(r.json()['conversacion'])
+        self.assertEqual(r.json()['historial'], [])
+
+        # Aunque mande el id ajeno, el POST crea SU conversación.
+        r = otro_cliente.post(
+            reverse('chatbot_api'),
+            {'mensaje': 'hola', 'conversacion': primera},
+        )
+        self.assertNotEqual(r.json()['conversacion']['id'], primera)
+
+        # La conversación de ana quedó intacta.
+        r = self.client.get(
+            reverse('chatbot_api'), {'conversacion': primera}
+        )
+        self.assertEqual(len(r.json()['historial']), 2)
+
+    def test_la_lista_muestra_la_conversacion_elegida(self):
+        r = self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'renovacion de DNI'}
+        )
+        primera = r.json()['conversacion']['id']
+
+        r = self.client.post(reverse('chatbot_api'), {'accion': 'nueva'})
+        self.assertNotEqual(r.json()['conversacion']['id'], primera)
+        self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'partida de nacimiento'}
+        )
+
+        r = self.client.get(reverse('chatbot_api'), {'conversacion': primera})
+        datos = r.json()
+
+        self.assertEqual(datos['conversacion']['id'], primera)
+        self.assertEqual(len(datos['conversaciones']), 2)
+        textos = [m['texto'] for m in datos['historial']]
+        self.assertIn('renovacion de DNI', textos)
+        self.assertNotIn('partida de nacimiento', textos)
+
+    def test_seleccionar_cambia_la_conversacion_activa(self):
+        r = self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'renovacion de DNI'}
+        )
+        primera = r.json()['conversacion']['id']
+
+        self.client.post(reverse('chatbot_api'), {'accion': 'nueva'})
+        self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
+
+        r = self.client.post(
+            reverse('chatbot_api'),
+            {'accion': 'seleccionar', 'conversacion': primera},
+        )
+        self.assertEqual(r.json()['conversacion']['id'], primera)
+
+        # El mensaje siguiente se guarda en la conversación elegida.
+        r = self.client.post(reverse('chatbot_api'), {'mensaje': 'gracias'})
+        self.assertEqual(r.json()['conversacion']['id'], primera)
+        self.assertEqual(len(r.json()['historial']), 4)
+
+    def test_el_titulo_sale_de_la_primera_pregunta(self):
+        r = self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'renovacion de DNI'}
+        )
+        self.assertEqual(r.json()['conversacion']['titulo'], 'renovacion de DNI')
+
+    def test_la_lista_trae_todas_las_conversaciones(self):
+        """La barra lateral no se corta en 50: lista el historial completo."""
+        for i in range(60):
+            ConversacionChat.objects.create(
+                usuario=self.user, titulo=f'Chat {i}'
+            )
+
+        r = self.client.get(reverse('chatbot_api'))
+        datos = r.json()
+
+        self.assertEqual(len(datos['conversaciones']), 60)
+        self.assertIn('actualizado', datos['conversaciones'][0])
+
+    def test_limpiar_escrito_solo_borra_la_conversacion_activa(self):
+        r = self.client.post(reverse('chatbot_api'), {'mensaje': 'hola'})
+        primera = r.json()['conversacion']['id']
+
+        r = self.client.post(reverse('chatbot_api'), {'accion': 'nueva'})
+        segunda = r.json()['conversacion']['id']
+        self.client.post(
+            reverse('chatbot_api'), {'mensaje': 'renovacion de DNI'}
+        )
+
+        self.client.post(reverse('chatbot_api'), {'mensaje': 'limpiar'})
+
+        r = self.client.get(reverse('chatbot_api'), {'conversacion': segunda})
+        historial = r.json()['historial']
+        self.assertEqual(len(historial), 2)
+        self.assertEqual(historial[0]['texto'], 'limpiar')
+        self.assertEqual(historial[1]['rol'], 'bot')
+        self.assertNotIn('Renovacion de DNI',
+                         [m['texto'] for m in historial])
+
+        # La primera conversación sigue intacta.
+        r = self.client.get(reverse('chatbot_api'), {'conversacion': primera})
+        self.assertEqual(len(r.json()['historial']), 2)
+        self.assertEqual(len(r.json()['conversaciones']), 2)
 
 
 class PlantillaLocalTests(TestCase):

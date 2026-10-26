@@ -2,7 +2,7 @@
 
     pagina.py     portada (hero + chat + lista de tramites)
     tramites.py   listado con filtros y ficha
-    chatbot.py    asistente (pagina, JSON y limpiar)
+    chatbot.py    asistente (JSON del modal y de la barra de búsqueda)
     consultas.py  consultas y sugerencias de los ciudadanos
     soporte.py    pedidos de soporte
     cuenta.py     registro y perfil del ciudadano
@@ -19,7 +19,7 @@ Para AGREGAR UNA VISTA NUEVA:
 """
 
 from .api import api_tramites
-from .chatbot import buscador_api, chatbot, chatbot_api, chatbot_limpiar
+from .chatbot import buscador_api, chatbot_api
 from .consultas import consulta_detalle, consulta_nueva, consultas
 from .cuenta import LoginDeSitio, perfil, registro
 from .pagina import inicio
@@ -37,9 +37,7 @@ __all__ = [
     'PREFIJO_SOPORTE',
     'api_tramites',
     'buscador_api',
-    'chatbot',
     'chatbot_api',
-    'chatbot_limpiar',
     'consulta_detalle',
     'consulta_nueva',
     'consultas',

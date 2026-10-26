@@ -82,12 +82,12 @@ class ListadoTests(TestCase):
 
     def test_abre_con_la_barra_del_asistente(self):
         """La chatbar va en el banner de la página: arriba de los filtros y
-        del listado. Sin JS hace POST a /chatbot/."""
+        del listado. Su POST va a la API que usa el modal."""
         r = self.client.get(reverse('tramites'))
 
         html = r.content.decode()
         self.assertIn('id="barra-chat"', html)
-        self.assertContains(r, 'action="%s"' % reverse('chatbot'))
+        self.assertContains(r, 'action="%s"' % reverse('chatbot_api'))
         self.assertLess(
             html.index('id="barra-chat"'),
             html.index('class="filtros"'),

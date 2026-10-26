@@ -1,0 +1,3529 @@
+[
+{
+  "model": "munitramites.municipio",
+  "pk": 19,
+  "fields": {
+    "nombre": "Posadas"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 20,
+  "fields": {
+    "nombre": "El Soberbio"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 21,
+  "fields": {
+    "nombre": "Obera"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 22,
+  "fields": {
+    "nombre": "Eldorado"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 23,
+  "fields": {
+    "nombre": "Puerto Iguazu"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 24,
+  "fields": {
+    "nombre": "Apostoles"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 25,
+  "fields": {
+    "nombre": "Jardin America"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 26,
+  "fields": {
+    "nombre": "San Vicente"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 27,
+  "fields": {
+    "nombre": "Montecarlo"
+  }
+},
+{
+  "model": "munitramites.municipio",
+  "pk": 28,
+  "fields": {
+    "nombre": "Puerto Rico"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 16,
+  "fields": {
+    "nombre": "La verde S.A.",
+    "direccion": "Donova y Gral Chamizo",
+    "ocupacion": "Manufactura",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 17,
+  "fields": {
+    "nombre": "Direccion de Licencias de Trafico",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 18,
+  "fields": {
+    "nombre": "Gobierno de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Portal oficial del gobierno provincial",
+    "sitio": "https://misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 19,
+  "fields": {
+    "nombre": "Municipios de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Directorio oficial de municipios",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 20,
+  "fields": {
+    "nombre": "Entes descentralizados",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Directorio/noticias de organismos provinciales",
+    "sitio": "https://misiones.gob.ar/category/entes-descentralizados-y-otros/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 21,
+  "fields": {
+    "nombre": "Poder Ejecutivo de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Información institucional del Poder Ejecutivo",
+    "sitio": "https://misiones.gob.ar/poder-ejecutivo/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 22,
+  "fields": {
+    "nombre": "Ministerio de Gobierno",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno, seguridad y asuntos registrales",
+    "sitio": "https://gobierno.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 23,
+  "fields": {
+    "nombre": "Ministerio de Salud Pública",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Salud pública provincial",
+    "sitio": "https://salud.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 24,
+  "fields": {
+    "nombre": "Secretaría de Estado de Energía",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Política energética provincial",
+    "sitio": "https://energia.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 25,
+  "fields": {
+    "nombre": "IPRODHA",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Vivienda y desarrollo habitacional",
+    "sitio": "https://iprodha.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 26,
+  "fields": {
+    "nombre": "Contaduría General",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Contabilidad y administración pública",
+    "sitio": "https://www.cg.misiones.gov.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 27,
+  "fields": {
+    "nombre": "Agencia Tributaria Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Impuestos y recaudación provincial",
+    "sitio": "https://atmisiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 28,
+  "fields": {
+    "nombre": "Registro Provincial de Personas",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "DNI, partidas y estado civil",
+    "sitio": "https://www.registrocivil.misiones.gov.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 29,
+  "fields": {
+    "nombre": "Dirección General de Catastro",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Catastro y datos territoriales",
+    "sitio": "https://gobierno.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 30,
+  "fields": {
+    "nombre": "Digesto Jurídico de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Legislación provincial y digesto municipal",
+    "sitio": "https://www.digestomisiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 31,
+  "fields": {
+    "nombre": "Cámara de Representantes",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Poder Legislativo provincial",
+    "sitio": "https://www.diputadosmisiones.gov.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 32,
+  "fields": {
+    "nombre": "Poder Judicial de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Justicia provincial",
+    "sitio": "https://www.jusmisiones.gov.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 33,
+  "fields": {
+    "nombre": "Tribunal de Cuentas",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Control externo de cuentas públicas",
+    "sitio": "https://www.htc.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 34,
+  "fields": {
+    "nombre": "Universidad Nacional de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Universidad pública nacional",
+    "sitio": "https://www.unam.edu.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 35,
+  "fields": {
+    "nombre": "Escuela de Robótica de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Formación en tecnología y robótica",
+    "sitio": "https://www.escueladeroboticamisiones.edu.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 36,
+  "fields": {
+    "nombre": "Ministerio de Educación",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Educación provincial",
+    "sitio": "https://edu.misiones.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 37,
+  "fields": {
+    "nombre": "Dirección Provincial de Vialidad",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Infraestructura y caminos provinciales",
+    "sitio": "https://www.dpv.misiones.gov.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 38,
+  "fields": {
+    "nombre": "Energía de Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Servicio eléctrico provincial",
+    "sitio": "https://www.energiademisiones.com.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 39,
+  "fields": {
+    "nombre": "SAMSA",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Agua potable y saneamiento en Posadas/Garupá",
+    "sitio": "https://samsa.com.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 40,
+  "fields": {
+    "nombre": "ANSES",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Seguridad social nacional",
+    "sitio": "https://www.anses.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 41,
+  "fields": {
+    "nombre": "ARCA",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Impuestos y aduana nacionales",
+    "sitio": "https://www.arca.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 42,
+  "fields": {
+    "nombre": "PAMI",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Cobertura de salud para jubilados y pensionados",
+    "sitio": "https://www.pami.org.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 43,
+  "fields": {
+    "nombre": "Argentina.gob.ar",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Portal oficial del Estado nacional",
+    "sitio": "https://www.argentina.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 44,
+  "fields": {
+    "nombre": "Organismos nacionales en Misiones",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Directorio de organismos nacionales",
+    "sitio": "https://www.argentina.gob.ar/misiones/organismos"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 45,
+  "fields": {
+    "nombre": "Municipalidad de Posadas",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal de Posadas",
+    "sitio": "https://posadas.gov.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 46,
+  "fields": {
+    "nombre": "Municipalidad de El Soberbio",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal de El Soberbio",
+    "sitio": "https://elsoberbio.gob.ar/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 47,
+  "fields": {
+    "nombre": "Municipalidad de Oberá",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 48,
+  "fields": {
+    "nombre": "Municipalidad de Puerto Iguazú",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 49,
+  "fields": {
+    "nombre": "Municipalidad de Eldorado",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 50,
+  "fields": {
+    "nombre": "Municipalidad de Apóstoles",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 51,
+  "fields": {
+    "nombre": "Municipalidad de Leandro N. Alem",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 52,
+  "fields": {
+    "nombre": "Municipalidad de Puerto Rico",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 53,
+  "fields": {
+    "nombre": "Municipalidad de San Vicente",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 54,
+  "fields": {
+    "nombre": "Municipalidad de Jardín América",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 55,
+  "fields": {
+    "nombre": "Municipalidad de Montecarlo",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 56,
+  "fields": {
+    "nombre": "Municipalidad de Aristóbulo del Valle",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 57,
+  "fields": {
+    "nombre": "Municipalidad de Campo Grande",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 58,
+  "fields": {
+    "nombre": "Municipalidad de San Ignacio",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 59,
+  "fields": {
+    "nombre": "Municipalidad de Candelaria",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 60,
+  "fields": {
+    "nombre": "Municipalidad de Garupá",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 61,
+  "fields": {
+    "nombre": "Municipalidad de San Pedro",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 62,
+  "fields": {
+    "nombre": "Municipalidad de Bernardo de Irigoyen",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 63,
+  "fields": {
+    "nombre": "Municipalidad de Comandante Andresito",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 64,
+  "fields": {
+    "nombre": "Municipalidad de Puerto Esperanza",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 65,
+  "fields": {
+    "nombre": "Municipalidad de Wanda",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 66,
+  "fields": {
+    "nombre": "Municipalidad de Puerto Libertad",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 67,
+  "fields": {
+    "nombre": "Municipalidad de San Javier",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 68,
+  "fields": {
+    "nombre": "Municipalidad de Concepción de la Sierra",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 69,
+  "fields": {
+    "nombre": "Municipalidad de Azara",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 70,
+  "fields": {
+    "nombre": "Municipalidad de Santa Ana",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 71,
+  "fields": {
+    "nombre": "Municipalidad de Corpus Christi",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 72,
+  "fields": {
+    "nombre": "Municipalidad de Santo Pipó",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 73,
+  "fields": {
+    "nombre": "Municipalidad de Gobernador Roca",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 74,
+  "fields": {
+    "nombre": "Municipalidad de Colonia Victoria",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 75,
+  "fields": {
+    "nombre": "Municipalidad de Santiago de Liniers",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 76,
+  "fields": {
+    "nombre": "Municipalidad de 9 de Julio",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 77,
+  "fields": {
+    "nombre": "Municipalidad de Colonia Delicia",
+    "direccion": "Sin dirección informada",
+    "ocupacion": "Gobierno municipal",
+    "sitio": "https://misiones.gob.ar/municipios/"
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 78,
+  "fields": {
+    "nombre": "Registro Civil de Misiones",
+    "direccion": "Av. Mitre 1234, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 79,
+  "fields": {
+    "nombre": "Direccion de Transito",
+    "direccion": "Calle Colon 567, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 80,
+  "fields": {
+    "nombre": "Direccion de Comercio",
+    "direccion": "Av. Uruguay 890, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 81,
+  "fields": {
+    "nombre": "Policia de Misiones",
+    "direccion": "Av. Corrientes 2345, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 82,
+  "fields": {
+    "nombre": "Ministerio de Salud Publica",
+    "direccion": "Calle Buenos Aires 678, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 83,
+  "fields": {
+    "nombre": "Rentas de Misiones",
+    "direccion": "Av. Roque Perez 1500, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.organismo",
+  "pk": 84,
+  "fields": {
+    "nombre": "Direccion de Catastro",
+    "direccion": "Calle San Martin 321, Posadas",
+    "ocupacion": "",
+    "sitio": ""
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 1,
+  "fields": {
+    "nombre": "Documentación"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 2,
+  "fields": {
+    "nombre": "Tránsito"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 3,
+  "fields": {
+    "nombre": "Comercio"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 4,
+  "fields": {
+    "nombre": "Seguridad"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 5,
+  "fields": {
+    "nombre": "Salud"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 6,
+  "fields": {
+    "nombre": "Impuestos"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 7,
+  "fields": {
+    "nombre": "Vivienda"
+  }
+},
+{
+  "model": "munitramites.tema",
+  "pk": 9,
+  "fields": {
+    "nombre": "Documentacion"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 137,
+  "fields": {
+    "titulo": "Renovacion de DNI",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 78,
+    "descripcion": "Tramite para la renovacion del Documento Nacional de Identidad ante el Registro Civil de la Provincia de Misiones.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": true,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.537",
+    "actualizado": "2026-10-16T22:57:54.537"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 138,
+  "fields": {
+    "titulo": "Licencia Nacional de Conducir",
+    "tema": 2,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 79,
+    "descripcion": "Obtencion o renovacion de la Licencia Nacional de Conducir para vehiculos particulares y profesionales.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": true,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.552",
+    "actualizado": "2026-10-16T22:57:54.552"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 139,
+  "fields": {
+    "titulo": "Partida de Nacimiento",
+    "tema": 1,
+    "modalidad": "virtual",
+    "municipio": 19,
+    "organismo": 78,
+    "descripcion": "Solicitud de partida de nacimiento a traves del sistema virtual del Registro Civil de Misiones.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": true,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.564",
+    "actualizado": "2026-10-16T22:57:54.564"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 140,
+  "fields": {
+    "titulo": "Habilitacion Comercial",
+    "tema": 3,
+    "modalidad": "mixta",
+    "municipio": 21,
+    "organismo": 80,
+    "descripcion": "Tramite para obtener la habilitacion comercial municipal para nuevos negocios en la ciudad de Obera.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": true,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.576",
+    "actualizado": "2026-10-16T22:57:54.576"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 141,
+  "fields": {
+    "titulo": "Certificado de Antecedentes Penales",
+    "tema": 4,
+    "modalidad": "virtual",
+    "municipio": 19,
+    "organismo": 81,
+    "descripcion": "Obtencion del certificado de antecedentes penales provincial emitido por la Policia de Misiones.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.590",
+    "actualizado": "2026-10-16T22:57:54.590"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 142,
+  "fields": {
+    "titulo": "Certificado de Salud",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 22,
+    "organismo": 82,
+    "descripcion": "Tramite para obtener el certificado de buena salud requerido para diversas gestiones administrativas y laborales.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.602",
+    "actualizado": "2026-10-16T22:57:54.602"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 143,
+  "fields": {
+    "titulo": "Inscripcion en Ingresos Brutos",
+    "tema": 6,
+    "modalidad": "virtual",
+    "municipio": 19,
+    "organismo": 83,
+    "descripcion": "Inscripcion en el impuesto provincial sobre los Ingresos Brutos para contribuyentes de la provincia de Misiones.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.612",
+    "actualizado": "2026-10-16T22:57:54.612"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 144,
+  "fields": {
+    "titulo": "Tramite de Titulo de Propiedad",
+    "tema": 7,
+    "modalidad": "presencial",
+    "municipio": 23,
+    "organismo": 84,
+    "descripcion": "Tramite de regularizacion dominial y obtencion de titulo de propiedad ante la Direccion de Catastro de Misiones.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:57:54.626",
+    "actualizado": "2026-10-16T22:57:54.626"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 145,
+  "fields": {
+    "titulo": "Habilitación y Registros Departamento de Saneamiento Básico",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 23,
+    "descripcion": "Trámite informado por Ministerio de Salud Pública.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-17T01:58:34.006",
+    "actualizado": "2026-10-16T23:12:05.980"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 146,
+  "fields": {
+    "titulo": "Beneficios para Personas con CUD",
+    "tema": 7,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 25,
+    "descripcion": "El IPRODHA establece un subsidio del 40% para todos aquellos beneficiarios de programas habitacionales que se encuentren en situación NORMAL, sin deuda, que acrediten una discapacidad o tener algún integrante en el grupo familiar con dichas condiciones. El porcentaje del subsidio se reduce a un 10% en los prototipos de viviendas sustentables o semejantes. El subsidio otorgado tendrá una vigencia equivalente al plazo de validez que surja del certificado único de discapacidad (CUD). Para renovar e",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:38.573",
+    "actualizado": "2026-10-16T22:58:38.573"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 147,
+  "fields": {
+    "titulo": "Trámite online de Proveedores",
+    "tema": 6,
+    "modalidad": "virtual",
+    "municipio": 19,
+    "organismo": 26,
+    "descripcion": "Trámite informado por Contaduría General.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-17T01:58:47.552",
+    "actualizado": "2026-10-16T23:12:06.016"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 148,
+  "fields": {
+    "titulo": "Ingresos Brutos",
+    "tema": 6,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "Por este medio podrá solicitar el cambio de Nivel de su clave fiscal.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:52.807",
+    "actualizado": "2026-10-16T22:58:52.807"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 149,
+  "fields": {
+    "titulo": "Trámites Frecuentes",
+    "tema": 6,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "Adjuntar a través de Legajo Único la documentación requerida en el Artículo 5 de la RG 14/2023.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:53.497",
+    "actualizado": "2026-10-16T22:58:53.497"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 150,
+  "fields": {
+    "titulo": "Inmobiliario",
+    "tema": 6,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "Pasos a seguir para la emisión de Boleta de Impuesto Inmobiliario.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:54.228",
+    "actualizado": "2026-10-16T22:58:54.228"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 151,
+  "fields": {
+    "titulo": "Automotor",
+    "tema": 2,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "Pasos a seguir para la emisión de Boleta de Impuesto Parque Automotor.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:54.998",
+    "actualizado": "2026-10-16T22:58:54.998"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 152,
+  "fields": {
+    "titulo": "Sellos",
+    "tema": 6,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "En caso de que la liquidación posea datos erróneos, se deberá solicitar anulación del recibo mediante nota formal presentada en DGR (ver ART 6° y 7° RG 28/2017-DGR). ARTICULO 6°.- DEBERA SOLICITARSE LA ANULACION de los actos comprendidos en el Artículo 1°, en los casos que se generaren declaraciones juradas o recibos en forma duplicada, con datos erróneos: fecha del instrumento, base imponible, partes intervinientes en el acto, alícuotas u omisión de exenciones que le pudieren corresponderá las ",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:55.677",
+    "actualizado": "2026-10-16T22:58:55.677"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 153,
+  "fields": {
+    "titulo": "Control Fiscal en Ruta",
+    "tema": 6,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "Para realizar su consulta sobre ACTAS de Interdiccion de Encomienda realizado en los Puestos de Control Fiscal en Ruta Apostoles – Arco – Azara – Centinela, debera comunicarse a la siguiente casilla de Correo Electronico:",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:56.460",
+    "actualizado": "2026-10-16T22:58:56.460"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 154,
+  "fields": {
+    "titulo": "Padrones productores",
+    "tema": 6,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 27,
+    "descripcion": "Encuentra información específica sobre padrones. Accede a datos detallados que te brindarán una visión completa de la producción, facilitando la comprensión y toma de decisiones en el ámbito fiscal.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:58:58.027",
+    "actualizado": "2026-10-16T22:58:58.027"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 155,
+  "fields": {
+    "titulo": "Solicitud de Partidas Digitales",
+    "tema": 1,
+    "modalidad": "virtual",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Ingresá acá para pedir online una partida de nacimiento, defunción, matrimonio o unión convivencial. Consultá cómo hacerlo aquí.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:02.573",
+    "actualizado": "2026-10-16T22:59:02.573"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 156,
+  "fields": {
+    "titulo": "Matrimonios",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Tenga en cuenta de que si usted no es titular del acta, debe adjuntar autorización o demostrar vinculo directo. Expedición de Actas $3.200 Abonar acá",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:03.448",
+    "actualizado": "2026-10-16T22:59:03.448"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 157,
+  "fields": {
+    "titulo": "Nacimientos",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Para realizar una Inscripción de Nacimiento dentro de los 40 días, debes realizarlo en el mismo lugar donde nace el bebé. Requsitos:",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:04.330",
+    "actualizado": "2026-10-16T22:59:04.330"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 158,
+  "fields": {
+    "titulo": "Matrimonios Extranjeros",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "REQUISITOS PARA MATRIMONIOS ENTRE EXTRANJEROS NO RESIDENTES EN LA PROVINCIA DE MISIONES: Los interesados deberán solicitar un turno para casarse a los siguientes correos electrónicos: deptodespachorpp@gmail.com y/o secretariaprivadarppmnes@gmail.com",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:05.152",
+    "actualizado": "2026-10-16T22:59:05.152"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 159,
+  "fields": {
+    "titulo": "Defunciones",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "• Certificado Medico expedido por el médico • DNI físico del Fallecido • Fotocopia del DNI que se presenta El declarante participa del proceso de inscripción como firmante, la defunción debe realizarse dentro de los 2 días hábiles , pasado ese limite se proceda a la solicitud de inscripción fuera de termino por cumplimiento del Articulo 60 de la ley 26.413. Así mismo el plazo estipulado por dicho articulo son de 60 días de corrido , procediendo a una inscripción vía judicial si se llegara a exce",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:05.922",
+    "actualizado": "2026-10-16T22:59:05.922"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 160,
+  "fields": {
+    "titulo": "Inscripción Tardia Administrativa",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Trámite informado por Registro Provincial de Personas.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-17T01:59:06.807",
+    "actualizado": "2026-10-16T23:12:06.001"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 161,
+  "fields": {
+    "titulo": "DNI en tu celular",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "El DNI en tu celular cuenta con altos niveles de seguridad y tiene las mismas funciones que el DNI tarjeta, excepto para votar y viajar fuera del país. Mucha más comodidad a la hora de acreditar tu identidad, sin la necesidad de llevar encima el DNI tarjeta.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:07.456",
+    "actualizado": "2026-10-16T22:59:07.456"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 162,
+  "fields": {
+    "titulo": "Tramites de DNI",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Para hacer un nuevo DNI podes ir a la delegación que te quede mas cerca. Todas las oficinas trabajan de 6.30hs a 12.30hs y atienden por orden de llegada. Los menores deben tener partida de nacimiento. Ver delegaciones El DNI tiene un costo de $10.000 Tarda de 15 días hábiles aproximadamente en llegar a su domicilio (el tiempo de envío depende de Buenos Aires). llegará a su domicilio por OCASA",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:08.431",
+    "actualizado": "2026-10-16T22:59:08.431"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 163,
+  "fields": {
+    "titulo": "Tramites de Pasaporte",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Podes ir a cualquier delegación que te quede cerca, en toda la provincia, incluso a los CDR Móviles que estén en los operativos también. Todos hacen trámites \"común\" y \"exprés\".",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:09.252",
+    "actualizado": "2026-10-16T22:59:09.252"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 164,
+  "fields": {
+    "titulo": "Solicitud de Actas",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 28,
+    "descripcion": "Atención! Por favor leer todo el instructivo antes de realizar la solicitud. Actas Legalizadas de la provincia de Misiones únicamente.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:10.097",
+    "actualizado": "2026-10-16T22:59:10.097"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 165,
+  "fields": {
+    "titulo": "Becas y servicios",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 34,
+    "descripcion": "Con el objetivo de generar mejores condiciones de vida para el aprendizaje de los estudiantes, la Universidad Nacional de Misiones (UNaM) desarrolla a través de su Secretaría General de Asuntos Estudiantiles tres programas de Becas: Albergues, Comedores y Salud.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:27.204",
+    "actualizado": "2026-10-16T22:59:27.204"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 166,
+  "fields": {
+    "titulo": "Becas de Investigación",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 34,
+    "descripcion": "La Secretaría General de Ciencia y Tecnología busca estimular la vocación científica en cada miembro de la Universidad. Mediante los diferentes tipos de becas se busca incentivar la participación de los estudiantes y graduados en actividades científico tecnológicas a través de financiamiento propio y externo.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:27.774",
+    "actualizado": "2026-10-16T22:59:27.774"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 167,
+  "fields": {
+    "titulo": "Formulario de Pre-Inscripción",
+    "tema": 1,
+    "modalidad": "virtual",
+    "municipio": 19,
+    "organismo": 34,
+    "descripcion": "Los datos consignados en este formulario, serán considerado una declaración jurada, por lo tanto, son verdaderos y completos. En la entrevista individual se hará entrega y se pondrá en conocimiento sobre las resoluciones que reglamentan el cumplimiento de los requisitos requeridos para hacerme receptor de la presente beca. Se deja constancia que el presente formulario corresponde a la preinscripción y por lo tanto se encuentra sujeto a evaluación.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:29.170",
+    "actualizado": "2026-10-16T22:59:29.170"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 168,
+  "fields": {
+    "titulo": "Becas Manuel Belgrano",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 34,
+    "descripcion": "Programa de Becas Estratégicas Acompañamos a los jóvenes en sus estudios de pregrado y grado",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:29.725",
+    "actualizado": "2026-10-16T22:59:29.725"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 169,
+  "fields": {
+    "titulo": "Titulos",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 34,
+    "descripcion": "Registro Público de Graduados para consulta pública, con lo que concluye el trámite de intervención en diplomas, certificados analíticos u otras certificaciones universitarias. Página: https://registrograduados.siu.edu.ar/",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:30.906",
+    "actualizado": "2026-10-16T22:59:30.906"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 170,
+  "fields": {
+    "titulo": "Guía de trámites",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 39,
+    "descripcion": "Solicitá la conexión de agua potable para tu propiedad",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:48.488",
+    "actualizado": "2026-10-16T22:59:48.488"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 171,
+  "fields": {
+    "titulo": "Constancia de servicio de agua y/o cloaca",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 39,
+    "descripcion": "Costo preestablecido según el código de facturación .",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:49.507",
+    "actualizado": "2026-10-16T22:59:49.507"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 172,
+  "fields": {
+    "titulo": "Cambio de Titularidad",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 39,
+    "descripcion": "De forma presencial en las oficinas de SAMSA, durante los horarios de atención al cliente.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:50.524",
+    "actualizado": "2026-10-16T22:59:50.524"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 173,
+  "fields": {
+    "titulo": "Cambios de datos postales",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 39,
+    "descripcion": "De forma presencial en las oficinas de SAMSA, durante los horarios de atención al cliente.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:51.524",
+    "actualizado": "2026-10-16T22:59:51.524"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 174,
+  "fields": {
+    "titulo": "Corrección de Datos",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 39,
+    "descripcion": "Corregir datos de la dirección del inmueble, datos catastrales, datos de calle, situación, cambio de base, del IVA y/o alta o baja de una cuenta",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T22:59:52.537",
+    "actualizado": "2026-10-16T22:59:52.537"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 176,
+  "fields": {
+    "titulo": "Tramitar el DNI",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 43,
+    "descripcion": "El Documento Nacional de Identidad (DNI) es el documento único de identificación con el que contamos los argentinos (en el país o en el exterior) y los extranjeros con domicilio en nuestro país.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:15.525",
+    "actualizado": "2026-10-16T23:00:15.525"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 177,
+  "fields": {
+    "titulo": "Trámites a Distancia",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 43,
+    "descripcion": "Hacé trámites estés donde estés. Ingresá a Trámites a Distancia y enterate cómo.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:17.309",
+    "actualizado": "2026-10-16T23:00:17.310"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 178,
+  "fields": {
+    "titulo": "Iniciar un trámite en TAD",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 43,
+    "descripcion": "Al ingresar a TAD podés acceder al listado de trámites disponibles para vos, consultar los requisitos e iniciar una nueva solicitud de trámite.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:17.849",
+    "actualizado": "2026-10-16T23:00:17.849"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 179,
+  "fields": {
+    "titulo": "Apoderamiento en TAD",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 43,
+    "descripcion": "El apoderamiento otorga a una persona usuaria TAD la posibilidad de actuar por otra dentro de la Plataforma ya sea para modificar sus datos, iniciar trámites, contestar tareas o realizar consultas.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:18.387",
+    "actualizado": "2026-10-16T23:00:18.388"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 180,
+  "fields": {
+    "titulo": "Dirección de Desarrollo Social",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 20,
+    "organismo": 46,
+    "descripcion": "*Aquí se visulizan las resoluciones del Honorable Concejo Deliberante* 01-26 RESOLUCIÓN- EXCEPTUAR ORD. 17-20 EL SOBERBIO REVENTON (PDF)",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:36.885",
+    "actualizado": "2026-10-16T23:00:36.885"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 181,
+  "fields": {
+    "titulo": "DNI, Nuevo Ejemplar, Denuncia, Extravío",
+    "tema": 1,
+    "modalidad": "presencial",
+    "municipio": 20,
+    "organismo": 46,
+    "descripcion": "El DNI se saca por primera vez con el nacimiento de un bebé y lo tramitan los padres o tutores. Este documento tendrá a futuro dos actualizaciones:",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:38.598",
+    "actualizado": "2026-10-16T23:00:38.598"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 182,
+  "fields": {
+    "titulo": "Automotores y Licencias de Conducir",
+    "tema": 2,
+    "modalidad": "presencial",
+    "municipio": 20,
+    "organismo": 46,
+    "descripcion": "Dirección de Tránsito – El Soberbio | Misiones | Argentina",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:00:40.389",
+    "actualizado": "2026-10-16T23:00:40.389"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 183,
+  "fields": {
+    "titulo": "Rehabilitación para personas con discapacidad",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda prestaciones para personas con discapacidad que tienen por objetivo la adquisición y/o restauración de aptitudes e intereses, alcanzando el nivel psicofísico y social más adecuado para lograr su integración social.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:31.889",
+    "actualizado": "2026-10-16T23:05:31.889"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 184,
+  "fields": {
+    "titulo": "Asistencia a personas con discapacidad",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda prestaciones asistenciales para personas con discapacidad. Se accede de acuerdo a la discapacidad y situación sociofamiliar que posea la persona afiliada. Estas prestaciones se otorgan en:",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:32.543",
+    "actualizado": "2026-10-16T23:05:32.543"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 185,
+  "fields": {
+    "titulo": "Transporte para personas con discapacidad",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda el transporte para personas con discapacidad, a través de diferentes empresas contratadas.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:33.248",
+    "actualizado": "2026-10-16T23:05:33.248"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 186,
+  "fields": {
+    "titulo": "Vacunacion Antigripal (Domicilios)",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Consiste en la inmunización de personas afiliadas residentes en su domicilio que NO puedan trasladarse, personas afiliadas residentes en Instituciones cerradas (residencias de larga estadía, centros para personas con discapacidad, centros de salud mental) y personas afiliadas en tratamiento en centros de diálisis.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:33.859",
+    "actualizado": "2026-10-16T23:05:33.859"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 187,
+  "fields": {
+    "titulo": "Asignación o cambio de médico/a de cabecera",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Tu médico de cabecera brinda atención ambulatoria en caso de ser necesaria; evalúa tu estado de salud para prevenir y tratar enfermedades; indica estudios diagnósticos y prescribe tus medicamentos; hace el seguimiento de tus problemas de salud, te deriva a especialistas si es necesario y te asesora sobre el cuidado de tu salud.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:34.939",
+    "actualizado": "2026-10-16T23:05:34.939"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 188,
+  "fields": {
+    "titulo": "Medicamentos sin cargo por subsidio social - Hasta 6 medicamentos",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda cobertura del 100% en medicamentos ambulatorios a afiliados que, por razones sociales, no pueden afrontar su costo con el descuento habitual.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:35.675",
+    "actualizado": "2026-10-16T23:05:35.675"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 189,
+  "fields": {
+    "titulo": "Medicamentos sin cargo por subsidio social - Hasta 4 medicamentos",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda cobertura del 100% en medicamentos ambulatorios a afiliados que, por razones sociales, no pueden afrontar su costo con el descuento habitual.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:36.282",
+    "actualizado": "2026-10-16T23:05:36.282"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 190,
+  "fields": {
+    "titulo": "Asignación o Cambio de Centros de Atención",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Es la asignación o modificación del centro de atención médica que le corresponde por cartilla a la persona afiliada.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:36.951",
+    "actualizado": "2026-10-16T23:05:36.951"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 191,
+  "fields": {
+    "titulo": "Subsidio económico por celiaquía",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI otorga una ayuda económica mensual regulada por el Ministerio de Salud de la Nación de $ 58.560,98 ( vigente a partir del período Mayo 2026) para que las personas afiliadas con celiaquía puedan acceder a harinas y premezclas libres de gluten. Para acceder a dicho subsidio deberán presentar la documentación correspondiente.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:37.623",
+    "actualizado": "2026-10-16T23:05:37.623"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 192,
+  "fields": {
+    "titulo": "Cobertura de medicamentos por discapacidad",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda la cobertura del 100% de la medicación asociada a la discapacidad declarada.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:38.244",
+    "actualizado": "2026-10-16T23:05:38.244"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 193,
+  "fields": {
+    "titulo": "Rehabilitación kinesiológica",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Es la rehabilitación para personas afiliadas ambulatorias que tienen patologías agudas, crónicas y quienes fueran externados. No requiere trámite; la persona afiliada va directamente al prestador de kinesiología asignado en la cartilla.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:38.847",
+    "actualizado": "2026-10-16T23:05:38.847"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 194,
+  "fields": {
+    "titulo": "Subsidio para auxiliar domiciliario",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda apoyo económico parcial para afrontar la dependencia funcional de personas mayores afiliadas que se encuentren en situación de limitaciones funcionales psicofísicas y no cuenten con una adecuada red de apoyo y atención efectiva.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:39.526",
+    "actualizado": "2026-10-16T23:05:39.526"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 195,
+  "fields": {
+    "titulo": "Afiliación de Hijas/os con discapacidad, del titular o cónyuge",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Este tipo de afiliaciones es para los hijos de la persona titular o cónyuge con discapacidad. Se puede otorgar en cualquier momento.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:40.166",
+    "actualizado": "2026-10-16T23:05:40.166"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 196,
+  "fields": {
+    "titulo": "Afiliación nietos/as con discapacidad mayores de edad",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Consiste en brindar la afiliación a nietas/os de la persona afiliada como titular, que tengan discapacidad física o mental, sean mayores de edad y se encuentren a cargo exclusivo de la persona afiliada titular.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:05:40.786",
+    "actualizado": "2026-10-16T23:05:40.786"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 197,
+  "fields": {
+    "titulo": "Estado de Trámite consultar",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Si tenés nueva información para sumar al caso en curso, escribila acá:",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:12:23.511",
+    "actualizado": "2026-10-16T23:12:23.511"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 198,
+  "fields": {
+    "titulo": "Residencias para personas mayores",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Son propósitos del PROGRAMA DE ATENCIÓN INTEGRAL EN RESIDENCIAS DE LARGA ESTADÍA PARA PERSONAS MAYORES:",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:12:24.112",
+    "actualizado": "2026-10-16T23:12:24.112"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 199,
+  "fields": {
+    "titulo": "Solicitud de audífonos",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI otorga audífonos a las personas afiliadas con hipoacusia y la persona afiliada tiene la libertad de elegir el prestador de PAMI para su atención.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:12:24.793",
+    "actualizado": "2026-10-16T23:12:24.793"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 200,
+  "fields": {
+    "titulo": "Afiliación para personas bajo curatela a cargo del titular",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Consiste en otorgar la afiliación a personas sujetas a curatela, cuya incapacidad haya sido declarada judicialmente, cuando el curador sea una persona afiliada a PAMI como titular. Las afiliaciones por curatela se otorgan sin límite de tiempo, mientras se mantenga vigente la situación judicial que dio origen a la afiliación.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:12:25.396",
+    "actualizado": "2026-10-16T23:12:25.396"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 201,
+  "fields": {
+    "titulo": "Cobertura médica para personas de nacionalidad italiana",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "PAMI brinda Cobertura Médica a aquellas personas que cobren un beneficio previsional en Italia y que estén en Argentina. Si la residencia es transitoria, la cobertura tiene una validez por noventa días, con posibilidad de renovación solo con certificado médico. Si la residencia es permanente, la cobertura es por un año, con renovación indefinidamente.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:12:26.098",
+    "actualizado": "2026-10-16T23:12:26.098"
+  }
+},
+{
+  "model": "munitramites.tramite",
+  "pk": 202,
+  "fields": {
+    "titulo": "Cobertura médica para personas que viajen a Italia",
+    "tema": 5,
+    "modalidad": "presencial",
+    "municipio": 19,
+    "organismo": 42,
+    "descripcion": "Para contar con cobertura medica en Italia, el interesado deberá solicitar en la agencia que le corresponde el formulario dentro de los 15 días anteriores al viaje . La cobertura tiene validez por noventa días, y de ser necesario podés solicitar su renovación solamente con certificado médico.",
+    "enlace_turnos": "",
+    "enlace_oficial": "",
+    "destacado": false,
+    "activo": true,
+    "creado": "2026-10-16T23:12:26.700",
+    "actualizado": "2026-10-16T23:12:26.700"
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 257,
+  "fields": {
+    "tramite": 137,
+    "descripcion": "DNI anterior (original)",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 258,
+  "fields": {
+    "tramite": 137,
+    "descripcion": "Partida de nacimiento actualizada",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 259,
+  "fields": {
+    "tramite": 137,
+    "descripcion": "Comprobante de domicilio (no mayor a 3 meses)",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 260,
+  "fields": {
+    "tramite": 137,
+    "descripcion": "Abonar la tasa correspondiente",
+    "orden": 4
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 261,
+  "fields": {
+    "tramite": 138,
+    "descripcion": "DNI vigente",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 262,
+  "fields": {
+    "tramite": 138,
+    "descripcion": "Certificado de grupo sanguineo",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 263,
+  "fields": {
+    "tramite": 138,
+    "descripcion": "Examen psicofisico aprobado",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 264,
+  "fields": {
+    "tramite": 138,
+    "descripcion": "Curso teorico-practico aprobado",
+    "orden": 4
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 265,
+  "fields": {
+    "tramite": 138,
+    "descripcion": "Abonar arancel municipal",
+    "orden": 5
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 266,
+  "fields": {
+    "tramite": 139,
+    "descripcion": "DNI del solicitante",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 267,
+  "fields": {
+    "tramite": 139,
+    "descripcion": "Datos completos de la persona (nombre, fecha de nacimiento)",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 268,
+  "fields": {
+    "tramite": 139,
+    "descripcion": "Abonar tasa provincial (si aplica)",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 269,
+  "fields": {
+    "tramite": 140,
+    "descripcion": "DNI del titular",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 270,
+  "fields": {
+    "tramite": 140,
+    "descripcion": "Constancia de CUIT/CUIL",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 271,
+  "fields": {
+    "tramite": 140,
+    "descripcion": "Contrato de locacion o titulo de propiedad del local",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 272,
+  "fields": {
+    "tramite": 140,
+    "descripcion": "Certificado de factibilidad tecnica",
+    "orden": 4
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 273,
+  "fields": {
+    "tramite": 140,
+    "descripcion": "Abonar tasa municipal de habilitacion",
+    "orden": 5
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 274,
+  "fields": {
+    "tramite": 141,
+    "descripcion": "DNI vigente",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 275,
+  "fields": {
+    "tramite": 141,
+    "descripcion": "Completar formulario web",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 276,
+  "fields": {
+    "tramite": 141,
+    "descripcion": "Abonar tasa provincial",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 277,
+  "fields": {
+    "tramite": 142,
+    "descripcion": "DNI vigente",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 278,
+  "fields": {
+    "tramite": 142,
+    "descripcion": "Carnet de vacunacion actualizado",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 279,
+  "fields": {
+    "tramite": 142,
+    "descripcion": "Asistir al centro de salud asignado",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 280,
+  "fields": {
+    "tramite": 143,
+    "descripcion": "DNI del titular",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 281,
+  "fields": {
+    "tramite": 143,
+    "descripcion": "Constancia de CUIT",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 282,
+  "fields": {
+    "tramite": 143,
+    "descripcion": "Constancia de domicilio fiscal",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 283,
+  "fields": {
+    "tramite": 143,
+    "descripcion": "Completar formulario F-400",
+    "orden": 4
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 284,
+  "fields": {
+    "tramite": 144,
+    "descripcion": "DNI del titular",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 285,
+  "fields": {
+    "tramite": 144,
+    "descripcion": "Escritura o boleto de compraventa",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 286,
+  "fields": {
+    "tramite": 144,
+    "descripcion": "Plano de mensura aprobado",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 287,
+  "fields": {
+    "tramite": 144,
+    "descripcion": "Certificado de libre deuda municipal",
+    "orden": 4
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 288,
+  "fields": {
+    "tramite": 144,
+    "descripcion": "Abonar tasas catastrales",
+    "orden": 5
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 289,
+  "fields": {
+    "tramite": 148,
+    "descripcion": "Contar con el CUIT y NUI a consultar.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 290,
+  "fields": {
+    "tramite": 149,
+    "descripcion": "Contar con el CUIT y NUI a consultar.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 291,
+  "fields": {
+    "tramite": 152,
+    "descripcion": "Poseer Clave Nivel 2.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 292,
+  "fields": {
+    "tramite": 152,
+    "descripcion": "Tener constituido su DFE (Domicilio Fiscal Electrónico).",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 293,
+  "fields": {
+    "tramite": 153,
+    "descripcion": "Clave fiscal",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 294,
+  "fields": {
+    "tramite": 153,
+    "descripcion": "Domicilio Fiscal Electronico",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 295,
+  "fields": {
+    "tramite": 156,
+    "descripcion": "Deben presentar en la Ch 32-33 por mesa de entrada la escritura certificada por un escribano original y copia debidamente certificada.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 296,
+  "fields": {
+    "tramite": 156,
+    "descripcion": "Abonar la tasa corresponiente de $51.100",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 297,
+  "fields": {
+    "tramite": 157,
+    "descripcion": "Certificado Médico (Es el papel que da el Médico después del nacimiento)",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 298,
+  "fields": {
+    "tramite": 157,
+    "descripcion": "Madre y padre con DNI",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 299,
+  "fields": {
+    "tramite": 161,
+    "descripcion": "DNI vigente.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 300,
+  "fields": {
+    "tramite": 161,
+    "descripcion": "Teléfono celular con sistema operativo Android (a partir del 5.0.21) o iOS (a partir del 11.0).",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 301,
+  "fields": {
+    "tramite": 161,
+    "descripcion": "Aplicación Mi Argentina descargada en el celular.",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 302,
+  "fields": {
+    "tramite": 161,
+    "descripcion": "Cuenta con identidad validada Nivel 3 en la aplicación Mi Argentina .",
+    "orden": 4
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 303,
+  "fields": {
+    "tramite": 169,
+    "descripcion": "Constancia original o fotocopia autenticada de la denuncia policial.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 304,
+  "fields": {
+    "tramite": 169,
+    "descripcion": "Constancia original o fotocopia autenticada de la denuncia efectuada ante los colegios o consejos profesionales.",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 305,
+  "fields": {
+    "tramite": 180,
+    "descripcion": "DNI de CUD: 2 FOTITOS 4X4",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 306,
+  "fields": {
+    "tramite": 180,
+    "descripcion": "CERTIFICADO DE DOMICILIO",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 307,
+  "fields": {
+    "tramite": 181,
+    "descripcion": "Partida de nacimiento original",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 308,
+  "fields": {
+    "tramite": 181,
+    "descripcion": "Si es mayor de 14 años",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 309,
+  "fields": {
+    "tramite": 181,
+    "descripcion": "DNI vigente, si lo tuviera",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 310,
+  "fields": {
+    "tramite": 187,
+    "descripcion": "Documento Nacional de Identidad con domicilio actualizado.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 311,
+  "fields": {
+    "tramite": 187,
+    "descripcion": "En caso de que el trámite lo realice la persona apoderada, deberá presentar además su DNI y el recibo de cobro de la persona afiliada.",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 312,
+  "fields": {
+    "tramite": 187,
+    "descripcion": "En caso de que el trámite lo realice una persona que designe la persona afiliada, deberá presentar además su DNI y una nota de autorización firmada, donde se aclare el cambio a realizar.",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 313,
+  "fields": {
+    "tramite": 190,
+    "descripcion": "Documento Nacional de Identidad con domicilio actualizado.",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 314,
+  "fields": {
+    "tramite": 190,
+    "descripcion": "En caso de que el trámite lo realice la persona apoderada, deberá presentar además su DNI y el recibo de cobro de la persona afiliada.",
+    "orden": 2
+  }
+},
+{
+  "model": "munitramites.requisito",
+  "pk": 315,
+  "fields": {
+    "tramite": 190,
+    "descripcion": "En caso de que el trámite lo realice una persona que designe la persona afiliada, deberá presentar además su DNI y una nota de autorización firmada, donde se aclare el cambio a realizar.",
+    "orden": 3
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 10,
+  "fields": {
+    "tramite": 138,
+    "nombre": "Pedir turno",
+    "url": "https://www.posadas.gob.ar/turnos-licencia",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 11,
+  "fields": {
+    "tramite": 139,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gob.ar",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 13,
+  "fields": {
+    "tramite": 195,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 14,
+  "fields": {
+    "tramite": 195,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/hijoconyuge",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 15,
+  "fields": {
+    "tramite": 196,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 16,
+  "fields": {
+    "tramite": 196,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/nietodisc",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 17,
+  "fields": {
+    "tramite": 200,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 18,
+  "fields": {
+    "tramite": 200,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/curatela",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 19,
+  "fields": {
+    "tramite": 179,
+    "nombre": "Pedir turno",
+    "url": "https://www.argentina.gob.ar/turnos",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 20,
+  "fields": {
+    "tramite": 179,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.argentina.gob.ar/jefatura/innovacion-ciencia-y-tecnologia/innovacion/tramites-distancia-tad/apoderamiento-en-tad",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 21,
+  "fields": {
+    "tramite": 190,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 22,
+  "fields": {
+    "tramite": 190,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/prestadores",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 23,
+  "fields": {
+    "tramite": 187,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 24,
+  "fields": {
+    "tramite": 187,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/cambio-medico",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 25,
+  "fields": {
+    "tramite": 184,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 26,
+  "fields": {
+    "tramite": 184,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/asistencia-personas-discapacidad",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 27,
+  "fields": {
+    "tramite": 151,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/automotor-autogestion/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 28,
+  "fields": {
+    "tramite": 182,
+    "nombre": "Sitio del organismo",
+    "url": "https://elsoberbio.gob.ar/automotores-y-licencias-de-conducir/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 29,
+  "fields": {
+    "tramite": 168,
+    "nombre": "Pedir turno",
+    "url": "https://www.argentina.gob.ar/turnos",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 30,
+  "fields": {
+    "tramite": 168,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.argentina.gob.ar/educacion/becas/becas-manuel-belgrano",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 31,
+  "fields": {
+    "tramite": 166,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.unam.edu.ar/index.php/investigacion/becas-de-investigacion",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 32,
+  "fields": {
+    "tramite": 165,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.unam.edu.ar/index.php/estudiantiles/becas-y-servicios",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 33,
+  "fields": {
+    "tramite": 146,
+    "nombre": "Pedir turno",
+    "url": "https://www.iprodha.misiones.gov.ar/sim/cola.php",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 34,
+  "fields": {
+    "tramite": 146,
+    "nombre": "Sitio del organismo",
+    "url": "https://iprodha.misiones.gob.ar/beneficios-cud/",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 35,
+  "fields": {
+    "tramite": 172,
+    "nombre": "Sitio del organismo",
+    "url": "https://samsa.com.ar/cambio-de-titularidad/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 36,
+  "fields": {
+    "tramite": 173,
+    "nombre": "Sitio del organismo",
+    "url": "https://samsa.com.ar/cambios-de-datos-postales/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 37,
+  "fields": {
+    "tramite": 141,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.policiamisiones.gob.ar/antecedentes",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 38,
+  "fields": {
+    "tramite": 192,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 39,
+  "fields": {
+    "tramite": 192,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/medicamentos-discapacidad",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 40,
+  "fields": {
+    "tramite": 201,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 41,
+  "fields": {
+    "tramite": 201,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/convenio",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 42,
+  "fields": {
+    "tramite": 202,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 43,
+  "fields": {
+    "tramite": 202,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/italo",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 44,
+  "fields": {
+    "tramite": 171,
+    "nombre": "Sitio del organismo",
+    "url": "https://samsa.com.ar/constancia-de-servicio/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 45,
+  "fields": {
+    "tramite": 153,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/control-fiscal-en-ruta-autogestion/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 46,
+  "fields": {
+    "tramite": 174,
+    "nombre": "Sitio del organismo",
+    "url": "https://samsa.com.ar/correccion-de-datos/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 47,
+  "fields": {
+    "tramite": 161,
+    "nombre": "Pedir turno",
+    "url": "https://www.argentina.gob.ar/turnos",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 48,
+  "fields": {
+    "tramite": 161,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.argentina.gob.ar/servicio/solicitar-el-dni-en-tu-celular",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 49,
+  "fields": {
+    "tramite": 181,
+    "nombre": "Sitio del organismo",
+    "url": "https://elsoberbio.gob.ar/dni-nuevo-ejemplar-denuncia-extravio/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 50,
+  "fields": {
+    "tramite": 159,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/defunciones",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 51,
+  "fields": {
+    "tramite": 180,
+    "nombre": "Sitio del organismo",
+    "url": "https://elsoberbio.gob.ar/direccion-de-desarrollo-social/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 52,
+  "fields": {
+    "tramite": 197,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 53,
+  "fields": {
+    "tramite": 197,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramites/consultar",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 54,
+  "fields": {
+    "tramite": 167,
+    "nombre": "Sitio del organismo",
+    "url": "https://albergues.comisiondeservicios.online/preinscripcion",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 55,
+  "fields": {
+    "tramite": 170,
+    "nombre": "Sitio del organismo",
+    "url": "https://samsa.com.ar/guia-de-tramites/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 56,
+  "fields": {
+    "tramite": 145,
+    "nombre": "Pedir turno",
+    "url": "https://salud.misiones.gob.ar/informacion-y-reservas/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 57,
+  "fields": {
+    "tramite": 145,
+    "nombre": "Sitio del organismo",
+    "url": "https://salud.misiones.gob.ar/habilitacion-y-registros-departamento-de-saneamiento-basico/",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 58,
+  "fields": {
+    "tramite": 148,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/ingresos-brutos-autogestion/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 59,
+  "fields": {
+    "tramite": 178,
+    "nombre": "Pedir turno",
+    "url": "https://www.argentina.gob.ar/turnos",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 60,
+  "fields": {
+    "tramite": 178,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.argentina.gob.ar/jefatura/innovacion-ciencia-y-tecnologia/innovacion/tramites-distancia-tad/iniciar-un-tramite-en-tad",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 61,
+  "fields": {
+    "tramite": 150,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/inmobiliario-autogestion/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 62,
+  "fields": {
+    "tramite": 143,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.rentas.misiones.gob.ar",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 63,
+  "fields": {
+    "tramite": 160,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/inscripcion-tardia-administrativa",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 64,
+  "fields": {
+    "tramite": 156,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/matrimonios",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 65,
+  "fields": {
+    "tramite": 158,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/matrimonios-extranjeros",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 66,
+  "fields": {
+    "tramite": 189,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 67,
+  "fields": {
+    "tramite": 189,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/medicamentos-sin-cargo-hasta-4",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 68,
+  "fields": {
+    "tramite": 188,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 69,
+  "fields": {
+    "tramite": 188,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/medicamentos-sin-cargo-hasta-6",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 70,
+  "fields": {
+    "tramite": 157,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/nacimientos",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 71,
+  "fields": {
+    "tramite": 154,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/padrones-productores/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 72,
+  "fields": {
+    "tramite": 193,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 73,
+  "fields": {
+    "tramite": 193,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/rehabilitacion-kinesiologica",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 74,
+  "fields": {
+    "tramite": 183,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 75,
+  "fields": {
+    "tramite": 183,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/rehabilitacion-personas-discapacidad",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 76,
+  "fields": {
+    "tramite": 198,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 77,
+  "fields": {
+    "tramite": 198,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/residencias-larga-estadia",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 78,
+  "fields": {
+    "tramite": 152,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/sellos-autogestion/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 79,
+  "fields": {
+    "tramite": 164,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/solicitud-de-actas",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 80,
+  "fields": {
+    "tramite": 155,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.gba.gob.ar/registrodelaspersonas/solicitud_de_partidas_online",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 81,
+  "fields": {
+    "tramite": 199,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 82,
+  "fields": {
+    "tramite": 199,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/solicitud-audifonos",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 83,
+  "fields": {
+    "tramite": 191,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 84,
+  "fields": {
+    "tramite": 191,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/subsidio-celiaquia",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 85,
+  "fields": {
+    "tramite": 194,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 86,
+  "fields": {
+    "tramite": 194,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/subsidio-auxiliar-domiciliario",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 87,
+  "fields": {
+    "tramite": 169,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.unam.edu.ar/index.php/graduados/titulos-y-tramites",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 88,
+  "fields": {
+    "tramite": 176,
+    "nombre": "Pedir turno",
+    "url": "https://mi.argentina.gob.ar/turnos",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 89,
+  "fields": {
+    "tramite": 176,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.argentina.gob.ar/interior/dni",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 90,
+  "fields": {
+    "tramite": 162,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/tramites-de-dni",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 91,
+  "fields": {
+    "tramite": 163,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.registrocivil.misiones.gov.ar/index.php/guia-de-tramites/tramites-de-pasaporte",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 92,
+  "fields": {
+    "tramite": 185,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 93,
+  "fields": {
+    "tramite": 185,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/transporte-personas-discapacidad",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 94,
+  "fields": {
+    "tramite": 147,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.cg.misiones.gov.ar/tramite-online-de-proveedores/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 95,
+  "fields": {
+    "tramite": 149,
+    "nombre": "Sitio del organismo",
+    "url": "https://atmisiones.gob.ar/tramites-frecuentes-autogestion/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 96,
+  "fields": {
+    "tramite": 177,
+    "nombre": "Sitio del organismo",
+    "url": "https://tramitesadistancia.gob.ar/registros-publicos/consulta-registros",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 97,
+  "fields": {
+    "tramite": 186,
+    "nombre": "Pedir turno",
+    "url": "https://turnos.pami.org.ar/",
+    "orden": 0
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 98,
+  "fields": {
+    "tramite": 186,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.pami.org.ar/tramite/domicilios",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.enlace",
+  "pk": 99,
+  "fields": {
+    "tramite": 137,
+    "nombre": "Sitio del organismo",
+    "url": "https://www.argentina.gob.ar/interior/renovacion-dni",
+    "orden": 1
+  }
+},
+{
+  "model": "munitramites.perfil",
+  "pk": "073f4e6e-13e7-4312-9493-5c5ee5460393",
+  "fields": {
+    "user": 18,
+    "rol": "corriente",
+    "creado": "2026-10-22T00:21:51.257",
+    "actualizado": "2026-10-22T00:21:51.257"
+  }
+},
+{
+  "model": "munitramites.perfil",
+  "pk": "31ad9a87-a75f-40be-b971-ea3d0c2a317e",
+  "fields": {
+    "user": 12,
+    "rol": "corriente",
+    "creado": "2026-10-14T18:57:26.418",
+    "actualizado": "2026-10-14T18:57:26.418"
+  }
+},
+{
+  "model": "munitramites.perfil",
+  "pk": "37c315cf-d0ac-4591-b1c7-1f30f1b4d7dd",
+  "fields": {
+    "user": 14,
+    "rol": "administrativo",
+    "creado": "2026-10-14T18:57:26.929",
+    "actualizado": "2026-10-14T18:57:26.929"
+  }
+},
+{
+  "model": "munitramites.perfil",
+  "pk": "796babb1-e50d-4275-86c6-b315de31a58e",
+  "fields": {
+    "user": 15,
+    "rol": "corriente",
+    "creado": "2026-10-14T18:57:27.243",
+    "actualizado": "2026-10-14T18:57:27.243"
+  }
+},
+{
+  "model": "munitramites.perfil",
+  "pk": "b5499e3e-f3a4-4697-be0f-aed5617039aa",
+  "fields": {
+    "user": 13,
+    "rol": "administrador",
+    "creado": "2026-10-14T18:57:26.652",
+    "actualizado": "2026-10-14T18:57:26.652"
+  }
+},
+{
+  "model": "munitramites.consulta",
+  "pk": 19,
+  "fields": {
+    "tipo": "reclamo",
+    "asunto": "JAJAJAJAJAJA",
+    "contenido": "cacacacasdd",
+    "tramite": null,
+    "usuario": null,
+    "estado": "respondido",
+    "respuesta": "BOCAAAA",
+    "fecha": "2026-10-09T22:30:22.819"
+  }
+},
+{
+  "model": "munitramites.consulta",
+  "pk": 20,
+  "fields": {
+    "tipo": "consulta",
+    "asunto": "Consulta de prueba del panel",
+    "contenido": "Para verificar que se vea el emisor, la fecha y el filtro.",
+    "tramite": null,
+    "usuario": 14,
+    "estado": "pendiente",
+    "respuesta": "",
+    "fecha": "2026-10-14T21:50:22.401"
+  }
+},
+{
+  "model": "munitramites.consulta",
+  "pk": 21,
+  "fields": {
+    "tipo": "consulta",
+    "asunto": "Horarios de atencion del Registro Civil",
+    "contenido": "Buenos dias, quisiera saber los horarios de atencion del Registro Civil en Posadas para renovar el DNI. Gracias.",
+    "tramite": 137,
+    "usuario": null,
+    "estado": "pendiente",
+    "respuesta": "",
+    "fecha": "2026-09-15T13:30:00"
+  }
+},
+{
+  "model": "munitramites.consulta",
+  "pk": 22,
+  "fields": {
+    "tipo": "sugerencia",
+    "asunto": "Agregar tramites de turismo",
+    "contenido": "Seria util agregar tramites relacionados con turismo, como habilitaciones de alojamientos y guias turisticos.",
+    "tramite": null,
+    "usuario": null,
+    "estado": "pendiente",
+    "respuesta": "",
+    "fecha": "2026-09-14T18:45:00"
+  }
+},
+{
+  "model": "munitramites.consulta",
+  "pk": 23,
+  "fields": {
+    "tipo": "consulta",
+    "asunto": "Licencia para extranjeros",
+    "contenido": "Soy residente de Brasil y quisiera saber si puedo tramitar la licencia de conducir en Misiones.",
+    "tramite": 138,
+    "usuario": null,
+    "estado": "respondido",
+    "respuesta": "",
+    "fecha": "2026-09-16T11:20:00"
+  }
+}
+]

@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+"""Requisitos normalizados: Municipalidad de Oberá."""
+
+REQUISITOS = {
+    'Carnet sanitario': [
+        'Ficha médica certificada por un profesional, vigente',
+        'DNI original',
+        'Foto digital del solicitante',
+        'Presencia personal del solicitante',
+    ],
+    'Castración de mascotas': [
+        'Mayoría de edad',
+        'DNI',
+        'Domicilio real en el ejido municipal de Oberá',
+        'Turno previo (lunes de 6:30 a 8:30, teléfono 3755 400798)',
+    ],
+    'Habilitación comercial con local': [
+        'Formulario de prefactibilidad',
+        'Persona física: formularios de habilitación comercial completos, con sellado de Rentas',
+        'Persona física: DNI frente y dorso',
+        'Persona física: constancia de inscripción en AFIP y Rentas',
+        'Persona física: permiso de ocupación del local comercial',
+        'Persona física: autorización de uso, comodato o contrato de alquiler',
+        'Persona jurídica: formularios de habilitación comercial completos, con sellado de Rentas',
+        'Persona jurídica: DNI frente y dorso del socio gerente o director',
+        'Persona jurídica: constancias de inscripción en AFIP y Rentas de la sociedad',
+        'Persona jurídica: contrato constitutivo y último pago en la Caja de Autónomos del socio gerente',
+        'Persona jurídica: permiso de ocupación y autorización de uso, comodato o alquiler',
+        'Profesionales: título y matrícula del colegio habilitante',
+    ],
+    'Habilitación comercial sin local': [
+        'Persona física: formulario de habilitación comercial para persona física',
+        'Persona física: DNI, primera y segunda hoja',
+        'Persona física: constancia de inscripción en AFIP y Rentas',
+        'Persona física: sellado de Rentas',
+        'Persona física: boleta de servicio',
+        'Persona jurídica: formulario de habilitación comercial para persona jurídica',
+        'Persona jurídica: DNI, primera y segunda hoja, del socio gerente o director',
+        'Persona jurídica: constancias de inscripción en AFIP y Rentas de la sociedad',
+        'Persona jurídica: sellado de Rentas',
+        'Persona jurídica: contrato constitutivo',
+        'Persona jurídica: último pago en la Caja de Autónomos del socio gerente',
+        'Profesionales: título y matrícula del colegio habilitante',
+    ],
+    'Libre deuda de inmueble': [
+        'Factura o número de partida del inmueble',
+        'Datos del dueño: nombre, apellido y DNI',
+        'Tasa de Inmueble al día',
+        'Libre deuda de alumbrado público de CELO',
+    ],
+    'Libre deuda de patente del automotor': [
+        'Obligaciones del impuesto automotor e infracciones de tránsito canceladas',
+        'Pago del derecho de oficina',
+        'Dominio del vehículo',
+    ],
+    'Licencia de conducir por primera vez de 16 a 21 años': [
+        'DNI original con domicilio real en Oberá; DNI digital o constancia de inicio del nuevo DNI con foto sellada por el Registro si se extravió',
+        'Menores de edad: autorización firmada por padres o tutores ante escribano público y partida de nacimiento',
+        'Boleta del CENAT con comprobante de pago, vigencia de 60 días',
+        'Formulario Único de Trámite (FUT) con declaración jurada de afecciones, curso teórico y práctico',
+        'Ficha médica con sello de validez de 30 días',
+    ],
+    'Licencia de conducir por primera vez para mayores de 21 años': [
+        'DNI original con domicilio real en Oberá; DNI digital o constancia de DNI en curso con foto sellada',
+        'Boleta del CENAT con comprobante de pago, vigencia de 60 días',
+        'Formulario Único de Trámite (FUT) con declaración jurada de afecciones, curso teórico y práctico',
+        'Ficha médica con sello de validez de 30 días',
+    ],
+    'Renovación de licencia nacional de conducir': [
+        'DNI original con domicilio real en Oberá',
+        'Licencia Nacional de Conducir vigente',
+        'Boleta del CENAT con comprobante de pago, vigencia de 60 días',
+        'Ficha médica con sello de validez de 30 días',
+        'Renovación dentro de los 45 días previos al vencimiento sin examen teórico-práctico, si no hay infracciones',
+        'Hasta 90 días después del vencimiento: examen teórico; más de 90 días: examen teórico y práctico',
+        'Categorías D1, D2, D3 y D4: certificado de antecedentes penales del Registro Nacional de Reincidencia',
+    ],
+}

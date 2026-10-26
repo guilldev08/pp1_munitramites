@@ -1,0 +1,140 @@
+﻿15 objects imported automatically (use -v 2 for details).
+
+257	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Cambio de nivel de clave fiscal	Solicitud de aumento del nivel de la clave fiscal para operar con m├ís servicios de la ATM.	4	1	1
+258	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Alta, modificaci├│n o cese de actividades (SR311)	Formulario para iniciar, modificar o dar de baja una actividad en Ingresos Brutos o como agente de recaudaci├│n.	3	1	1
+259	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Declaraci├│n Jurada mensual de Ingresos Brutos (SR318)	Presentaci├│n mensual de los ingresos percibidos por contribuyentes directos del impuesto sobre los Ingresos Brutos.	3	1	1
+260	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Declaraci├│n Jurada anual de Ingresos Brutos (SR320)	Presentaci├│n anual del ejercicio fiscal para contribuyentes directos del impuesto sobre los Ingresos Brutos.	3	1	1
+261	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Declaraci├│n Jurada mensual de agente de retenci├│n (SR128)	Declaraci├│n y pago de las retenciones de Ingresos Brutos practicadas por agentes de retenci├│n.	3	1	1
+262	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Declaraci├│n Jurada mensual de agente de percepci├│n (SR129)	Declaraci├│n y pago de las percepciones de Ingresos Brutos practicadas por agentes de percepci├│n.	3	1	1
+263	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Declaraci├│n Jurada mensual de pagos a cuenta (SR343)	Declaraci├│n informativa mensual de los contribuyentes que pagan anticipos de Ingresos Brutos mediante el Sistema Especial de Pagos.	3	1	1
+264	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Constancia de cumplimiento de obligaciones fiscales (SR322)	Solicitud de la constancia que acredita el cumplimiento de las obligaciones fiscales provinciales.	3	1	1
+265	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Alta de Certificado Fiscal para Contratar (SR345)	Solicitud de alta del certificado que permite contratar con el Estado provincial y generar el formulario SR348.	3	1	1
+266	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Emisi├│n de Certificado Fiscal para Contratar (SR348)	Emisi├│n del certificado fiscal para contratar a partir de un SR345 vigente.	4	1	1
+267	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Exclusiones, compensaciones y devoluciones (SF178)	Solicitud de exclusi├│n de reg├¡menes, reducci├│n de al├¡cuotas, compensaci├│n, cesi├│n de saldos y devoluciones.	3	1	1
+268	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Solicitud de exenci├│n de Sellos (SR352)	Solicitud de exenci├│n del pago de un instrumento alcanzado por una resoluci├│n de la ATM.	4	1	1
+269	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Cambio de titular o contribuyente inmobiliario (SR308)	Solicitud de cambio del titular del impuesto inmobiliario de un inmueble.	2	1	1
+270	Administraci├│n Tributaria de Misiones (ATM)	Impuestos	Certificado de libre deuda inmobiliario (SR309)	Solicitud del certificado que acredita que un inmueble no registra deudas del impuesto inmobiliario.	2	1	1
+319	Direcci├│n General de Personas Jur├¡dicas y Registro P├║blico	Comercio	Matr├¡cula de comerciante	Inscripci├│n de una persona humana que realiza actividad econ├│mica en el Registro P├║blico de Comercio.	7	1	1
+320	Direcci├│n General de Personas Jur├¡dicas y Registro P├║blico	Comercio	Declaraci├│n jurada de beneficiario final	Declaraci├│n de las personas humanas que poseen al menos el 10% del capital, derechos de voto o control final de una persona jur├¡dica.	6	1	1
+321	Direcci├│n General de Personas Jur├¡dicas y Registro P├║blico	Comercio	Cambio de domicilio de asociaciones y fundaciones	Actualizaci├│n del domicilio social de una asociaci├│n civil o fundaci├│n inscripta en la Direcci├│n de Personas Jur├¡dicas.	6	1	1
+322	Direcci├│n General de Personas Jur├¡dicas y Registro P├║blico	Comercio	Reserva de nombre para sociedades	Verificaci├│n de que la denominaci├│n que se pretende usar no sea id├®ntica o similar a otra ya registrada.	6	1	1
+323	Direcci├│n General de Personas Jur├¡dicas y Registro P├║blico	Comercio	R├║brica de libros societarios	R├║brica de los libros de actas, diario, IVA, inventario y registro de asistencia a asamblea de una entidad.	6	1	1
+285	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Habilitaci├│n inicial del servicio el├®ctrico	Conexi├│n nueva del suministro el├®ctrico con instalaci├│n de medidor en el domicilio.	8	1	1
+286	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Cambio de titularidad del servicio el├®ctrico	Cambio del servicio de energ├¡a a nombre del nuevo titular de la conexi├│n.	9	1	1
+287	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Baja del servicio el├®ctrico	Baja de la conexi├│n el├®ctrica con retiro del medidor del domicilio.	4	1	1
+288	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Beneficio para jubilados y pensionados	Descuento provincial para jubilados y pensionados con ingresos bajos y una sola conexi├│n residencial.	7	1	1
+289	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Devoluci├│n del dep├│sito de garant├¡a	Reintegro del dep├│sito abonado por usuarios no propietarios luego de la baja de una conexi├│n sin deuda.	4	1	1
+290	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Devoluci├│n por pago doble	Cr├®dito a favor del usuario por el pago duplicado de una misma factura.	1	1	1
+291	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Revisi├│n de factura	Reclamo cuando el usuario considera que el importe facturado es excesivo por consumo o tarifa.	1	1	1
+292	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Adhesi├│n al d├®bito autom├ítico	Autorizaci├│n para debitar autom├íticamente la factura el├®ctrica de una cuenta bancaria.	3	1	1
+293	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Factibilidad el├®ctrica	An├ílisis de la red para determinar si es posible conectar un suministro o si hace falta una obra el├®ctrica previa.	10	1	1
+294	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Tarifa Social provincial	Beneficio tarifario para hogares en situaci├│n de vulnerabilidad que cumplan los criterios de elegibilidad provinciales.	7	1	1
+295	Energ├¡a de Misiones S.A.	Servicios P├║blicos	Registro de Electrodependientes (RECS)	Inscripci├│n o renovaci├│n en el registro que otorga gratuidad del servicio el├®ctrico a personas que dependen de equipos m├®dicos.	9	1	1
+271	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Inscripci├│n en el Registro de Demanda General de Viviendas	Inscripci├│n para acceder a una vivienda social en la localidad donde la persona habita de forma permanente.	10	1	1
+272	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Construcci├│n de Viviendas Rurales	Programa de construcci├│n de viviendas rurales gestionado a trav├®s de municipios, cooperativas o asociaciones con convenio con IPRODHA.	12	1	1
+273	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Construcci├│n de Viviendas de Gesti├│n Compartida	Programa para construir viviendas en terrenos municipales donados al IPRODHA, con aporte financiero del municipio.	8	1	1
+274	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Arreglo Mi Casa	Programa de refacci├│n o ampliaci├│n de viviendas existentes para grupos familiares beneficiarios de IPRODHA.	8	1	1
+275	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Construyo Mi Casa	Cr├®dito para construir una vivienda en un lote propio, destinado a grupos familiares con al menos un menor de 18 a├▒os.	13	1	1
+276	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Mediaci├│n entre Terceros para Regularizaci├│n Dominial	Intervenci├│n del IPRODHA para regularizar terrenos particulares ocupados por familias durante m├ís de cinco a├▒os.	4	1	1
+277	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Beneficio para Personas Trasplantadas	Subsidio del 40% para beneficiarios de programas habitacionales que acrediten trasplante o estar en lista de espera.	5	1	1
+278	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Beneficios para Personas con CUD	Subsidio del 40% para beneficiarios de programas habitacionales que acrediten discapacidad mediante CUD.	5	1	1
+279	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Cancelaci├│n por Fallecimiento	Cancelaci├│n del 50% de la deuda de la vivienda para c├│nyuge o conviviente del beneficiario fallecido.	4	1	1
+280	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Cancelaci├│n Anticipada	Cancelaci├│n total anticipada del saldo de la vivienda financiada por IPRODHA.	3	1	1
+281	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Cambio de Titular de la Vivienda	Transferencia del titular de una vivienda IPRODHA a otro integrante del grupo familiar original, con ingresos y garant├¡as.	6	1	1
+282	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Denuncia de Siniestro en la Vivienda	Denuncia de da├▒os sufridos en una vivienda financiada por IPRODHA para evaluar la cobertura o las medidas a adoptar.	5	1	1
+283	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Renuncia a la Vivienda	Renuncia voluntaria del adjudicatario a una vivienda financiada por IPRODHA.	4	1	1
+284	Instituto Provincial de Desarrollo Habitacional (IPRODHA)	Vivienda	Permiso de Custodia o Guarda de la Vivienda	Autorizaci├│n para que otra persona o grupo familiar ocupe temporalmente una vivienda IPRODHA mientras el adjudicatario se ausenta.	8	1	1
+305	Ministerio de Salud P├║blica de Misiones	Salud	Inscripci├│n de establecimiento elaborador de productos domisanitarios	Registro provincial de establecimientos elaboradores o fraccionadores de productos domisanitarios de uso dom├®stico.	12	1	1
+306	Ministerio de Salud P├║blica de Misiones	Salud	Inscripci├│n de producto domisanitario	Registro provincial de productos domisanitarios elaborados o fraccionados en Misiones, con certificado por producto.	13	1	1
+307	Ministerio de Salud P├║blica de Misiones	Salud	Inscripci├│n de establecimiento de higiene personal, cosm├®ticos y perfumes	Registro provincial de establecimientos elaboradores, fraccionadores, envasadores y distribuidores de cosm├®ticos y perfumes.	13	1	1
+308	Ministerio de Salud P├║blica de Misiones	Salud	Inscripci├│n de producto de higiene personal, cosm├®ticos y perfumes	Registro provincial de productos de higiene personal, cosm├®ticos y perfumes elaborados en Misiones.	12	1	1
+309	Ministerio de Salud P├║blica de Misiones	Salud	Habilitaci├│n de servicio de radiodiagn├│stico y equipos emisores de radiaciones	Habilitaci├│n de servicios de radiodiagn├│stico, diagn├│stico por im├ígenes, terap├®uticos, laborales y equipos emisores.	9	1	1
+310	Ministerio de Salud P├║blica de Misiones	Salud	Renovaci├│n de habilitaci├│n de equipos de rayos X, RMI y otros	Renovaci├│n de la habilitaci├│n de servicios que utilizan equipos generadores de radiaciones ionizantes y no ionizantes.	4	1	1
+311	Ministerio de Salud P├║blica de Misiones	Salud	Certificaci├│n de establecimiento no generador de residuos patol├│gicos	Certificaci├│n para establecimientos o instituciones que no generan residuos patol├│gicos de la categor├¡a Y1.	7	1	1
+324	Municipalidad de Ober├í	Comercio	Habilitaci├│n comercial con local	Habilitaci├│n municipal para abrir un comercio con local en Ober├í, seg├║n el tipo de personer├¡a.	12	1	1
+325	Municipalidad de Ober├í	Comercio	Habilitaci├│n comercial sin local	Habilitaci├│n municipal para una actividad comercial que no cuenta con local propio en Ober├í.	12	1	1
+326	Municipalidad de Ober├í	Tr├ínsito	Licencia de conducir por primera vez de 16 a 21 a├▒os	Otorgamiento de la licencia nacional de conducir para personas de 16 a 21 a├▒os con domicilio en Ober├í.	7	1	1
+327	Municipalidad de Ober├í	Tr├ínsito	Licencia de conducir por primera vez para mayores de 21 a├▒os	Otorgamiento de la licencia nacional de conducir para personas mayores de 21 a├▒os con domicilio en Ober├í.	6	1	1
+328	Municipalidad de Ober├í	Tr├ínsito	Renovaci├│n de licencia nacional de conducir	Renovaci├│n de la licencia nacional de conducir, con o sin ampliaci├│n de categor├¡a, para residentes de Ober├í.	8	1	1
+329	Municipalidad de Ober├í	Impuestos	Libre deuda de patente del automotor	Certificado municipal que acredita que un veh├¡culo no tiene deudas de patente ni infracciones de tr├ínsito en Ober├í.	4	1	1
+330	Municipalidad de Ober├í	Impuestos	Libre deuda de inmueble	Certificado municipal que acredita que un inmueble no registra deudas de la tasa inmobiliaria ni del alumbrado p├║blico.	4	1	1
+331	Municipalidad de Ober├í	Salud	Carnet sanitario	Certificado de salud para trabajadores de peluquer├¡as, est├®ticas, institutos de belleza y actividades de tatuajes o perforaciones.	5	1	1
+332	Municipalidad de Ober├í	Ambiente	Castraci├│n de mascotas	Turno para la esterilizaci├│n quir├║rgica gratuita de mascotas de vecinos con domicilio en Ober├í.	4	1	1
+234	Municipalidad de Posadas	Obras y Catastro	Inicio de tr├ímite de obra en el sistema GOP	Registro digital de obras privadas para obtener factibilidad, permisos de obra nueva, reforma, ampliaci├│n, demolici├│n y final de obra.	13	1	1
+235	Municipalidad de Posadas	Obras y Catastro	Certificado final de obra	Certificaci├│n municipal de que la obra aprobada se encuentra terminada y en condiciones de ser habilitada.	9	1	1
+236	Municipalidad de Posadas	Obras y Catastro	Cambio de categor├¡a de bald├¡o a edificado	Certificado de construcci├│n existente para pasar un inmueble de la categor├¡a de bald├¡o a edificado.	2	1	1
+237	Municipalidad de Posadas	Obras y Catastro	Ocupaci├│n de la v├¡a p├║blica con vallado de obra	Autorizaci├│n para instalar un vallado de obra sobre la v├¡a p├║blica frente al inmueble en construcci├│n.	4	1	1
+238	Municipalidad de Posadas	Obras y Catastro	Certificaci├│n para inicio de comodato precario	Certificado municipal para iniciar el tr├ímite de comodato precario de un inmueble.	3	1	1
+239	Municipalidad de Posadas	Vivienda	Plan Mejor Vivir	Presentaci├│n de refacciones o ampliaciones de viviendas existentes financiadas por IPRODHA, con aval del instituto.	4	1	1
+240	Municipalidad de Posadas	Obras y Catastro	Visado de expediente de mensura	Visado municipal del expediente de mensura para propiedad horizontal, fraccionamiento simple o fraccionamiento simple especial.	5	1	1
+241	Municipalidad de Posadas	Impuestos	Certificado de libre deuda del automotor	Certificado municipal que acredita que el veh├¡culo no registra deudas de patente ni multas vigentes.	2	1	1
+242	Municipalidad de Posadas	Impuestos	Plan de pagos del automotor	Solicitud de un plan de pagos para regularizar deudas del impuesto automotor municipal.	3	1	1
+243	Municipalidad de Posadas	Tr├ínsito	Denuncia de venta del automotor	Comunicaci├│n municipal de la venta de un veh├¡culo para deslindar responsabilidades sobre el rodado.	2	1	1
+244	Municipalidad de Posadas	Tr├ínsito	Alta municipal de rodados usados	Alta municipal de un veh├¡culo usado para el pago del impuesto automotor en Posadas.	3	1	1
+245	Municipalidad de Posadas	Tr├ínsito	Alta municipal de rodados 0 km	Alta municipal de un veh├¡culo nuevo para el pago del impuesto automotor en Posadas.	3	1	1
+246	Municipalidad de Posadas	Tr├ínsito	Certificado de baja del automotor por cambio de radicaci├│n	Baja municipal del veh├¡culo para radicarlo en otra jurisdicci├│n.	4	1	1
+247	Municipalidad de Posadas	Impuestos	Inscripci├│n como agente de retenci├│n y percepci├│n del DIRySC	Inscripci├│n de contribuyentes que superaron los $600.000.000 de ingresos brutos en el r├®gimen de retenci├│n y percepci├│n del DIRySC.	7	1	1
+248	Municipalidad de Posadas	Impuestos	Exclusi├│n del r├®gimen de retenci├│n y percepci├│n del DIRySC	Solicitud de exclusi├│n del r├®gimen de retenci├│n y percepci├│n del derecho de inspecci├│n, registro y servicio de contralor.	7	1	1
+249	Municipalidad de Posadas	Impuestos	Exclusi├│n del DIRySC por saldos a favor	Exclusi├│n total o parcial del r├®gimen cuando su aplicaci├│n genera saldos a favor permanentes en el contribuyente.	7	1	1
+250	Municipalidad de Posadas	Servicios P├║blicos	Recolecci├│n de ramas y residuos	Servicio municipal de retiro de ramas y residuos de gran volumen, con pago del canon correspondiente.	3	1	1
+251	Municipalidad de Posadas	Ambiente	Solicitud de poda de arbolado urbano	Autorizaci├│n municipal para podar ├írboles urbanos y retirar los residuos generados.	5	1	1
+252	Municipalidad de Posadas	Vivienda	Inscripci├│n en el Registro de Administradores de Consorcios	Registro municipal de personas f├¡sicas o jur├¡dicas que administran consorcios de propiedad horizontal en Posadas.	6	1	1
+253	Municipalidad de Posadas	Comercio	Certificado de funcionamiento comercial	Certificado municipal de funcionamiento para locales comerciales, con documentaci├│n t├®cnica firmada por profesional habilitado.	6	1	1
+254	Municipalidad de Posadas	Tr├ínsito	Licencia de conducir para clases profesionales C, D y E	Inicio o renovaci├│n de licencias profesionales jurisdiccionales e interjurisdiccionales para conducir veh├¡culos de mayor complejidad.	7	2	1
+255	Municipalidad de Posadas	Tr├ínsito	Primera licencia de conducir para clases particulares A, B y G	Otorgamiento de la licencia nacional de conducir para autom├│viles y motos, con curso y ex├ímenes.	6	2	1
+256	Municipalidad de Posadas	Tr├ínsito	Renovaci├│n de licencia de conducir para clases particulares A, B y G	Renovaci├│n de la licencia nacional de conducir para autom├│viles y motos.	5	2	1
+333	Municipalidad de Puerto Iguaz├║	Tr├ínsito	Licencia de conducir por primera vez para mayores de edad	Otorgamiento de la licencia nacional de conducir en Puerto Iguaz├║, con curso y ex├ímenes obligatorios.	6	1	1
+334	Municipalidad de Puerto Iguaz├║	Tr├ínsito	Licencia de conducir por primera vez para menores de 16 y 17 a├▒os	Otorgamiento de la licencia nacional de conducir para menores de edad, con autorizaci├│n de sus representantes.	5	1	1
+335	Municipalidad de Puerto Iguaz├║	Tr├ínsito	Renovaci├│n de licencia de conducir	Renovaci├│n de la licencia nacional de conducir de Puerto Iguaz├║, antes o despu├®s del vencimiento.	4	1	1
+336	Municipalidad de Puerto Iguaz├║	Tr├ínsito	Ampliaci├│n de categor├¡a de licencia de conducir	Ampliaci├│n de la categor├¡a de la licencia nacional de conducir en Puerto Iguaz├║.	4	1	1
+337	Municipalidad de Puerto Iguaz├║	Tr├ínsito	Duplicado o triplicado de licencia de conducir	Emisi├│n de un duplicado o triplicado de la licencia por extrav├¡o o actualizaci├│n de datos.	3	1	1
+338	Municipalidad de Puerto Iguaz├║	Salud	Libreta sanitaria por primera vez	Libreta sanitaria para trabajadores de actividades con riesgo de transmisi├│n de enfermedades alimentarias.	6	1	1
+339	Municipalidad de Puerto Iguaz├║	Salud	Renovaci├│n de libreta sanitaria	Renovaci├│n de la libreta sanitaria de Puerto Iguaz├║ con nuevo examen m├®dico.	4	1	1
+340	Municipalidad de Puerto Iguaz├║	Comercio	Habilitaci├│n e inscripci├│n o traslado de comercio	Habilitaci├│n municipal de una actividad comercial en Puerto Iguaz├║, para personas f├¡sicas o jur├¡dicas.	12	1	1
+312	Polic├¡a de Misiones	Seguridad	Certificado de domicilio con testigos	Certificado policial que acredita el domicilio real y efectivo del solicitante mediante la declaraci├│n de dos testigos.	5	2	1
+313	Polic├¡a de Misiones	Seguridad	Certificado de domicilio sin testigos	Certificado policial de domicilio para el solicitante cuyo DNI ya contiene la direcci├│n que se quiere acreditar.	4	2	1
+314	Polic├¡a de Misiones	Seguridad	Certificado de convivencia	Certificado policial que acredita que dos personas conviven en un mismo domicilio, con intervenci├│n de testigos.	5	2	1
+315	Polic├¡a de Misiones	Seguridad	Certificado de supervivencia con testigos	Certificado policial que acredita que una persona vive y tiene domicilio real y efectivo, con dos testigos o apoderado.	4	2	1
+316	Polic├¡a de Misiones	Seguridad	Certificado de supervivencia sin testigos	Certificado policial de supervivencia para el solicitante cuyo domicilio consta en su DNI.	4	2	1
+317	Polic├¡a de Misiones	Seguridad	Certificado de residencia para extranjeros	Certificado policial de residencia para presentar ante la Direcci├│n General de Migraciones.	6	2	1
+318	Polic├¡a de Misiones	Seguridad	Constancia policial por extrav├¡o	Constancia policial de la p├®rdida o extrav├¡o de un documento u objeto, para presentar ante las autoridades que lo requieran.	4	2	1
+203	Registro Provincial de las Personas	Documentaci├│n	Nuevo ejemplar de DNI	Solicitud de un nuevo ejemplar del Documento Nacional de Identidad en cualquier delegaci├│n del Registro Provincial de las Personas.	4	5	1
+204	Registro Provincial de las Personas	Documentaci├│n	Cambio de domicilio en el DNI	Actualiza la direcci├│n que figura en el DNI y define el domicilio donde se recibir├í el nuevo ejemplar.	4	5	1
+205	Registro Provincial de las Personas	Documentaci├│n	DNI Expr├®s	Emisi├│n acelerada del DNI, con entrega estimada en 96 horas h├íbiles.	3	5	1
+206	Registro Provincial de las Personas	Documentaci├│n	DNI Cero A├▒o	Emisi├│n gratuita del DNI para un reci├®n nacido, en la localidad donde naci├│.	4	5	1
+207	Registro Provincial de las Personas	Documentaci├│n	Actualizaci├│n de DNI de 5 a 8 a├▒os	Actualizaci├│n del DNI de los chicos que tienen entre 5 y 8 a├▒os.	5	5	1
+208	Registro Provincial de las Personas	Documentaci├│n	Actualizaci├│n de DNI a los 14 a├▒os	Actualizaci├│n obligatoria del DNI al cumplir 14 a├▒os.	3	5	1
+209	Registro Provincial de las Personas	Documentaci├│n	Actualizaci├│n de DNI para mayores de 18 a├▒os	Actualizaci├│n del DNI para personas adultas que deben acreditar identidad y datos filiatorios.	4	5	1
+210	Registro Provincial de las Personas	Documentaci├│n	DNI para personas extranjeras	Nuevo ejemplar, primera identificaci├│n para ciudadanos del MERCOSUR y actualizaci├│n de DNI para personas extranjeras.	3	5	1
+211	Registro Provincial de las Personas	Documentaci├│n	Reposici├│n de DNI por dato incorrecto	Correcci├│n de un dato incorrecto consignado en el DNI mediante la emisi├│n de un nuevo ejemplar.	4	5	1
+212	Registro Provincial de las Personas	Documentaci├│n	Rectificaci├│n de DNI por acta modificada	Emisi├│n de un nuevo DNI cuando se modific├│ un dato del acta de nacimiento que impacta en el documento.	3	5	1
+213	Registro Provincial de las Personas	Documentaci├│n	Pasaporte para mayores de edad	Emisi├│n del pasaporte argentino para personas mayores de edad.	4	5	1
+214	Registro Provincial de las Personas	Documentaci├│n	Pasaporte para menores de edad	Emisi├│n del pasaporte argentino para menores de edad, con presencia del menor y documentaci├│n de sus padres.	5	5	1
+215	Registro Provincial de las Personas	Documentaci├│n	Pasaporte Expr├®s	Emisi├│n acelerada del pasaporte, con entrega estimada en 72 a 96 horas h├íbiles.	4	5	1
+216	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n de nacimiento dentro de los 40 d├¡as	Inscripci├│n del reci├®n nacido en el Registro Civil, dentro de los 40 d├¡as posteriores al nacimiento.	3	5	1
+217	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n de nacimiento de 14 a 18 a├▒os	Inscripci├│n de nacimiento de personas mayores de 14 y hasta 18 a├▒os inclusive.	3	5	1
+218	Registro Provincial de las Personas	Documentaci├│n	Reconocimiento de hijo o hija	Reconocimiento filial de un hijo o hija menor de edad ante el Registro Civil.	4	5	1
+219	Registro Provincial de las Personas	Documentaci├│n	Adici├│n de apellido materno	Incorporaci├│n del apellido de la madre en el acta de nacimiento y en el DNI.	5	5	1
+220	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n de matrimonio	Inscripci├│n y celebraci├│n del matrimonio civil en la jurisdicci├│n donde uno de los contrayentes tiene domicilio.	10	5	1
+221	Registro Provincial de las Personas	Documentaci├│n	Matrimonio de extranjeros no residentes	Celebraci├│n de matrimonio entre extranjeros no residentes en la provincia de Misiones, con turno previo.	8	6	1
+222	Registro Provincial de las Personas	Documentaci├│n	Uni├│n convivencial	Registraci├│n de la uni├│n convivencial de dos personas que comparten domicilio y cumplen los requisitos legales.	6	6	1
+223	Registro Provincial de las Personas	Documentaci├│n	Cese de uni├│n convivencial	Registraci├│n del cese de una uni├│n convivencial inscripta en el Registro Civil.	3	1	1
+224	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n de defunci├│n	Inscripci├│n del fallecimiento en la Centralizadora de Defunciones del Registro Civil.	5	1	1
+225	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n de divorcio	Inscripci├│n de una sentencia de divorcio en el Registro Civil.	4	5	1
+226	Registro Provincial de las Personas	Documentaci├│n	Solicitud de actas legalizadas	Solicitud en l├¡nea de actas de nacimiento, matrimonio o defunci├│n legalizadas de la provincia de Misiones.	6	5	1
+227	Registro Provincial de las Personas	Documentaci├│n	Rectificaci├│n de actas de estado civil	Correcci├│n de errores en actas de nacimiento, matrimonio o defunci├│n.	6	5	1
+228	Registro Provincial de las Personas	Documentaci├│n	Legalizaci├│n de t├¡tulo	Legalizaci├│n de t├¡tulos educativos originales de la provincia de Misiones.	5	1	1
+229	Registro Provincial de las Personas	Documentaci├│n	Permiso de viaje para menores dentro del pa├¡s	Autorizaci├│n para que un menor viaje dentro del territorio argentino con un adulto o solo, seg├║n su edad.	7	1	1
+230	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n tard├¡a administrativa de nacimiento	Inscripci├│n de nacimientos fuera de t├®rmino en sedes administrativas del Registro, sin l├¡mite de edad.	4	5	1
+231	Registro Provincial de las Personas	Documentaci├│n	Inscripci├│n de acta de extra├▒a jurisdicci├│n	Inscripci├│n en Misiones de actas de nacimiento, matrimonio o defunci├│n emitidas en otra jurisdicci├│n.	5	1	1
+232	Registro Provincial de las Personas	Documentaci├│n	Registraci├│n de pacto convivencial	Registraci├│n de un pacto de convivencia celebrado por instrumento privado con certificaci├│n de firmas.	3	1	1
+233	Registro Provincial de las Personas	Documentaci├│n	Registraci├│n de convenci├│n matrimonial	Registraci├│n y protocolizaci├│n de una convenci├│n matrimonial otorgada por escritura p├║blica.	3	1	1
+296	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Solicitud de conexi├│n domiciliaria de agua y cloaca	Conexi├│n nueva de agua potable y/o cloaca para un inmueble, con presupuesto previo y pago de derechos.	9	1	1
+297	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Cambio de titularidad del servicio de agua	Cambio a nombre del nuevo titular de una cuenta de agua y/o cloaca existente.	5	1	1
+298	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Constancia de servicio de agua y/o cloaca	Constancia que acredita la existencia y las condiciones del servicio de agua y/o cloaca de un inmueble.	3	1	1
+299	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Libre deuda de SAMSA	Certificado que acredita que la cuenta del inmueble no registra deudas con SAMSA.	2	1	1
+300	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Correcci├│n de datos de la cuenta	Correcci├│n de direcci├│n, datos catastrales, datos de calle, situaci├│n, cambio de base, IVA o alta y baja de cuenta.	6	1	1
+301	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Solicitud de factibilidad para barrios	Evaluaci├│n de factibilidad de agua y cloaca para un proyecto de barrio o urbanizaci├│n.	2	1	1
+302	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Convenio de pago de deuda	Acuerdo para regularizar una deuda existente con SAMSA.	3	1	1
+303	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Adhesi├│n al d├®bito autom├ítico de SAMSA	Autorizaci├│n para debitar autom├íticamente la factura de agua y cloaca de una tarjeta o cuenta bancaria.	3	1	1
+304	SAMSA - Aguas de Misiones S.A.	Servicios P├║blicos	Cambio de datos postales	Actualizaci├│n del domicilio postal o de contacto de un cliente existente de SAMSA.	2	1	1

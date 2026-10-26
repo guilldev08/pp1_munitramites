@@ -7,7 +7,8 @@ modal de auth; «Continuar sin sesión» entra al sitio) más la sección
 
 El listado de trámites con filtros vive en /tramites/ (ver
 views/tramites.py) y la barra del asistente se retira de la landing por
-ahora: el asistente sigue al alcance con el botón 💬 y en /chatbot/.
+ahora: el asistente sigue al alcance con el botón 💬 y el modal que se
+abre desde cualquier página.
 """
 
 from django.shortcuts import render

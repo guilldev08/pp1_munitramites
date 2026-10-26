@@ -26,15 +26,15 @@
             {% else %}Sin resultados.{% endif %}
           </p>
         </div>
-        <a class="boton boton--secundario" href="{% url 'chatbot' %}" data-abrir="modal-chat">
+        <a class="boton boton--secundario" href="{% url 'tramites' %}" data-abrir="modal-chat">
           ¿No lo encontrás? Preguntá
         </a>
       </div>
 
       {# --- Barra del asistente: preguntar sin salir del listado ------------- #}
-      {# Sin JavaScript hace POST a /chatbot/ y se responde en la página del chat; con JavaScript app.js abre el modal y manda la pregunta. #}
+      {# La barra abre el modal del asistente y manda la pregunta por JSON. #}
       <form class="barra-chat" id="barra-chat" method="post"
-            action="{% url 'chatbot' %}" autocomplete="off">
+            action="{% url 'chatbot_api' %}" autocomplete="off">
         {% csrf_token %}
         <input type="text" name="mensaje" maxlength="300" required
                placeholder="Preguntale al asistente… (ej.: «¿cómo renuevo el DNI?»)"

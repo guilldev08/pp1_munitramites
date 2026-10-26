@@ -36,17 +36,20 @@ Criterios del documento que garantiza este diseno:
     · Manejo de alucinaciones .. umbral + «no dispongo de esa información»
                                  + el corte de montos de generacion.py
     · Cita de fuentes .......... cada respuesta enlaza sus tramites
-    · Privacidad ............... la charla vive en la sesion, no en la base
+    · Privacidad ............... cada usuario tiene su propio historial
 
 Uso tipico (desde una vista):
 
     from munitramites.services.chatbot import es_limpieza, responder
-    historial = request.session.get('chatbot', [])
+    historial = [...]                # últimos mensajes de la conversación
     if es_limpieza(pregunta):        # «limpiar» escrito a mano
         historial = []
     rta = responder(pregunta, historial)
     rta['texto']      # str legible
     rta['tramites']   # [Tramite, …] fuentes citadas
+
+El historial persistente (ConversacionChat/MensajeChat) lo maneja la
+vista; este paquete solo recibe la lista de mensajes previos.
 
 Con `historial` el asistente entiende seguimientos («¿y el plazo?»): si la
 pregunta es corta, se busca junto con la pregunta anterior del usuario

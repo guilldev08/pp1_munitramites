@@ -274,7 +274,6 @@ class AnonimoTests(TestCase):
     def test_las_paginas_privadas_redirigen_al_login(self):
         for url in (reverse('perfil'), reverse('consultas'),
                     reverse('consulta_nueva'), reverse('soporte'),
-                    reverse('chatbot'),
                     reverse('panel'), reverse('panel_tramites')):
             r = self.client.get(url)
             self.assertEqual(r.status_code, 302, url)

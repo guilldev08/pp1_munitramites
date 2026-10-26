@@ -23,7 +23,8 @@ Reglas de la conversación:
       preguntó antes,
     · la barra de búsqueda pública pasa `usar_llm=False`: responde el RAG
       con plantillas y la API queda para usuarios logueados,
-    · la charla no se guarda en la base: vive en la sesión del usuario.
+    · el historial lo persiste la vista, por usuario
+      (`ConversacionChat`/`MensajeChat`); acá solo llega como lista.
 """
 
 import re
@@ -167,7 +168,7 @@ def _sin_informacion(pregunta):
 def responder(pregunta, historial=None, usar_llm=True):
     """Punto de entrada único del asistente.
 
-    `historial` es la charla previa de la sesión (dicts con `rol` y
+    `historial` es la charla previa guardada (dicts con `rol` y
     `texto`, la misma que ve el ciudadano en pantalla): se usa para
     entender seguimientos cortos —con la pregunta anterior se sabe de
     qué trámite habla «¿y el plazo?»— y para que un seguimiento cite

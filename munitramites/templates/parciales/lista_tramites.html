@@ -43,13 +43,13 @@
       <p class="texto-suave mb-0">Consultando la base de conocimiento…</p>
       <noscript>
         <p class="mb-0">
-          <a href="{% url 'chatbot' %}?q={{ filtros.q.value|urlencode }}">
-            Preguntar esto al asistente →</a>
+          El asistente necesita JavaScript para responder acá.
         </p>
       </noscript>
     </div>
     <p class="asistente-barra__pie">
-      <a href="{% url 'chatbot' %}?q={{ filtros.q.value|urlencode }}">Seguir en el chat →</a>
+      <a href="{% url 'tramites' %}" data-abrir="modal-chat"
+         data-chat-pregunta="{{ filtros.q.value }}">Seguir en el chat →</a>
     </p>
   </section>
 {% endif %}

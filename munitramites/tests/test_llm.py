@@ -12,7 +12,7 @@ está o no corresponde usarlo, y que un fallo no se pague en cada mensaje.
 from unittest.mock import MagicMock, patch
 
 import requests
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 
 from munitramites.services.chatbot import llm
 from munitramites.services.chatbot.pipeline import responder
@@ -81,6 +81,38 @@ class LlmTests(TestCase):
         self.assertIn('Renovacion de DNI', mensajes[1]['content'])
         self.assertIn('¿qué necesito para renovar el DNI?',
                       mensajes[1]['content'])
+
+    def test_el_prompt_prohibe_enlaces_y_markdown(self):
+        with patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+            return_value=_respuesta_modelo('Renovás el DNI.'),
+        ) as post:
+            responder('¿qué necesito para renovar el DNI?')
+
+        sistema = post.call_args.kwargs['json']['messages'][0]['content']
+        self.assertIn('ENLACES', sistema)
+        self.assertIn('no escribas enlaces', sistema)
+        self.assertIn('Markdown', sistema)
+        self.assertIn('el sistema agrega el enlace', sistema)
+
+    def test_el_modelo_no_puede_colar_enlaces(self):
+        with patch(
+            'munitramites.services.chatbot.llm.groq.requests.post',
+            return_value=_respuesta_modelo(
+                'Renovás el DNI. Mirá '
+                '[la ficha](https://ejemplo.test/dni) o '
+                '<a href="https://ejemplo.test/portal">el portal</a>. '
+                'Más datos en https://ejemplo.test/extra'
+            ),
+        ):
+            rta = responder('¿qué necesito para renovar el DNI?')
+
+        # Queda el texto visible, nunca el enlace ni una URL externa.
+        self.assertIn('la ficha', rta['texto'])
+        self.assertIn('el portal', rta['texto'])
+        self.assertNotIn('http', rta['texto'])
+        self.assertNotIn('](', rta['texto'])
+        self.assertNotIn('<a', rta['texto'])
 
     @override_settings(GROQ_API_KEY='')
     def test_sin_clave_no_se_llama_a_groq(self):
@@ -242,3 +274,33 @@ class SinLlmTests(TestCase):
         self.assertIn('No dispongo', rta['texto'])
         self.assertIn('monto', rta['texto'])
         post.assert_not_called()
+
+
+class LimpiarEnlacesTests(SimpleTestCase):
+    """La red de seguridad del servidor: el modelo no devuelve enlaces."""
+
+    def test_quita_markdown_absoluto_y_relativo(self):
+        self.assertEqual(
+            llm.limpiar_enlaces('Mirá [la ficha](https://x.test/dni).'),
+            'Mirá la ficha.',
+        )
+        self.assertEqual(
+            llm.limpiar_enlaces('[Renovación de DNI](/tramites/12/)'),
+            'Renovación de DNI',
+        )
+
+    def test_quita_html_y_urls_sueltas(self):
+        self.assertEqual(
+            llm.limpiar_enlaces(
+                'Entrá a <a href="https://x.test">el portal</a>.'
+            ),
+            'Entrá a el portal.',
+        )
+        self.assertEqual(
+            llm.limpiar_enlaces('Más en https://x.test/ayuda'),
+            'Más en',
+        )
+
+    def test_no_toca_el_texto_normal(self):
+        texto = 'Renovás el DNI con el DNI anterior y la tasa.'
+        self.assertEqual(llm.limpiar_enlaces(texto), texto)

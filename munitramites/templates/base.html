@@ -100,7 +100,7 @@
     <div>
       <a href="{% url 'tramites' %}">Trámites</a> ·
       <a href="{% url 'soporte' %}">Soporte</a> ·
-      <a href="{% url 'chatbot' %}" data-abrir="modal-chat">Chatbot</a> ·
+      <a href="{% url 'tramites' %}" data-abrir="modal-chat">Chatbot</a> ·
       <a href="{% url 'api_tramites' %}">API</a>
       {% if user.is_staff or user.is_superuser %}
         · <a href="{% url 'panel' %}">Administración</a>
@@ -240,14 +240,44 @@
 <div class="modal modal--chat" id="modal-chat" hidden
      role="dialog" aria-modal="true" aria-label="Asistente de trámites">
   <div class="modal__caja modal__caja--chat" data-modal-caja>
-    <div class="modal__cabecera">
-      <div>
-        <strong>Asistente de trámites</strong>
-        <div class="texto-chico texto-suave">Responde con los trámites cargados de Misiones y cita la fuente.</div>
+
+    {% if user.is_authenticated %}
+      <aside class="chat-panel" id="chat-panel" aria-label="Tus conversaciones"
+             aria-hidden="true">
+        <div class="chat-panel__cabecera">
+          <strong class="chat-panel__titulo">Tus conversaciones</strong>
+          <button class="chat-panel__cerrar" type="button" data-cerrar-panel
+                  aria-label="Cerrar conversaciones">✕</button>
+        </div>
+        <button class="boton boton--ancho chat-panel__nuevo" type="button"
+                id="chat-nuevo-panel">+ Nuevo chat</button>
+        <nav class="chat-panel__lista" id="chat-lista"
+             aria-label="Conversaciones guardadas"></nav>
+        <p class="chat-panel__pie texto-chico texto-suave mb-0">
+          Tus chats quedan guardados en tu cuenta.
+        </p>
+      </aside>
+      <div class="chat-panel__fondo" id="chat-panel-fondo"
+           data-cerrar-panel aria-hidden="true"></div>
+    {% endif %}
+
+    <div class="modal__cabecera modal__cabecera--chat">
+      <div class="chat__cabecera-izq">
+        {% if user.is_authenticated %}
+          <button class="chat-hamburguesa" id="chat-hamburguesa" type="button"
+                  aria-label="Ver tus conversaciones" aria-expanded="false"
+                  aria-controls="chat-panel">
+            <span></span><span></span><span></span>
+          </button>
+        {% endif %}
+        <div>
+          <strong>Asistente de trámites</strong>
+          <div class="texto-chico texto-suave">Responde con los trámites cargados de Misiones y cita la fuente.</div>
+        </div>
       </div>
       <div class="modal__acciones">
         {% if user.is_authenticated %}
-          <button class="boton boton--secundario boton--chico" type="button" id="chat-limpiar">Vaciar</button>
+          <button class="boton boton--secundario boton--chico" type="button" id="chat-nuevo">+ Nuevo</button>
         {% endif %}
         <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button>
       </div>
@@ -257,12 +287,13 @@
       {% include "parciales/chat_historial.html" %}
     </div>
 
-    {# Sin JavaScript este form manda a /chatbot/ y la charla se ve en la pagina #}
+    {# El modal funciona con JavaScript; sin JS no hay página de chat. #}
     <form class="chat__entrada" id="chat-form" method="post"
-          action="{% url 'chatbot' %}" autocomplete="off">
+          action="{% url 'chatbot_api' %}" autocomplete="off">
       {% csrf_token %}
-      <input type="text" name="mensaje" placeholder="Escribí tu consulta…"
-             maxlength="300" required aria-label="Mensaje">
+      <input type="text" name="mensaje" id="chat-mensaje"
+             placeholder="Escribí tu consulta…" maxlength="300" required
+             aria-label="Mensaje">
       <button class="boton" type="submit">Enviar</button>
     </form>
   </div>
@@ -275,10 +306,10 @@
   window.MT = {
     chatApi: "{% url 'chatbot_api' %}",
     buscadorApi: "{% url 'buscador_api' %}",
-    urlChat: "{% url 'chatbot' %}",
     urlLogin: "{% url 'login' %}",
     urlRegistro: "{% url 'registro' %}",
-    sesionIniciada: {% if user.is_authenticated %}true{% else %}false{% endif %}
+    sesionIniciada: {% if user.is_authenticated %}true{% else %}false{% endif %},
+    usuarioId: "{{ user.pk|default:'' }}"
   };
 </script>
 <script src="{% estatico 'js/app.js' %}" defer></script>

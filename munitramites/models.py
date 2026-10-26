@@ -277,6 +277,96 @@ def gestiona_cuentas(user):
     return perfil is not None and perfil.rol == Perfil.Rol.ADMINISTRADOR
 
 
+class ConversacionChat(models.Model):
+    """Una conversación del asistente, privada de cada usuario.
+
+    El historial dejó de vivir en la cookie de sesión: ahora se guarda en
+    Firebird para que la persona pueda retomar la charla desde cualquier
+    navegador y elegir entre conversaciones anteriores. Cada fila
+    pertenece a una sola cuenta; las vistas filtran siempre por
+    `usuario=request.user`.
+    """
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='conversaciones_chat',
+    )
+    titulo = models.CharField(
+        max_length=120,
+        default='Nueva conversación',
+        help_text='Se completa con la primera pregunta de la charla.',
+    )
+    creado = models.DateTimeField(auto_now_add=True)
+    actualizado = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Conversación del asistente'
+        verbose_name_plural = 'Conversaciones del asistente'
+        ordering = ['-actualizado', '-id']
+
+    def __str__(self):
+        return f'{self.usuario} — {self.titulo}'
+
+
+class MensajeChat(models.Model):
+    """Un mensaje de una conversación (pregunta o respuesta)."""
+
+    class Rol(models.TextChoices):
+        USUARIO = 'usuario', 'Usuario'
+        BOT = 'bot', 'Asistente'
+
+    conversacion = models.ForeignKey(
+        ConversacionChat,
+        on_delete=models.CASCADE,
+        related_name='mensajes',
+    )
+    rol = models.CharField(max_length=10, choices=Rol.choices)
+    texto = models.TextField()
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Mensaje del asistente'
+        verbose_name_plural = 'Mensajes del asistente'
+        ordering = ['creado', 'id']
+
+    def __str__(self):
+        return f'{self.get_rol_display()}: {self.texto[:50]}'
+
+
+class FuenteMensaje(models.Model):
+    """Ficha del sistema citada por una respuesta del asistente.
+
+    Guarda el título tal como se mostró al responder, para que la cita no
+    cambie si luego se edita el trámite. `tramite` puede quedar en NULL si
+    la ficha se elimina; en ese caso se conserva el título, sin enlace.
+    """
+
+    mensaje = models.ForeignKey(
+        MensajeChat,
+        on_delete=models.CASCADE,
+        related_name='fuentes',
+    )
+    tramite = models.ForeignKey(
+        Tramite,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='mensajes_fuente',
+    )
+    titulo = models.CharField(max_length=200)
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Fuente del asistente'
+        verbose_name_plural = 'Fuentes del asistente'
+        ordering = ['orden', 'id']
+        unique_together = [('mensaje', 'orden')]
+
+    def __str__(self):
+        return self.titulo
+
+
 class Consulta(models.Model):
     """Consulta o sugerencia enviada por un ciudadano."""
 

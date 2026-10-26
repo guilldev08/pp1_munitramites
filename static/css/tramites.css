@@ -1,4 +1,4 @@
-/* Páginas de trámites y chatbot. Todo va bajo .tr (no toca el resto del sitio).
+/* Páginas de trámites. Todo va bajo .tr (no toca el resto del sitio).
    Tema oscuro fijo con los colores de marca: azul, verde y rojo. */
 .tr{--az:#4d97e6;--ve:#2fc77a;--ro:#f0555f;--bg:#0a1020;--bg2:#0f1830;--cd:#131d35;--cd2:#1a2744;--ln:#27385a;--tx:#e8eef9;--mu:#9aabc4;--gris-200:#27385a;
   color-scheme:dark;color:var(--tx);line-height:1.55;overflow-x:clip;
@@ -47,7 +47,7 @@
 .tr .panel--ayuda{background:linear-gradient(145deg,#142a52,#123a30)}
 .tr .requisitos{list-style:none;counter-reset:r;padding:0;margin:0;display:grid;gap:10px}
 .tr .requisitos li{counter-increment:r;display:flex;gap:14px;align-items:flex-start;padding:12px 14px;background:var(--cd2);border:1px solid transparent;border-radius:10px;transition:transform .2s,border-color .2s,background .2s}
-.tr .requisitos li::before{content:counter(r);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:700;color:#052414;background:var(--ve)}
+.tr .requisitos li::before{content:counter(r);position:static;left:auto;top:auto;transform:none;flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:700;color:#052414;background:var(--ve)}
 .tr .requisitos li:hover{transform:translateX(5px);border-color:var(--ve);background:#1d2f4e}
 .tr .direccion-grupo + .direccion-grupo{margin-top:18px}
 .tr .direccion-grupo__municipio{font-size:.9rem;margin:0 0 8px;color:var(--az);text-transform:uppercase;letter-spacing:.06em}
@@ -78,15 +78,7 @@
 .tr .tarjeta h3{font-size:1.08rem;margin:12px 0 8px}
 .tr .tarjeta__meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:.86rem}
 
-/* ---- Chatbot ---- */
-.tr .chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-.tr .chip{--c:var(--az);display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;background:var(--cd);color:var(--tx);border:1px solid var(--ln);font:inherit;font-size:.9rem;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s}
-.tr .chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
-.tr .chips form>.chip:nth-child(3n+2){--c:var(--ve)}.tr .chips form>.chip:nth-child(3n){--c:var(--ro)}
-.tr .chip:hover{transform:translateY(-3px);border-color:var(--c);box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 3px rgba(255,255,255,.04)}
-.tr .chat{position:relative;overflow:hidden;background:var(--cd);border:1px solid var(--ln);border-radius:18px;box-shadow:0 22px 50px rgba(0,0,0,.45);animation:subir .7s .1s both}
-.tr .chat::before{content:"Asistente de trámites · en línea";display:block;padding:15px 20px 15px 42px;font-weight:600;font-size:.95rem;background:linear-gradient(90deg,#14305c,#133a30);border-bottom:1px solid var(--ln)}
-.tr .chat::after{content:"";position:absolute;top:20px;left:20px;width:10px;height:10px;border-radius:50%;background:var(--ve);animation:pulso 2s infinite}
+/* ---- Burbujas del asistente en la barra de búsqueda ---- */
 .tr .chat__historial{height:430px;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:var(--ln) transparent}
 .tr .chat__burbuja{max-width:82%;padding:11px 15px;border-radius:16px;animation:pop .35s both}
 .tr .chat__burbuja--usuario{align-self:flex-end;color:#fff;background:linear-gradient(135deg,#2b7be0,#4d97e6);border-bottom-right-radius:4px}

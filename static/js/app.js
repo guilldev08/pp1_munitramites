@@ -5,13 +5,15 @@
    Todo lo que se rompe sin JavaScript tiene alternativa:
      · «Ingresar» / «Crear cuenta» → caen en /login/ y /registro/, que
        abren el mismo modal server-side (con el sitio detrás).
-     · La barra del chat y el form del modal → mandan POST a /chatbot/
-       y la charla se ve en la página completa. Sin sesión, el intento
-       de escribir abre el modal de login en lugar de fallar.
+     · El modal del asistente y la barra del chat funcionan con
+       JavaScript: abren la pestaña y mandan la pregunta por JSON. Sin
+       sesión, el intento de escribir abre el modal de login.
 
    Al enviar se pinta la pregunta y un «Escribiendo…» con aria-live;
    al llegar la respuesta, pintar() repinta el historial real que
-   devolvió el servidor.
+   devolvió el servidor. El modal recuerda la conversación activa, la
+   posición del scroll, el borrador y si la barra lateral estaba abierta
+   (sessionStorage), y se limpia al cerrar sesión.
    ========================================================================= */
 (function () {
   'use strict';
@@ -103,13 +105,31 @@
     if (pestana) seleccionarPestana(modal, pestana);
     if (id === 'modal-auth') prepararNext();
 
+    if (id === 'modal-chat') {
+      estadoChat.abierto = true;
+      guardarEstadoChat();
+      if (estadoChat.panel) abrirPanel(); else cerrarPanel();
+    }
+
     // Primer campo visible, para escribir de una
     var campo = modal.querySelector('input:not([type=hidden]), textarea');
     if (campo) setTimeout(function () { campo.focus(); }, 60);
+
+    // El modal vive en todas las páginas: al abrirlo por primera vez
+    // trae la conversación activa (y la lista completa para cambiar).
+    if (id === 'modal-chat' && window.MT.sesionIniciada && !chatCargado) {
+      cargarChat(conversacionActual);
+    }
   }
 
   function cerrar(modal) {
     if (!modal) return;
+    if (modal.id === 'modal-chat') {
+      guardarScroll();
+      guardarBorrador();
+      estadoChat.abierto = false;
+      guardarEstadoChat();
+    }
     modal.classList.remove('modal--abierto');
     modal.setAttribute('hidden', '');
     document.body.style.overflow = scrollGuardado;
@@ -141,7 +161,18 @@
     var botonAbrir = el.closest('[data-abrir]');
     if (botonAbrir) {
       ev.preventDefault();
-      abrir(botonAbrir.getAttribute('data-abrir'), botonAbrir.getAttribute('data-tab'));
+      var destino = botonAbrir.getAttribute('data-abrir');
+      abrir(destino, botonAbrir.getAttribute('data-tab'));
+      if (destino === 'modal-chat') {
+        prefillChat(botonAbrir.getAttribute('data-chat-pregunta'));
+      }
+      return;
+    }
+
+    var cerrarPanelBtn = el.closest('[data-cerrar-panel]');
+    if (cerrarPanelBtn) {
+      ev.preventDefault();
+      cerrarPanel();
       return;
     }
 
@@ -168,6 +199,13 @@
 
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape') return;
+    var modalChat = document.getElementById('modal-chat');
+    var chatVisible = modalChat &&
+      modalChat.classList.contains('modal--abierto');
+    if (chatVisible && panelAbierto()) {
+      cerrarPanel();
+      return;
+    }
     var abierto = $('.modal--abierto');
     if (abierto) cerrar(abierto);
   });
@@ -176,28 +214,142 @@
      Chatbot: pestaña emergente + barra de la portada
      -------------------------------------------------------------------- */
   var contChat = document.getElementById('chat-historial');
+  var listaChat = document.getElementById('chat-lista');
+  var panelChat = document.getElementById('chat-panel');
+  var fondoPanel = document.getElementById('chat-panel-fondo');
+  var botonHamburguesa = document.getElementById('chat-hamburguesa');
+  var entradaChat = document.getElementById('chat-mensaje');
+  var conversacionActual = '';
+  var chatCargado = false;
+  var cargaChatToken = 0;
 
-  function bajar() {
-    if (contChat) contChat.scrollTop = contChat.scrollHeight;
+  // Persistencia del modal en la pestaña: misma conversación, scroll,
+  // borrador y barra lateral al cerrar y volver a abrir, incluso después
+  // de navegar a otra página. Se guarda por usuario y se borra al salir.
+  var CLAVE_CHAT = 'mt-chat:' + (window.MT.usuarioId || 'anon');
+  var estadoChat = {
+    conversacion: '',
+    abierto: false,
+    panel: false,
+    scroll: {},
+    borradores: {}
+  };
+
+  function leerEstadoChat() {
+    try {
+      var crudo = sessionStorage.getItem(CLAVE_CHAT);
+      if (!crudo) return;
+      var datos = JSON.parse(crudo);
+      if (!datos || typeof datos !== 'object') return;
+      estadoChat.conversacion = datos.conversacion
+        ? String(datos.conversacion) : '';
+      estadoChat.abierto = !!datos.abierto;
+      estadoChat.panel = !!datos.panel;
+      estadoChat.scroll = (
+        datos.scroll && typeof datos.scroll === 'object'
+      ) ? datos.scroll : {};
+      estadoChat.borradores = (
+        datos.borradores && typeof datos.borradores === 'object'
+      ) ? datos.borradores : {};
+    } catch (e) { /* sessionStorage puede estar bloqueado */ }
   }
 
-  function burbuja(texto, rol) {
+  function guardarEstadoChat() {
+    try {
+      sessionStorage.setItem(CLAVE_CHAT, JSON.stringify(estadoChat));
+    } catch (e) { /* sin persistencia, el modal sigue andando */ }
+  }
+
+  function limpiarEstadosChat(conservar) {
+    try {
+      Object.keys(sessionStorage).forEach(function (clave) {
+        if (clave.indexOf('mt-chat:') === 0 && clave !== conservar) {
+          sessionStorage.removeItem(clave);
+        }
+      });
+    } catch (e) { /* nada que limpiar */ }
+  }
+
+  function claveConversacion() {
+    return conversacionActual || 'nueva';
+  }
+
+  function bajar() {
+    if (!contChat) return;
+    contChat.scrollTop = contChat.scrollHeight;
+    estadoChat.scroll[claveConversacion()] = contChat.scrollTop;
+    guardarEstadoChat();
+  }
+
+  function restaurarScroll() {
+    if (!contChat) return;
+    var guardado = estadoChat.scroll[claveConversacion()];
+    if (typeof guardado !== 'number') {
+      bajar();
+      return;
+    }
+    requestAnimationFrame(function () {
+      contChat.scrollTop = guardado;
+    });
+  }
+
+  function guardarScroll() {
+    if (!contChat) return;
+    estadoChat.scroll[claveConversacion()] = contChat.scrollTop;
+    guardarEstadoChat();
+  }
+
+  function cargarBorrador() {
+    if (!entradaChat) return;
+    entradaChat.value = estadoChat.borradores[claveConversacion()] || '';
+  }
+
+  function guardarBorrador() {
+    if (!entradaChat) return;
+    estadoChat.borradores[claveConversacion()] = entradaChat.value;
+    guardarEstadoChat();
+  }
+
+  function prefillChat(texto) {
+    if (!entradaChat || !texto) return;
+    entradaChat.value = texto;
+    estadoChat.borradores[claveConversacion()] = texto;
+    guardarEstadoChat();
+    setTimeout(function () { entradaChat.focus(); }, 60);
+  }
+
+  function burbuja(texto, rol, segmentos) {
     var b = document.createElement('div');
     b.className = 'chat__burbuja ' +
       (rol === 'usuario' ? 'chat__burbuja--usuario' : 'chat__burbuja--bot');
-    b.textContent = texto;   // texto plano: nada de innerHTML con datos del servidor
+
+    // El servidor manda los segmentos ya escapados: texto plano y, si
+    // corresponde, el enlace interno de la ficha. Nunca innerHTML.
+    if (rol !== 'usuario' && segmentos && segmentos.length) {
+      segmentos.forEach(function (seg) {
+        if (seg.url) {
+          var a = document.createElement('a');
+          a.href = seg.url;
+          a.textContent = seg.texto;
+          a.title = 'Abrir la ficha en el sistema';
+          b.appendChild(a);
+        } else {
+          b.appendChild(document.createTextNode(seg.texto || ''));
+        }
+      });
+    } else {
+      b.textContent = texto;
+    }
     return b;
   }
 
   function burbujaVacia() {
     var d = document.createElement('div');
-    d.className = 'centrado texto-suave';
-    d.style.padding = '40px 10px';
+    d.className = 'centrado texto-suave chat__vacio';
 
     var icono = document.createElement('div');
+    icono.className = 'chat__vacio-icono';
     icono.textContent = '👋';
-    icono.style.fontSize = '2.2rem';
-    icono.style.marginBottom = '8px';
 
     var p1 = document.createElement('p');
     p1.className = 'mb-0';
@@ -211,47 +363,117 @@
     return d;
   }
 
-  function pintar(historial) {
-    if (!contChat) return;
-    contChat.innerHTML = '';
+  function fechaCorta(iso) {
+    if (!iso) return '';
+    var fecha = new Date(iso);
+    if (isNaN(fecha.getTime())) return '';
+    function dos(n) { return (n < 10 ? '0' : '') + n; }
+    return dos(fecha.getDate()) + '/' + dos(fecha.getMonth() + 1) +
+      ' ' + dos(fecha.getHours()) + ':' + dos(fecha.getMinutes());
+  }
 
-    if (!historial || !historial.length) {
-      contChat.appendChild(burbujaVacia());
-      bajar();
+  function setConversacion(id) {
+    var nuevo = id ? String(id) : '';
+    if (nuevo !== conversacionActual) {
+      guardarScroll();
+      conversacionActual = nuevo;
+      estadoChat.conversacion = nuevo;
+      guardarEstadoChat();
+      cargarBorrador();
+    } else {
+      estadoChat.conversacion = nuevo;
+    }
+  }
+
+  function pintarConversaciones(lista, activa) {
+    if (!listaChat) return;
+    listaChat.innerHTML = '';
+
+    if (!lista || !lista.length) {
+      var vacio = document.createElement('p');
+      vacio.className = 'chat-panel__vacio texto-chico texto-suave mb-0';
+      vacio.textContent = 'Todavía no hay conversaciones.';
+      listaChat.appendChild(vacio);
       return;
     }
 
-    historial.forEach(function (msg) {
-      var b = burbuja(msg.texto || '', msg.rol);
-      contChat.appendChild(b);
+    lista.forEach(function (c) {
+      var boton = document.createElement('button');
+      boton.type = 'button';
+      boton.className = 'chat-panel__item' +
+        (String(c.id) === String(activa) ? ' activo' : '');
+      boton.setAttribute('data-conversacion', c.id);
 
-      if (msg.tramites && msg.tramites.length) {
-        b.appendChild(listaTramites(msg.tramites));
-      }
+      var nombre = document.createElement('span');
+      nombre.className = 'chat-panel__nombre';
+      nombre.textContent = c.titulo || 'Nueva conversación';
+
+      var fecha = document.createElement('span');
+      fecha.className = 'chat-panel__fecha';
+      fecha.textContent = fechaCorta(c.actualizado);
+
+      boton.appendChild(nombre);
+      if (fecha.textContent) boton.appendChild(fecha);
+      listaChat.appendChild(boton);
     });
-
-    bajar();
   }
 
-  // Enlaces a fichas de trámites: lo comparte el chat y el buscador
-  function listaTramites(tramites) {
-    var ul = document.createElement('ul');
-    ul.className = 'lista-limpia';
-    ul.style.marginTop = '10px';
-    tramites.forEach(function (t) {
-      var li = document.createElement('li');
-      li.style.padding = '6px 0';
-      li.style.borderTop = '1px dashed var(--gris-200)';
-      var a = document.createElement('a');
-      a.href = t.url || ('/tramites/' + t.pk + '/');
-      a.textContent = '→ ' + t.titulo;
-      li.appendChild(a);
-      ul.appendChild(li);
-    });
-    return ul;
+  function pintar(data, mantenerScroll) {
+    if (!contChat) return;
+
+    // Compatibilidad con la forma vieja (un array de mensajes).
+    if (Array.isArray(data)) {
+      data = { historial: data, conversacion: null, conversaciones: [] };
+    }
+
+    var historial = (data && data.historial) || [];
+    if (data && data.conversacion) {
+      setConversacion(data.conversacion.id);
+    } else if (data && data.conversacion === null) {
+      setConversacion('');
+    }
+    pintarConversaciones(
+      (data && data.conversaciones) || [], conversacionActual
+    );
+
+    contChat.innerHTML = '';
+
+    if (!historial.length) {
+      contChat.appendChild(burbujaVacia());
+    } else {
+      historial.forEach(function (msg) {
+        contChat.appendChild(
+          burbuja(msg.texto || '', msg.rol, msg.segmentos)
+        );
+      });
+    }
+
+    chatCargado = true;
+    if (mantenerScroll) restaurarScroll(); else bajar();
+  }
+
+  function cargarChat(conversacionId) {
+    if (!window.MT.sesionIniciada) return Promise.resolve();
+    var token = ++cargaChatToken;
+    var url = window.MT.chatApi;
+    if (conversacionId) {
+      url += '?conversacion=' + encodeURIComponent(conversacionId);
+    }
+    return fetch(url, { credentials: 'same-origin' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        if (token === cargaChatToken) pintar(data, true);
+      })
+      .catch(function () { /* se queda con lo que ya estaba pintado */ });
   }
 
   function postChat(datos) {
+    if (conversacionActual) {
+      datos.append('conversacion', conversacionActual);
+    }
     return fetch(window.MT.chatApi, {
       method: 'POST',
       body: datos,
@@ -285,7 +507,11 @@
 
     var datos = new FormData();
     datos.append('mensaje', texto);
+    var claveEnvio = claveConversacion();
 
+    // Si el modal recién se abrió, la carga inicial puede llegar después
+    // del POST y pisar la respuesta: este token la descarta.
+    cargaChatToken += 1;
     boton.disabled = true;
 
     // Se pinta la pregunta de una vez y un aviso mientras el servidor
@@ -304,8 +530,12 @@
 
     postChat(datos)
       .then(function (data) {
-        entrada.value = '';
-        pintar(data.historial);
+        if ((entrada.value || '').trim() === texto) {
+          entrada.value = '';
+          delete estadoChat.borradores[claveEnvio];
+          guardarEstadoChat();
+        }
+        pintar(data, false);
         abrir('modal-chat');
         var campo = $('#chat-form input[name=mensaje]');
         if (campo) campo.focus();
@@ -357,8 +587,7 @@
   /* --------------------------------------------------------------------
      Barra de búsqueda del sitio: si se escribió algo en «Buscar», la
      consulta también la responde el asistente (mismo pipeline RAG que el
-     chat, pero por /buscador/api/ y sin tocar la sesión). Sin JavaScript
-     queda el enlace del <noscript> a /chatbot/?q=…
+     chat, pero por /buscador/api/ y sin tocar la sesión).
      -------------------------------------------------------------------- */
   var panelBusqueda = document.getElementById('respuesta-ia');
   if (panelBusqueda) {
@@ -374,10 +603,9 @@
         })
         .then(function (data) {
           cuerpoBarra.innerHTML = '';
-          cuerpoBarra.appendChild(burbuja(data.texto || '', 'bot'));
-          if (data.tramites && data.tramites.length) {
-            cuerpoBarra.lastChild.appendChild(listaTramites(data.tramites));
-          }
+          cuerpoBarra.appendChild(
+            burbuja(data.texto || '', 'bot', data.segmentos)
+          );
         })
         .catch(function () {
           cuerpoBarra.innerHTML = '';
@@ -385,7 +613,9 @@
           aviso.className = 'mb-0';
           aviso.textContent = 'No pude consultar al asistente. ';
           var enlace = document.createElement('a');
-          enlace.href = window.MT.urlChat + '?q=' + encodeURIComponent(consultaBarra);
+          enlace.href = '#';
+          enlace.setAttribute('data-abrir', 'modal-chat');
+          enlace.setAttribute('data-chat-pregunta', consultaBarra);
           enlace.textContent = 'Intentar en el chat →';
           aviso.appendChild(enlace);
           cuerpoBarra.appendChild(aviso);
@@ -393,18 +623,109 @@
     }
   }
 
-  // Botón «Vaciar chat»
-  var limpiar = document.getElementById('chat-limpiar');
-  if (limpiar) {
-    limpiar.addEventListener('click', function () {
-      var datos = new FormData();
-      datos.append('accion', 'limpiar');
-      limpiar.disabled = true;
-      postChat(datos)
-        .then(function (data) { pintar(data.historial); })
-        .catch(function () { /* se queda como estaba */ })
-        .then(function () { limpiar.disabled = false; });
+  /* --------------------------------------------------------------------
+     Barra lateral del modal: hamburguesa, lista de chats y «+ Nuevo»
+     -------------------------------------------------------------------- */
+  function panelAbierto() {
+    return !!(panelChat &&
+      panelChat.classList.contains('chat-panel--abierto'));
+  }
+
+  function abrirPanel() {
+    if (!panelChat) return;
+    panelChat.classList.add('chat-panel--abierto');
+    panelChat.setAttribute('aria-hidden', 'false');
+    if (fondoPanel) {
+      fondoPanel.classList.add('chat-panel__fondo--abierto');
+      fondoPanel.setAttribute('aria-hidden', 'false');
+    }
+    if (botonHamburguesa) {
+      botonHamburguesa.setAttribute('aria-expanded', 'true');
+    }
+    estadoChat.panel = true;
+    guardarEstadoChat();
+    var primero = listaChat &&
+      listaChat.querySelector('[data-conversacion]');
+    if (primero) setTimeout(function () { primero.focus(); }, 30);
+  }
+
+  function cerrarPanel() {
+    if (!panelChat) return;
+    panelChat.classList.remove('chat-panel--abierto');
+    panelChat.setAttribute('aria-hidden', 'true');
+    if (fondoPanel) {
+      fondoPanel.classList.remove('chat-panel__fondo--abierto');
+      fondoPanel.setAttribute('aria-hidden', 'true');
+    }
+    if (botonHamburguesa) {
+      botonHamburguesa.setAttribute('aria-expanded', 'false');
+    }
+    estadoChat.panel = false;
+    guardarEstadoChat();
+  }
+
+  if (botonHamburguesa) {
+    botonHamburguesa.addEventListener('click', function () {
+      if (panelAbierto()) cerrarPanel(); else abrirPanel();
     });
+  }
+
+  if (listaChat) {
+    listaChat.addEventListener('click', function (ev) {
+      var boton = ev.target.closest('[data-conversacion]');
+      if (!boton) return;
+      var id = boton.getAttribute('data-conversacion');
+      cerrarPanel();
+      if (String(id) === String(conversacionActual)) return;
+      cargarChat(id);
+    });
+  }
+
+  if (entradaChat) {
+    entradaChat.addEventListener('input', guardarBorrador);
+  }
+
+  if (contChat) {
+    var temporizadorScroll = null;
+    contChat.addEventListener('scroll', function () {
+      clearTimeout(temporizadorScroll);
+      temporizadorScroll = setTimeout(guardarScroll, 120);
+    });
+  }
+
+  function crearNuevoChat(boton) {
+    var datos = new FormData();
+    datos.append('accion', 'nueva');
+    boton.disabled = true;
+    cargaChatToken += 1;
+    postChat(datos)
+      .then(function (data) {
+        pintar(data, false);
+        cerrarPanel();
+        var campo = $('#chat-form input[name=mensaje]');
+        if (campo) campo.focus();
+      })
+      .catch(function () { /* se queda como estaba */ })
+      .then(function () { boton.disabled = false; });
+  }
+
+  var nuevoChat = document.getElementById('chat-nuevo');
+  var nuevoChatPanel = document.getElementById('chat-nuevo-panel');
+  [nuevoChat, nuevoChatPanel].forEach(function (boton) {
+    if (!boton) return;
+    boton.addEventListener('click', function () {
+      crearNuevoChat(boton);
+    });
+  });
+
+  // Recuperar el estado del modal antes de que el usuario lo abra.
+  if (window.MT.sesionIniciada) {
+    leerEstadoChat();
+    limpiarEstadosChat(CLAVE_CHAT);
+    conversacionActual = estadoChat.conversacion || '';
+    cargarBorrador();
+  } else {
+    limpiarEstadosChat('');
   }
 
   /* --------------------------------------------------------------------
@@ -570,5 +891,8 @@
     var abierto = $('.modal--abierto');
     if (abierto) document.body.style.overflow = 'hidden';
     if (contChat && contChat.children.length) bajar();
+    if (window.MT.sesionIniciada && estadoChat.abierto && !abierto) {
+      abrir('modal-chat');
+    }
   });
 })();

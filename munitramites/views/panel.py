@@ -74,8 +74,9 @@ def solo_administrador(vista):
 def solo_gestor_de_cuentas(vista):
     """Decorador de /panel/usuarios/…: rol administrador o superusuario.
 
-    El administrativo entra al panel pero no a las cuentas: ni la pestaña
-    «Usuarios» se le muestra ni las URLs de esa sección le responden.
+    El administrativo entra al panel pero no a las cuentas: ni el ítem
+    «Usuarios» del menú se le muestra ni las URLs de esa sección le
+    responden.
     """
 
     @login_required
@@ -100,17 +101,80 @@ def solo_gestor_de_cuentas(vista):
 
 @solo_administrador
 def panel(request):
-    """Resumen general con accesos a los dos centros y a las gestiones."""
+    """Resumen general: contadores, gráficos y últimos movimientos."""
     consultas = Consulta.objects
+    tramites_total = Tramite.objects.count()
+    tramites_activos = Tramite.objects.filter(activo=True).count()
+    pendientes = consultas.filter(estado=Consulta.Estado.PENDIENTE).count()
+    consultas_total = consultas.count()
+
+    def pct(parte, total):
+        # Siempre enteros: un decimal con coma rompería el CSS de los gráficos
+        return round(parte * 100 / total) if total else 0
+
+    # Barras: los 6 temas con más trámites (alto 0-100 respecto del mayor)
+    temas_top = list(
+        Tema.objects.annotate(n=Count('tramites')).order_by('-n', 'nombre')[:6]
+    )
+    mayor = max([t.n for t in temas_top] or [0]) or 1
+    grafico_temas = [
+        {'nombre': t.nombre, 'n': t.n, 'alto': max(4, pct(t.n, mayor))}
+        for t in temas_top
+    ]
+
+    # Anillo: consultas por estado
+    # (pendiente rojo, respondido verde, cerrado azul)
+    colores = {
+        Consulta.Estado.PENDIENTE: 'var(--m-rojo)',
+        Consulta.Estado.RESPONDIDO: 'var(--m-verde)',
+        Consulta.Estado.CERRADO: 'var(--m-azul)',
+    }
+    por_estado, tramos, desde = [], [], 0
+    for valor, texto in Consulta.Estado.choices:
+        n = consultas.filter(estado=valor).count()
+        hasta = desde + pct(n, consultas_total)
+        por_estado.append({'texto': texto, 'n': n, 'color': colores[valor]})
+        tramos.append(f'{colores[valor]} {desde}% {hasta}%')
+        desde = hasta
+    if tramos:
+        tramos[-1] = tramos[-1].rsplit(' ', 1)[0] + ' 100%'
+    donut = (
+        f"conic-gradient({', '.join(tramos)})" if consultas_total
+        else 'conic-gradient(var(--s-ln) 0 100%)'
+    )
+
+    # Barras de progreso: trámites por modalidad
+    por_modalidad = [
+        {
+            'texto': texto,
+            'n': (n := Tramite.objects.filter(modalidad=valor).count()),
+            'pct': pct(n, tramites_total),
+        }
+        for valor, texto in Tramite.Modalidad.choices
+    ]
+
     contexto = {
-        'tramites_total': Tramite.objects.count(),
-        'tramites_activos': Tramite.objects.filter(activo=True).count(),
-        'pendientes': consultas.filter(
-            estado=Consulta.Estado.PENDIENTE
+        'tramites_total': tramites_total,
+        'tramites_activos': tramites_activos,
+        'destacados': Tramite.objects.filter(
+            destacado=True, activo=True
         ).count(),
-        'consultas_total': consultas.count(),
+        'pct_activos': pct(tramites_activos, tramites_total),
+        'pendientes': pendientes,
+        'pct_pendientes': pct(pendientes, consultas_total),
+        'consultas_total': consultas_total,
         'usuarios': User.objects.filter(is_active=True).count(),
         'temas': Tema.objects.count(),
+        'grafico_temas': grafico_temas,
+        'por_estado': por_estado,
+        'donut': donut,
+        'por_modalidad': por_modalidad,
+        'ultimas_consultas': consultas.select_related(
+            'usuario', 'tramite'
+        ).order_by('-fecha')[:5],
+        'ultimos_tramites': Tramite.objects.select_related(
+            'tema', 'municipio'
+        ).order_by('-creado')[:5],
     }
     return render(request, 'panel/dashboard.html', contexto)
 

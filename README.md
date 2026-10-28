@@ -28,10 +28,12 @@ Qué hace el sistema, en corto:
   tres lo ve—, y hay UNO solo: una regla que impone el código. Ver
   [Quién puede qué](#quién-puede-qué-dentro-del-panel).
 - **Buscador de trámites** con filtros (texto, tema, municipio, modalidad)
-  y fichas que muestran requisitos, organismo responsable y enlaces
-  oficiales; los temas se cargan desde el panel, no son opciones fijas.
-  Lo que se escribe en «Buscar» lo responde además el asistente, en un
-  panel arriba de los resultados.
+  y fichas que muestran requisitos, organismo responsable, documentos
+  descargables y enlaces oficiales; los temas se cargan desde el panel, no
+  son opciones fijas. La búsqueda es flexible: tolera tildes, mayúsculas,
+  plurales, palabras parciales y sinónimos, y ordena por relevancia. Lo que
+  se escribe en «Buscar» lo responde además el asistente, en un panel arriba
+  de los resultados.
 - **Consultas, sugerencias y soporte** que el administrador ve, responde y
   cierra.
 - **Asistente virtual** con RAG y **Groq** como modelo (API en la nube):
@@ -208,7 +210,7 @@ piezas lo componen:
 | Pieza | Archivo | Qué aporta |
 |---|---|---|
 | Vistas y permisos | `munitramites/views/panel.py` + `munitramites/middleware.py` | decoradores `solo_administrador` y `solo_gestor_de_cuentas` (Usuarios), dashboard con accesos, CRUD de trámites, centro de consultas, usuarios y temas; el middleware manda a `/panel/` a todo usuario de gestión que pise `/admin/` |
-| Formularios | `munitramites/forms.py` | `TramitePanelForm` con los inlines `RequisitoFormSet` / `EnlaceFormSet` / `DireccionFormSet`, `UsuarioPanelForm` y `UsuarioRolForm` (con el campo `rol` de tres opciones, **sin** `is_superuser`), `RespuestaConsultaForm`, `TemaForm` |
+| Formularios | `munitramites/forms.py` | `TramitePanelForm` con los inlines `RequisitoFormSet` / `EnlaceFormSet` / `DireccionFormSet` / `ArchivoFormSet`, `UsuarioPanelForm` y `UsuarioRolForm` (con el campo `rol` de tres opciones, **sin** `is_superuser`), `RespuestaConsultaForm`, `TemaForm` |
 | Plantillas y estilos | `munitramites/templates/panel/` + `static/css/app.css` (sección «PANEL DE ADMINISTRACIÓN») | `base_panel.html` con la barra de pestañas («Usuarios» solo aparece para quien gestiona cuentas) y una plantilla por sección; pestañas, filtros, filas de inlines y etiquetas de rol heredando los dos temas |
 
 ### Qué se hace desde `/panel/`
@@ -216,7 +218,7 @@ piezas lo componen:
 | Sección | URL | Qué permite |
 |---|---|---|
 | Resumen | `/panel/` | tarjetas con los números del día y atajos (la de Usuarios solo aparece para el rol administrador; los de `/admin/` solo los ve el superusuario) |
-| Centro de Trámites | `/panel/tramites/` | listar todos/activos/inactivos, alta y edición con requisitos, enlaces y direcciones (varias sedes por trámite), activar / desactivar / destacar |
+| Centro de Trámites | `/panel/tramites/` | listar todos/activos/inactivos, alta y edición con requisitos, enlaces, direcciones (varias sedes por trámite) y archivos descargables, activar / desactivar / destacar |
 | Centro de Consultas | `/panel/consultas/` | ver las de todos los ciudadanos, filtrar por estado y responder (RF-10) |
 | Usuarios | `/panel/usuarios/` | buscar, crear cuentas con cualquiera de los tres roles, cambiar roles, suspender y eliminar (RF-11); reservada al rol administrador |
 | Temas | `/panel/temas/` | alta de temas con el conteo de trámites de cada uno (RF-07) |
@@ -235,6 +237,16 @@ Lo que el panel **no** hace, a propósito:
   dirección (tabla `MUNITRAMITES_DIRECCION`, «DIRECCIONES» en el diagrama).
   Si un trámite no tiene filas, la ficha pública muestra la dirección del
   organismo responsable como respaldo.
+- **Los archivos descargables también**: formularios rellenables,
+  instructivos y documentos se suben en el mismo formulario del trámite
+  (tabla `MUNITRAMITES_ARCHIVOTRAMITE`) y aparecen en «Documentos y
+  formularios» de la ficha pública, con su tipo y una descripción opcional.
+  En desarrollo los sirve Django desde `/media/`; el `.gitignore` ya excluye
+  esa carpeta.
+- **El buscador es flexible**: `munitramites/services/busqueda.py` normaliza
+  tildes y mayúsculas, recorta plurales, acepta prefijos y sinónimos del
+  dominio («chofer» → licencia de conducir) y ordena por relevancia. Lo usan
+  tanto el listado público como el buscador del panel.
 
 ### El admin de Django (`/admin/`)
 
@@ -392,6 +404,7 @@ munitramites/
     │   └── api.py                  #    API JSON
     ├── services/                   #    lógica que no depende del request
     │   ├── README.md               #    mapa: qué hace cada archivo
+    │   ├── busqueda.py             #    buscador flexible (tildes, plurales, sinónimos)
     │   ├── chatbot/                #    RAG: indexar → recuperar → generar
     │   │   ├── indexar.py          #    1. convierte trámites en fragmentos
     │   │   ├── recuperacion.py     #    2. BM25 + sinónimos + stopwords
@@ -413,7 +426,7 @@ munitramites/
     │       ├── servicio.py         #    orquestación del scraping
     │       └── data/
     │           └── organismos_misiones.csv   # planilla de organismos de Misiones
-    ├── tests/                      #    tests de aceptación (288)
+    ├── tests/                      #    tests de aceptación (303)
     │   ├── base.py                 #    helpers (usuarios, trámites) + TestCase
     │   ├── test_auth.py            #    ESP-01 · RF-01/02/14/15
     │   ├── test_tramites.py        #    ESP-04/06/07 · RF-07/12
@@ -540,7 +553,7 @@ docker compose exec web python manage.py migrate                # aplicar
 docker compose exec web python manage.py cargar_datos           # sembrar datos
 docker compose exec web python manage.py scrapear_sitios        # importar la planilla y scrapear los sitios oficiales
 docker compose exec web python manage.py shell                  # consola Django
-docker compose exec web python manage.py test --noinput         # correr los 288 tests
+docker compose exec web python manage.py test --noinput         # correr los 303 tests
 docker compose exec web python manage.py ver_contexto "¿qué necesito para renovar el DNI?"  # ver el contexto que se manda a Groq
 
 docker compose logs -f web                                     # ver los pedidos a Groq
@@ -620,7 +633,7 @@ en esta tabla.
 | **RF-01** Registro de usuario | `views/cuenta.py::registro` (usuario, correo y clave: sin datos personales) | `test_auth.RegistroTests` · `test_auth.PerfilTests` (editar su correo) |
 | **RF-02** Inicio de sesión | modal de `base.html` + `LoginView` | `test_auth.SesionTests` |
 | **RF-03** Gestión de roles | `models.Perfil.rol` (corriente / administrativo / administrador) con `is_staff` sincronizado + `forms.UsuarioRolForm` | `test_roles` · `test_panel.UsuariosTests` · `test_admin` |
-| **RF-07** Administrar trámites | `/panel/tramites/` (con Requisitos, Enlaces y Direcciones) | `test_panel.CentroDeTramitesTests` · `test_tramites` · `test_roles` |
+| **RF-07** Administrar trámites | `/panel/tramites/` (con Requisitos, Enlaces, Direcciones y Archivos) + búsqueda flexible en `services/busqueda.py` | `test_panel.CentroDeTramitesTests` · `test_tramites` · `test_roles` |
 | **RF-08** Enviar consultas | `views/consultas.py::consulta_nueva` | `test_consultas` |
 | **RF-09** Enviar sugerencias | mismo formulario, `tipo = sugerencia` | `test_consultas` |
 | **RF-10** Gestionar consultas | `/panel/consultas/<id>/` + `/consultas/<id>/` | `test_panel.CentroDeConsultasTests` · `test_consultas.GestionDelAdminTests` |
@@ -640,11 +653,11 @@ en esta tabla.
 | **RNF-04** Disponibilidad | `restart: unless-stopped`, healthcheck de Firebird y espera activa del `web` en `docker-compose.yml` | — |
 | **RNF-05** Integridad | `unique` (Municipio/Organismo), `unique_together` (Requisitos), `PROTECT`/`CASCADE` en las claves foráneas | `test_rnf.IntegridadTests` · `test_auth` |
 | **RNF-06** Mantenibilidad | `views/` por módulo, `services/`, docstrings y este README | — |
-| **RNF-07** Compatibilidad | el entorno definido del proyecto (Docker) y páginas que andan sin JavaScript ni plugins | `test_chatbot.test_pagina_del_chat_sin_javascript` · `test_chatbot.BuscadorTests.test_el_enlace_sin_javascript_de_verdad_responde` |
+| **RNF-07** Compatibilidad | el entorno definido del proyecto (Docker); login y registro andan sin JavaScript y el asistente se resuelve en el modal | `test_chatbot` · `test_tramites` |
 | **RNF-08** Escalabilidad | capas independientes (vista ↔ servicio ↔ plantilla) y `INSTALLED_APPS` | — |
 | **RNF-09** Despliegue (Docker) | `Dockerfile` + `docker-compose.yml` | — |
 | **RNF-10** Respaldo de BD | sección «Respaldo de la base» más abajo | — |
-| **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, sin JS obligatorio, tema claro/oscuro con contraste AA | `test_chatbot` · `test_tema` |
+| **RNF-11** Accesibilidad | `label`, `aria-label`, `aria-modal`, foco visible, cierre con `Esc` y tema claro/oscuro con contraste AA | `test_chatbot` · `test_tema` |
 
 ## Asistente virtual (RAG)
 
@@ -660,32 +673,33 @@ Todo vive en `services/chatbot/`, en cuatro piezas.
 | LLM | `llm/` | cliente de Groq (API compatible con OpenAI): `prompt.py` arma la ventana de contexto, `groq.py` hace el POST y `__init__.py` decide cuándo llamar (cooldown tras un fallo). Redacta con o sin contexto, **siempre dentro de los trámites**; los datos salen siempre del contexto (nunca los inventa) |
 | Orquestador | `pipeline.py` | saludos y ayuda sin buscar, devuelve `{'texto', 'tramites', 'fragmentos'}`. Con contexto → el modelo redacta; sin contexto → el modelo explica el portal o redirige si el tema es ajeno; sin modelo o en la barra pública, el «no dispongo» citando la consulta. Nunca inventa nada |
 
-**Se le puede preguntar desde cuatro lugares**: el modal 💬 (desde cualquier
+**Se le puede preguntar desde tres lugares**: el modal 💬 (desde cualquier
 página), la **chatbar de `/tramites/`** (arriba de todo en el listado: abre
-el mismo modal y manda la pregunta), la página `/chatbot/` (con su
-alternativa sin JS: `/chatbot/?q=…`)
-y la **barra de búsqueda del sitio**: lo que se escriba en «Buscar» filtra
-la lista y, arriba de los resultados, un panel con el mismo pipeline
-redacta la respuesta (`parciales/lista_tramites.html` + `app.js`). Ese
-panel sale por `/buscador/api/?q=…`, que llama al mismo `responder()` que
-el chat pero **sin tocar el historial**: lo que se busca no queda en la
-charla (privacidad, verificado en vivo). Sin sesión iniciada ese panel responde
+el mismo modal y manda la pregunta) y la **barra de búsqueda del sitio**:
+lo que se escriba en «Buscar» filtra la lista y, arriba de los resultados,
+un panel con el mismo pipeline redacta la respuesta
+(`parciales/lista_tramites.html` + `app.js`). Ese panel sale por
+`/buscador/api/?q=…`, que llama al mismo `responder()` que el chat pero
+**sin tocar el historial**: lo que se busca no queda en la charla
+(privacidad, verificado en vivo). Sin sesión iniciada ese panel responde
 con plantillas —el modelo solo redacta para usuarios logueados—, así que
 una visita anónima no gasta la API de Groq. Sin JavaScript el panel muestra
-el enlace a `/chatbot/?q=…`, que responde la misma pregunta en el chat.
+el enlace que abre el modal con la misma pregunta (`data-chat-pregunta`).
 Tests: `test_chatbot.BuscadorTests`.
 
 ### Historial por usuario
 
 Cada cuenta tiene sus propias conversaciones, guardadas en Firebird
-(`ConversacionChat`, `MensajeChat` y `FuenteMensaje`). La página `/chatbot/`
-trae una barra lateral para cambiar de charla; el modal tiene un selector,
-«+ Nuevo» y «Vaciar». Los POST redirigen a `?c=<id>` para que refrescar no
-reenvíe la pregunta.
+(`ConversacionChat`, `MensajeChat` y `FuenteMensaje`). El modal trae una
+hamburguesa que abre la barra lateral con **todas** las conversaciones
+(título y fecha), «+ Nuevo» para empezar otra y la conversación activa
+resaltada. No hay botón «Vaciar»: la orden escrita `limpiar` sigue vaciando
+la charla actual.
 
 El modelo no arma enlaces: `llm.limpiar_enlaces()` descarta Markdown, HTML y
-URLs que devuelva, y el servidor agrega al pie la fuente interna con el
-título de la ficha como texto del enlace (`Fuente: [título](/tramites/<pk>/)`).
+URLs que devuelva, y el servidor enlaza **dentro del texto** la primera
+aparición del título de cada ficha citada (`_segmentos_con_enlaces()` en
+`views/chatbot.py`); no se agrega una sección «Fuentes» al pie.
 Tests: `test_chatbot.HistorialPersistenteTests` y
 `test_llm.LimpiarEnlacesTests`.
 
@@ -813,9 +827,10 @@ docker compose exec firebird gbak -c -user SYSDBA -password masterkey \
   no tienen texto visible, llevan `aria-label`.
 - Los modales son `role="dialog"` con `aria-modal`, `aria-labelledby` y botón de
   cierre con nombre accesible; se pueden cerrar con `Esc`.
-- El sitio funciona **sin JavaScript**: los enlaces caen en `/login/` y
-  `/registro/` (que abren el modal del lado del servidor) y la barra del chat
-  manda el POST a `/chatbot/`.
+- Login y registro funcionan **sin JavaScript**: los enlaces caen en
+  `/login/` y `/registro/`, que abren el mismo modal del lado del servidor.
+  El asistente vive en el modal y necesita JavaScript; no hay página de chat
+  alternativa.
 - El contraste, el orden de tabulación y los tamaños de texto están en
   `static/css/app.css` + `static/css/sitio.css` (incluye
   `prefers-reduced-motion`). Los pares de color de los **dos temas** (claro y
@@ -841,6 +856,9 @@ Luego escribí SQL y cerrá con `quit;`.
 | `ENLACE` | 5 | botones con nombre y URL que carga el seed (el panel los agrega, edita y borra); los campos viejos `enlace_turnos` / `enlace_oficial` quedan solo como respaldo |
 | `DIRECCION` | 0+ | sedes de atención que se cargan desde el panel: lugar, municipio y dirección; un trámite puede tener varias |
 | `CONSULTA` | 3+ | seed + formularios (incluye el prefijo `Soporte: `) |
+| `CONVERSACION_CHAT` | 0+ | conversaciones del asistente, una por charla y usuario |
+| `MENSAJE_CHAT` | 0+ | mensajes de cada conversación |
+| `FUENTE_MENSAJE` | 0+ | fichas citadas por cada respuesta |
 | `PERFIL` | 1+ | se crea con el registro (guarda el rol; su id es un UUID) |
 | `AUTH_USER` | 2 | Django (usuarios) |
 | + 9 tablas de Django | — | auth, sessions, admin, contenttypes |

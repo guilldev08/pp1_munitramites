@@ -56,6 +56,8 @@ _ENLACE_MARKDOWN = re.compile(
 )
 _ENLACE_HTML = re.compile(r'<a\b[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
 _URL = re.compile(r'\b(?:https?://|www\.)\S+', re.IGNORECASE)
+_NEGRITA = re.compile(r'\*\*(.+?)\*\*|__(.+?)__', re.DOTALL)
+_CODIGO = re.compile(r'`([^`]+)`')
 
 
 def limpiar_enlaces(texto):
@@ -71,6 +73,10 @@ def limpiar_enlaces(texto):
     texto = _ENLACE_HTML.sub(r'\1', texto)
     texto = _ENLACE_MARKDOWN.sub(r'\1', texto)
     texto = _URL.sub('', texto)
+    texto = _NEGRITA.sub(lambda m: m.group(1) or m.group(2), texto)
+    texto = _CODIGO.sub(r'\1', texto)
+    # Por si quedó un marcador suelto (el modelo a veces abre sin cerrar).
+    texto = texto.replace('**', '').replace('__', '')
     return re.sub(r'[ \t]{2,}', ' ', texto).strip()
 
 # Segundos sin reintentar tras un fallo (ver docstring).

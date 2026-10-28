@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block panel_contenido %}
-<form class="formulario" method="post" novalidate>
+<form class="formulario" method="post" enctype="multipart/form-data" novalidate>
   {% csrf_token %}
 
   {% if form.non_field_errors %}
@@ -218,6 +218,63 @@
         </template>
         <button class="boton boton--secundario boton--chico agregar-fila" type="button"
                 data-agregar-fila="direcciones">+ Agregar dirección</button>
+      </div>
+      <div class="panel">
+        <h3 class="mt-0">Documentos y formularios</h3>
+        <p class="texto-suave texto-chico">Archivos que el ciudadano puede descargar desde la ficha: formularios rellenables, instructivos o documentos de consulta. Se numeran y se muestran en el orden de las filas. Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo).</p>
+
+        {{ archivos.management_form }}
+        {% if archivos.non_form_errors %}
+          <div class="alerta alerta--error">
+            {% for e in archivos.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="inline-filas" data-filas="archivos" data-numerar>
+          {% for af in archivos %}
+            <div class="inline-fila{% if af.DELETE.value %} inline-fila--borrar{% endif %}">
+              <p class="inline-fila__numero">Archivo <span data-numero>{{ forloop.counter }}</span></p>
+              {% for campo in af %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% else %}
+                  {{ campo }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <p class="texto-suave texto-chico" data-aviso-borrado="archivo" data-aviso-plural="archivos" hidden>
+          <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
+        </p>
+
+        {# Fila vacía que clona el botón de abajo (ver app.js) #}
+        <template data-vacio="archivos">
+          {% with af=archivos.empty_form %}
+            <div class="inline-fila">
+              <p class="inline-fila__numero">Archivo <span data-numero></span></p>
+              {% for campo in af %}
+                {% if not campo.field.widget.is_hidden %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
+                  </div>
+                {% else %}
+                  {{ campo }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endwith %}
+        </template>
+        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+                data-agregar-fila="archivos">+ Agregar archivo</button>
       </div>
     </div>
   </div>

@@ -35,13 +35,14 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.views.decorators.http import require_POST
 
 from ..forms import (
-    DireccionFormSet, EnlaceFormSet, RespuestaConsultaForm,
+    ArchivoFormSet, DireccionFormSet, EnlaceFormSet, RespuestaConsultaForm,
     RequisitoFormSet, TemaForm, TramitePanelForm, UsuarioPanelForm,
     UsuarioRolForm,
 )
 from ..models import (
     Consulta, Municipio, Organismo, Tema, Tramite, gestiona_cuentas,
 )
+from ..services.busqueda import buscar_tramites
 
 # Filas por página de los listados del panel
 POR_PAGINA = 10
@@ -144,16 +145,6 @@ ACCIONES_TRAMITE = {
 def _filtros_tramites(request, queryset):
     """Buscador + filtros laterales del listado (?q=, ?estado=, ?tema=…)."""
     q = request.GET.get('q', '').strip()
-    if q:
-        queryset = queryset.filter(
-            Q(titulo__icontains=q)
-            | Q(descripcion__icontains=q)
-            | Q(organismo__nombre__icontains=q)
-            | Q(municipio__nombre__icontains=q)
-            | Q(direcciones__lugar__icontains=q)
-            | Q(direcciones__direccion__icontains=q)
-            | Q(direcciones__municipio__nombre__icontains=q)
-        ).distinct()
 
     estado = request.GET.get('estado', '')
     if estado == 'activos':
@@ -186,8 +177,15 @@ def _filtros_tramites(request, queryset):
 
     orden = ORDENES_TRAMITE.get(request.GET.get('orden', ''))
     if orden:
-        return queryset.order_by(orden)
-    return queryset.order_by('-destacado', 'titulo')
+        queryset = queryset.order_by(orden)
+    else:
+        queryset = queryset.order_by('-destacado', 'titulo')
+
+    # La búsqueda flexible va al final: ordena por relevancia (tolera
+    # tildes, mayúsculas, plurales, palabras parciales y sinónimos).
+    if q:
+        queryset = buscar_tramites(queryset, q)
+    return queryset
 
 
 @solo_administrador
@@ -203,7 +201,7 @@ def panel_tramites(request):
         request,
         Tramite.objects
         .select_related('tema', 'municipio', 'organismo')
-        .prefetch_related('direcciones'),
+        .prefetch_related('direcciones__municipio', 'requisitos'),
     )
 
     paginador = Paginator(queryset, POR_PAGINA)
@@ -292,7 +290,7 @@ def _crear_relaciones_nuevas(post):
 
 
 def _contexto_form_tramite(request, tramite):
-    """Form + inlines (requisitos, enlaces y direcciones) para GET o POST."""
+    """Form + inlines (requisitos, enlaces, direcciones y archivos)."""
     if request.method == 'POST':
         form = TramitePanelForm(
             _crear_relaciones_nuevas(request.POST), instance=tramite
@@ -306,12 +304,21 @@ def _contexto_form_tramite(request, tramite):
             # se muestra el inline vacío, pero no se borran las direcciones
             # que ya estén guardadas.
             direcciones = DireccionFormSet(instance=tramite)
+        if 'archivos-TOTAL_FORMS' in request.POST:
+            archivos = ArchivoFormSet(
+                request.POST, request.FILES, instance=tramite
+            )
+        else:
+            # Igual que con las direcciones: un POST viejo no borra los
+            # archivos ya cargados.
+            archivos = ArchivoFormSet(instance=tramite)
     else:
         form = TramitePanelForm(instance=tramite)
         requisitos = RequisitoFormSet(instance=tramite)
         enlaces = EnlaceFormSet(instance=tramite)
         direcciones = DireccionFormSet(instance=tramite)
-    return form, requisitos, enlaces, direcciones
+        archivos = ArchivoFormSet(instance=tramite)
+    return form, requisitos, enlaces, direcciones, archivos
 
 
 # Los «orden» se renumeran pasando primero por este rango: así nunca se
@@ -357,20 +364,22 @@ def _guardar_tramite(request, tramite):
     """Valida form + formsets y guarda todo junto. True si se guardó.
 
     El trámite se guarda primero (los inlines necesitan su pk) y recién
-    después los requisitos, los enlaces y las direcciones, igual que hace
-    el /admin/.
+    después los requisitos, los enlaces, las direcciones y los archivos,
+    igual que hace el /admin/.
     """
-    form, requisitos, enlaces, direcciones = _contexto_form_tramite(
+    form, requisitos, enlaces, direcciones, archivos = _contexto_form_tramite(
         request, tramite
     )
     direcciones_ok = not direcciones.is_bound or direcciones.is_valid()
+    archivos_ok = not archivos.is_bound or archivos.is_valid()
     if not (
         form.is_valid()
         and requisitos.is_valid()
         and enlaces.is_valid()
         and direcciones_ok
+        and archivos_ok
     ):
-        return False, form, requisitos, enlaces, direcciones
+        return False, form, requisitos, enlaces, direcciones, archivos
 
     tramite = form.save()
     # Los formsets apuntan al MISMO objeto: ya tiene pk al guardarlos.
@@ -381,15 +390,18 @@ def _guardar_tramite(request, tramite):
     if direcciones.is_bound:
         direcciones.instance = tramite
         direcciones.save()
-    return True, form, requisitos, enlaces, direcciones
+    if archivos.is_bound:
+        archivos.instance = tramite
+        _guardar_inlines(archivos)
+    return True, form, requisitos, enlaces, direcciones, archivos
 
 
 @solo_administrador
 def panel_tramite_nuevo(request):
     """Alta de un trámite con sus requisitos, enlaces y direcciones."""
     if request.method == 'POST':
-        guardado, form, requisitos, enlaces, direcciones = _guardar_tramite(
-            request, Tramite()
+        guardado, form, requisitos, enlaces, direcciones, archivos = (
+            _guardar_tramite(request, Tramite())
         )
         if guardado:
             messages.success(request, 'Trámite creado y publicado en el sitio.')
@@ -399,12 +411,14 @@ def panel_tramite_nuevo(request):
         requisitos = RequisitoFormSet()
         enlaces = EnlaceFormSet()
         direcciones = DireccionFormSet()
+        archivos = ArchivoFormSet()
 
     return render(request, 'panel/tramite_form.html', {
         'form': form,
         'requisitos': requisitos,
         'enlaces': enlaces,
         'direcciones': direcciones,
+        'archivos': archivos,
         'tramite': None,
     })
 
@@ -415,19 +429,19 @@ def panel_tramite_editar(request, pk):
     tramite = get_object_or_404(
         Tramite.objects
         .select_related('tema', 'municipio', 'organismo')
-        .prefetch_related('direcciones__municipio'),
+        .prefetch_related('direcciones__municipio', 'archivos'),
         pk=pk,
     )
     if request.method == 'POST':
-        guardado, form, requisitos, enlaces, direcciones = _guardar_tramite(
-            request, tramite
+        guardado, form, requisitos, enlaces, direcciones, archivos = (
+            _guardar_tramite(request, tramite)
         )
         if guardado:
             messages.success(request, 'Trámite guardado.')
             return redirect('panel_tramites')
     else:
-        form, requisitos, enlaces, direcciones = _contexto_form_tramite(
-            request, tramite
+        form, requisitos, enlaces, direcciones, archivos = (
+            _contexto_form_tramite(request, tramite)
         )
 
     return render(request, 'panel/tramite_form.html', {
@@ -435,6 +449,7 @@ def panel_tramite_editar(request, pk):
         'requisitos': requisitos,
         'enlaces': enlaces,
         'direcciones': direcciones,
+        'archivos': archivos,
         'tramite': tramite,
     })
 

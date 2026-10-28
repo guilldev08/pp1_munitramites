@@ -12,8 +12,10 @@ from django.db.models import Q
 from django.forms import inlineformset_factory
 
 from .models import (
-    Consulta, Direccion, Enlace, Municipio, Perfil, Requisito, Tema, Tramite,
+    ArchivoTramite, Consulta, Direccion, Enlace, Municipio, Perfil,
+    Requisito, Tema, Tramite,
 )
+from .services.busqueda import buscar_tramites
 
 
 class RegistroForm(UserCreationForm):
@@ -171,15 +173,6 @@ class TramiteFiltroForm(forms.Form):
             return queryset
         datos = self.cleaned_data
 
-        if datos['q']:
-            queryset = queryset.filter(
-                Q(titulo__icontains=datos['q'])
-                | Q(descripcion__icontains=datos['q'])
-                | Q(requisitos__descripcion__icontains=datos['q'])
-                | Q(direcciones__lugar__icontains=datos['q'])
-                | Q(direcciones__direccion__icontains=datos['q'])
-                | Q(direcciones__municipio__nombre__icontains=datos['q'])
-            ).distinct()
         if datos['tema']:
             queryset = queryset.filter(tema_id=datos['tema'])
         if datos['municipio']:
@@ -192,6 +185,11 @@ class TramiteFiltroForm(forms.Form):
             ).distinct()
         if datos['modalidad']:
             queryset = queryset.filter(modalidad=datos['modalidad'])
+
+        # La búsqueda flexible va al final: ordena por relevancia. Tolera
+        # tildes, mayúsculas, plurales, palabras parciales y sinónimos.
+        if datos['q']:
+            queryset = buscar_tramites(queryset, datos['q'])
         return queryset
 
 
@@ -325,6 +323,40 @@ DireccionFormSet = inlineformset_factory(
     Tramite, Direccion,
     form=DireccionInlineForm,
     fields=['lugar', 'municipio', 'direccion'],
+    extra=2,
+    can_delete=True,
+)
+
+
+class ArchivoInlineForm(forms.ModelForm):
+    """Fila de archivo descargable: formulario, instructivo o documento."""
+
+    class Meta:
+        model = ArchivoTramite
+        fields = ['titulo', 'tipo', 'archivo', 'descripcion']
+        labels = {
+            'titulo': 'Título',
+            'tipo': 'Tipo',
+            'archivo': 'Archivo',
+            'descripcion': 'Descripción',
+        }
+        widgets = {
+            'titulo': forms.TextInput(attrs={
+                'placeholder': 'Ej.: Formulario de solicitud',
+            }),
+            'descripcion': forms.TextInput(attrs={
+                'placeholder': 'Para qué sirve o cómo se completa (opcional)',
+            }),
+        }
+        help_texts = {
+            'archivo': 'PDF, Word o imagen. Se descarga desde la ficha pública.',
+        }
+
+
+ArchivoFormSet = inlineformset_factory(
+    Tramite, ArchivoTramite,
+    form=ArchivoInlineForm,
+    fields=['titulo', 'tipo', 'archivo', 'descripcion'],
     extra=2,
     can_delete=True,
 )

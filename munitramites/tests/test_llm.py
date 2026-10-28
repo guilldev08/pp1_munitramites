@@ -301,6 +301,18 @@ class LimpiarEnlacesTests(SimpleTestCase):
             'Más en',
         )
 
+    def test_quita_las_marcas_de_negrita_del_modelo(self):
+        self.assertEqual(
+            llm.limpiar_enlaces(
+                'Podés abrir la ficha **Nuevo ejemplar de DNI** para ver todo.'
+            ),
+            'Podés abrir la ficha Nuevo ejemplar de DNI para ver todo.',
+        )
+        self.assertEqual(
+            llm.limpiar_enlaces('El __título__ y el `campo`.'),
+            'El título y el campo.',
+        )
+
     def test_no_toca_el_texto_normal(self):
         texto = 'Renovás el DNI con el DNI anterior y la tasa.'
         self.assertEqual(llm.limpiar_enlaces(texto), texto)

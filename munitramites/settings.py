@@ -158,12 +158,17 @@ USE_TZ = True
 
 
 # ---------------------------------------------------------------------------
-# 5. Archivos estaticos
+# 5. Archivos estaticos y multimedia
 # ---------------------------------------------------------------------------
 STATIC_URL = '/static/'
 
 # Carpeta de estilos, imagenes y JS del sitio (fuera de las apps)
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Archivos que sube el panel (documentos y formularios de cada trámite).
+# En desarrollo los sirve Django (ver urls.py); en produccion, el servidor web.
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # ---------------------------------------------------------------------------

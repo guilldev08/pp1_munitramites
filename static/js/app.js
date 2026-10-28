@@ -509,6 +509,21 @@
     datos.append('mensaje', texto);
     var claveEnvio = claveConversacion();
 
+    // El campo se vacía apenas se manda: la pregunta ya se pinta en el
+    // historial y no tiene que quedar escrita esperando la respuesta.
+    entrada.value = '';
+    delete estadoChat.borradores[claveEnvio];
+    guardarEstadoChat();
+
+    // Si se mandó desde la barra del listado, el modal tiene su propio
+    // campo: también se vacía para que no quede la pregunta repetida.
+    var entradaModal = document.querySelector(
+      '#chat-form input[name=mensaje]'
+    );
+    if (entradaModal && entradaModal !== entrada) {
+      entradaModal.value = '';
+    }
+
     // Si el modal recién se abrió, la carga inicial puede llegar después
     // del POST y pisar la respuesta: este token la descarta.
     cargaChatToken += 1;
@@ -530,11 +545,6 @@
 
     postChat(datos)
       .then(function (data) {
-        if ((entrada.value || '').trim() === texto) {
-          entrada.value = '';
-          delete estadoChat.borradores[claveEnvio];
-          guardarEstadoChat();
-        }
         pintar(data, false);
         abrir('modal-chat');
         var campo = $('#chat-form input[name=mensaje]');

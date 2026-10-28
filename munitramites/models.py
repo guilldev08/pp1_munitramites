@@ -17,9 +17,11 @@ Todas las tablas viven en Firebird. Después de tocar este archivo:
 """
 
 import uuid
+from pathlib import Path
 
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 
 
 class Municipio(models.Model):
@@ -206,6 +208,68 @@ class Enlace(models.Model):
 
     def __str__(self):
         return f'{self.nombre} → {self.url}'
+
+
+def ruta_archivo_tramite(instance, filename):
+    """Guarda cada archivo dentro de la carpeta de su trámite.
+
+    El nombre se limpia (sin tildes, espacios ni signos) para que la URL de
+    descarga sea prolija y no dependa del sistema de archivos. La extensión
+    original se conserva.
+    """
+    original = Path(filename)
+    limpio = slugify(original.stem) or 'archivo'
+    return f'tramites/{instance.tramite_id}/{limpio}{original.suffix.lower()}'
+
+
+class ArchivoTramite(models.Model):
+    """Archivo descargable de un trámite (formulario, instructivo, …).
+
+    Se cargan desde el panel y se descargan desde la ficha pública. Un
+    trámite puede tener varios y el panel los numera por su posición, igual
+    que los requisitos.
+    """
+
+    class Tipo(models.TextChoices):
+        FORMULARIO = 'formulario', 'Formulario'
+        DOCUMENTO = 'documento', 'Documento'
+        INSTRUCTIVO = 'instructivo', 'Instructivo'
+        OTRO = 'otro', 'Otro'
+
+    tramite = models.ForeignKey(
+        Tramite, on_delete=models.CASCADE, related_name='archivos'
+    )
+    titulo = models.CharField(
+        max_length=150,
+        help_text='Nombre que se muestra en la ficha, ej.: «Formulario de solicitud».',
+    )
+    tipo = models.CharField(
+        max_length=20,
+        choices=Tipo.choices,
+        default=Tipo.DOCUMENTO,
+        help_text='Sirve para agruparlos en la ficha pública.',
+    )
+    archivo = models.FileField(
+        upload_to=ruta_archivo_tramite,
+        max_length=200,
+        help_text='PDF, Word o imagen que descarga el ciudadano.',
+    )
+    descripcion = models.CharField(
+        max_length=300,
+        blank=True,
+        default='',
+        help_text='Aclaración opcional: para qué sirve o cómo se completa.',
+    )
+    orden = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Archivo del trámite'
+        verbose_name_plural = 'Archivos del trámite'
+        ordering = ['orden', 'id']
+        unique_together = [('tramite', 'orden')]
+
+    def __str__(self):
+        return f'{self.tramite} — {self.titulo}'
 
 
 class Perfil(models.Model):

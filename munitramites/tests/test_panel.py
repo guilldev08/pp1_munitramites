@@ -12,13 +12,16 @@ Matriz de aceptación del panel de administración:
 * **Temas**: alta desde el panel (RF-07).
 """
 
+import tempfile
 import uuid
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 
 from munitramites.models import (
-    Consulta, Direccion, Perfil, Requisito, Tema, Tramite,
+    ArchivoTramite, Consulta, Direccion, Perfil, Requisito, Tema, Tramite,
 )
 
 from .base import (
@@ -102,6 +105,7 @@ class AccesoTests(TestCase):
             self.assertEqual(r['Location'], reverse('inicio'), url)
 
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class CentroDeTramitesTests(TestCase):
     """CRUD del catálogo: alta, edición y publicación (RF-07)."""
 
@@ -331,6 +335,87 @@ class CentroDeTramitesTests(TestCase):
         self.assertEqual(
             nuevo.direcciones.get(lugar='Sede Oberá').municipio, obera
         )
+
+    def test_el_form_trae_la_seccion_de_archivos(self):
+        """El panel permite subir documentos y el form va con multipart."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r, 'enctype="multipart/form-data"')
+        self.assertContains(r, 'Documentos y formularios')
+        self.assertContains(r, 'archivos-0-archivo')
+        self.assertContains(r, 'data-agregar-fila="archivos"')
+        self.assertContains(r, 'archivos-__prefix__-archivo')
+
+    def test_crea_un_tramite_con_un_archivo_descargable(self):
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Certificado de residencia',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'presencial',
+            'municipio': municipio().pk,
+            'organismo': organismo().pk,
+            'descripcion': 'Se pide en la municipalidad.',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0',
+            'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0',
+            'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0',
+            'enlaces-MAX_NUM_FORMS': '1000',
+            'archivos-TOTAL_FORMS': '1', 'archivos-INITIAL_FORMS': '0',
+            'archivos-MIN_NUM_FORMS': '0',
+            'archivos-MAX_NUM_FORMS': '1000',
+            'archivos-0-titulo': 'Formulario de solicitud',
+            'archivos-0-tipo': 'formulario',
+            'archivos-0-descripcion': 'Se completa a mano',
+            'archivos-0-archivo': SimpleUploadedFile(
+                'solicitud.pdf', b'%PDF-1.4 contenido',
+                content_type='application/pdf',
+            ),
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Certificado de residencia')
+        archivo = nuevo.archivos.get()
+        self.assertEqual(archivo.titulo, 'Formulario de solicitud')
+        self.assertEqual(archivo.tipo, ArchivoTramite.Tipo.FORMULARIO)
+        self.assertEqual(archivo.orden, 0)
+        self.assertTrue(archivo.archivo.name.endswith('.pdf'))
+
+    def test_edita_y_borra_un_archivo(self):
+        t = tramite()
+        a = ArchivoTramite.objects.create(
+            tramite=t, titulo='Instructivo viejo', orden=0,
+            archivo=SimpleUploadedFile('viejo.pdf', b'%PDF-1.4'),
+        )
+
+        r = self.client.post(
+            reverse('panel_tramite_editar', args=[t.pk]), {
+                'titulo': t.titulo, 'tema': t.tema.pk,
+                'modalidad': t.modalidad, 'municipio': t.municipio.pk,
+                'organismo': t.organismo.pk, 'descripcion': t.descripcion,
+                'destacado': '', 'activo': 'on',
+                'requisitos-TOTAL_FORMS': '0',
+                'requisitos-INITIAL_FORMS': '0',
+                'requisitos-MIN_NUM_FORMS': '0',
+                'requisitos-MAX_NUM_FORMS': '1000',
+                'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+                'enlaces-MIN_NUM_FORMS': '0',
+                'enlaces-MAX_NUM_FORMS': '1000',
+                'archivos-TOTAL_FORMS': '1',
+                'archivos-INITIAL_FORMS': '1',
+                'archivos-MIN_NUM_FORMS': '0',
+                'archivos-MAX_NUM_FORMS': '1000',
+                'archivos-0-id': str(a.pk),
+                'archivos-0-titulo': a.titulo,
+                'archivos-0-tipo': a.tipo,
+                'archivos-0-descripcion': '',
+                'archivos-0-DELETE': 'on',
+            },
+        )
+
+        self.assertEqual(r.status_code, 302)
+        self.assertFalse(ArchivoTramite.objects.filter(pk=a.pk).exists())
 
     def test_edita_y_borra_una_direccion(self):
         t = tramite()

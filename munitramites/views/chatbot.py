@@ -44,6 +44,10 @@ _PALABRAS_SIN_PESO = {
     'las', 'los', 'o', 'para', 'por', 'que', 'sin', 'su', 'sus', 'un',
     'una', 'unas', 'unos', 'y', 'tramite', 'tramites', 'solicitud',
     'obtencion', 'renovacion', 'inscripcion', 'registro',
+    # Palabras que aparecen en muchos títulos y no identifican una ficha
+    # («a los 14 años», «nuevo ejemplar»): enlazarlas confunde.
+    'ano', 'anos', 'actualizacion', 'alta', 'baja', 'cambio', 'ejemplar',
+    'mayores', 'menores', 'modificacion', 'nuevo', 'nueva', 'servicio',
 }
 
 
@@ -244,15 +248,39 @@ def _segmentos_con_enlaces(texto, tramites):
         reverse=True,
     )
 
-    enlaces = []
-    ocupados = []
-    for tramite in ordenados:
+    candidatos = []
+    for indice, tramite in enumerate(ordenados):
         titulo = (tramite.get('titulo') or '').strip()
         url = tramite.get('url') or ''
         if not titulo or not url:
             continue
+        candidatos.append((indice, url, _candidatos(titulo)))
+
+    enlaces = []
+    ocupados = []
+    enlazados = set()
+
+    # Primero los títulos completos, de más largo a más corto. Si dos
+    # fichas comparten una palabra («DNI Exprés» y «Pasaporte Exprés»),
+    # así gana la que aparece entera en el texto y no queda partida.
+    for indice, url, opciones in candidatos:
         encontrado = _buscar_en_texto(
-            normalizado, _candidatos(titulo), ocupados,
+            normalizado, opciones[:1], ocupados,
+        )
+        if encontrado is None:
+            continue
+        inicio, fin = encontrado
+        enlaces.append((inicio, fin, url))
+        ocupados.append((inicio, fin))
+        enlazados.add(indice)
+
+    # Recién después, la palabra significativa de las fichas que no
+    # aparecieron con el título completo.
+    for indice, url, opciones in candidatos:
+        if indice in enlazados:
+            continue
+        encontrado = _buscar_en_texto(
+            normalizado, opciones[1:], ocupados,
         )
         if encontrado is None:
             continue

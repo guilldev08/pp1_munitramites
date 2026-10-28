@@ -7,9 +7,16 @@ información».
 """
 
 
+import shutil
+import tempfile
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 
-from munitramites.models import Direccion, Enlace, Requisito, Tema
+from munitramites.models import (
+    ArchivoTramite, Direccion, Enlace, Requisito, Tema,
+)
 
 from .base import TestCase, administrador, ciudadano, municipio, organismo, tramite
 
@@ -172,6 +179,49 @@ class ListadoTests(TestCase):
 
         self.assertContains(r, 'Renovacion de DNI')
 
+    def test_busca_sin_tildes_ni_mayusculas(self):
+        tramite(titulo='Inscripción de comercio', tema='Comercio')
+
+        for texto in ('inscripcion', 'INSCRIPCIÓN', 'Inscripcion'):
+            r = self.client.get(reverse('tramites'), {'q': texto})
+            self.assertContains(
+                r, 'Inscripción de comercio', msg_prefix=texto
+            )
+
+    def test_busca_con_plurales_y_palabras_parciales(self):
+        tramite()
+        tramite(titulo='Licencia de conducir', tema='Tránsito')
+
+        # plural («licencias») y prefijo («renov»)
+        r = self.client.get(reverse('tramites'), {'q': 'licencias'})
+        self.assertContains(r, 'Licencia de conducir')
+        self.assertNotContains(r, 'Renovacion de DNI')
+
+        r = self.client.get(reverse('tramites'), {'q': 'renov'})
+        self.assertContains(r, 'Renovacion de DNI')
+
+    def test_busca_por_varias_palabras_y_sinonimos(self):
+        tramite()
+        tramite(titulo='Licencia de conducir', tema='Tránsito',
+                municipio=municipio('Obera'))
+
+        # palabras sueltas, no la frase exacta
+        r = self.client.get(reverse('tramites'),
+                            {'q': 'licencia obera'})
+        self.assertContains(r, 'Licencia de conducir')
+        self.assertNotContains(r, 'Renovacion de DNI')
+
+        # sinónimo del dominio: chofer → licencia de conducir
+        r = self.client.get(reverse('tramites'), {'q': 'chofer'})
+        self.assertContains(r, 'Licencia de conducir')
+
+    def test_una_consulta_solo_de_relleno_no_esconde_nada(self):
+        tramite()
+
+        r = self.client.get(reverse('tramites'), {'q': 'de la'})
+
+        self.assertContains(r, 'Renovacion de DNI')
+
     def test_pagina_inexistente_no_rompe(self):
         tramite()
         r = self.client.get(reverse('tramites'), {'pagina': '99'})
@@ -245,6 +295,63 @@ class FichaTests(TestCase):
         self.assertContains(r, 'Direcciones de atención')
         self.assertContains(r, t.organismo.direccion)
         self.assertContains(r, 'Todavía no se cargaron sedes adicionales')
+
+
+class ArchivosTests(TestCase):
+    """Archivos descargables: se guardan por trámite y se ven en la ficha."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._media = tempfile.mkdtemp()
+        cls._override = override_settings(MEDIA_ROOT=cls._media)
+        cls._override.enable()
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls._override.disable()
+        shutil.rmtree(cls._media, ignore_errors=True)
+
+    def _archivo(self, tramite_obj, nombre='formulario.pdf'):
+        return ArchivoTramite.objects.create(
+            tramite=tramite_obj,
+            titulo='Formulario de solicitud',
+            tipo=ArchivoTramite.Tipo.FORMULARIO,
+            descripcion='Se completa a mano y se presenta en la sede.',
+            archivo=SimpleUploadedFile(
+                nombre, b'%PDF-1.4 contenido de prueba',
+                content_type='application/pdf',
+            ),
+            orden=0,
+        )
+
+    def test_la_ficha_muestra_los_documentos_para_descargar(self):
+        t = tramite()
+        a = self._archivo(t)
+
+        r = self.client.get(reverse('tramite_detalle', args=[t.pk]))
+
+        self.assertContains(r, 'Documentos y formularios')
+        self.assertContains(r, 'Formulario de solicitud')
+        self.assertContains(r, 'Se completa a mano')
+        self.assertContains(r, a.archivo.url)
+        self.assertIn('/media/tramites/%s/' % t.pk, a.archivo.url)
+
+    def test_sin_archivos_no_muestra_el_panel(self):
+        t = tramite()
+
+        r = self.client.get(reverse('tramite_detalle', args=[t.pk]))
+
+        self.assertNotContains(r, 'Documentos y formularios')
+
+    def test_borrar_el_tramite_borra_sus_archivos(self):
+        t = tramite()
+        a = self._archivo(t)
+
+        t.delete()
+
+        self.assertFalse(ArchivoTramite.objects.filter(pk=a.pk).exists())
 
 
 class DireccionTests(TestCase):

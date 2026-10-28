@@ -48,8 +48,8 @@ from django.db.models import Count
 from django.utils.html import format_html
 
 from .models import (
-    Consulta, Direccion, Enlace, Municipio, Organismo, Perfil, Requisito,
-    Tema, Tramite,
+    ArchivoTramite, Consulta, Direccion, Enlace, Municipio, Organismo,
+    Perfil, Requisito, Tema, Tramite,
 )
 
 # --- La marca del panel -------------------------------------------------------
@@ -202,6 +202,27 @@ class DireccionInline(admin.TabularInline):
     ordering = ['municipio__nombre', 'lugar']
 
 
+class ArchivoInline(admin.TabularInline):
+    """Documentos y formularios descargables de la ficha."""
+
+    model = ArchivoTramite
+    extra = 1
+    fields = ['orden', 'titulo', 'tipo', 'archivo', 'descripcion']
+    ordering = ['orden']
+
+
+@admin.register(ArchivoTramite)
+class ArchivoTramiteAdmin(BaseAdmin):
+    """Archivos subidos desde el panel: formularios, instructivos y más."""
+
+    list_display = ['id', 'tramite', 'titulo', 'tipo', 'orden']
+    list_filter = ['tipo']
+    search_fields = ['titulo', 'descripcion', 'tramite__titulo']
+    list_select_related = ['tramite']
+    autocomplete_fields = ['tramite']
+    ordering = ['tramite', 'orden']
+
+
 @admin.register(Direccion)
 class DireccionAdmin(BaseAdmin):
     """Direcciones de atención, con su municipio y su trámite."""
@@ -281,7 +302,7 @@ class TramiteAdmin(BaseAdmin):
     # Acciones masivas: publicar / dar de baja sin entrar a cada ficha.
     # Ojo: el borrado real (delete_selected) solo lo ve el superusuario.
     actions = ['activar', 'desactivar']
-    inlines = [EnlaceInline, RequisitoInline, DireccionInline]
+    inlines = [EnlaceInline, RequisitoInline, DireccionInline, ArchivoInline]
     fieldsets = (
         ('Datos principales', {
             'fields': ('titulo', 'tema', 'modalidad', 'descripcion'),

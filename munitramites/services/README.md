@@ -1,7 +1,15 @@
 # `services/` — lógica que no depende del request
 
-Dos paquetes, ordenados por las etapas que ejecutan. Las vistas y los
+Paquetes ordenados por las etapas que ejecutan. Las vistas y los
 management commands son cáscaras finas sobre esto.
+
+## `busqueda.py` — buscador flexible del catálogo
+
+Normaliza tildes y mayúsculas, recorta plurales, acepta prefijos y suma
+sinónimos del dominio («chofer» → licencia de conducir). Recibe el
+queryset ya filtrado y devuelve los trámites ordenados por relevancia.
+Lo usan el listado público (`forms.TramiteFiltroForm`) y el buscador del
+panel (`views/panel.py`).
 
 ## `chatbot/` — asistente RAG
 

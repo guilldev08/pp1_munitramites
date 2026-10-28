@@ -58,6 +58,15 @@
 .tr .datos>div:last-child{border:0}
 .tr .datos dt{color:var(--mu)}.tr .datos dd{margin:0;font-weight:600;text-align:right}
 
+/* ---- Archivos descargables de la ficha ---- */
+.tr .archivos{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.tr .archivo{display:flex;gap:14px;align-items:flex-start;padding:12px 14px;background:var(--cd2);border:1px solid transparent;border-radius:10px;transition:transform .2s,border-color .2s,background .2s}
+.tr .archivo:hover{transform:translateX(5px);border-color:var(--az);background:#1d2f4e}
+.tr .archivo__tipo{flex:none;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#05210f;background:var(--az)}
+.tr .archivo__datos{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tr .archivo__titulo{color:var(--tx);font-weight:600;text-decoration:none}
+.tr .archivo__titulo:hover{color:var(--az);text-decoration:underline}
+
 /* ---- Botones ---- */
 .tr .acciones{display:flex;flex-wrap:wrap;gap:12px}
 .tr .boton{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border:2px solid transparent;border-radius:10px;font:inherit;font-weight:600;color:#fff;cursor:pointer;background:linear-gradient(135deg,#2b7be0,#4d97e6);transition:transform .2s,box-shadow .25s,background .25s,color .25s}

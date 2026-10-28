@@ -84,6 +84,28 @@
           {% endif %}
         </div>
 
+        {# Archivos descargables: formularios, instructivos y documentos #}
+        {% if tramite.archivos.all %}
+          <div class="panel">
+            <h3 class="mt-0">Documentos y formularios</h3>
+            <ul class="archivos">
+              {% for a in tramite.archivos.all %}
+                <li class="archivo">
+                  <span class="archivo__tipo">{{ a.get_tipo_display }}</span>
+                  <div class="archivo__datos">
+                    <a class="archivo__titulo" href="{{ a.archivo.url }}" download>
+                      {{ a.titulo }} <span aria-hidden="true">↓</span>
+                    </a>
+                    {% if a.descripcion %}
+                      <span class="texto-suave texto-chico">{{ a.descripcion }}</span>
+                    {% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
         {# Enlaces oficiales: botones con el nombre que carga el admin #}
         {% if tramite.enlaces.all or tramite.enlace_turnos or tramite.enlace_oficial %}
           <div class="panel">
@@ -119,6 +141,7 @@
             <div><dt>Municipio principal</dt><dd>{{ tramite.municipio.nombre }}</dd></div>
             <div><dt>Direcciones</dt><dd>{{ tramite.direcciones.count }}</dd></div>
             <div><dt>Requisitos</dt><dd>{{ tramite.requisitos.count }}</dd></div>
+            <div><dt>Archivos</dt><dd>{{ tramite.archivos.count }}</dd></div>
             <div><dt>Actualizado</dt><dd>{{ tramite.actualizado|hora_local|date:"d/m/Y" }}</dd></div>
           </dl>
         </div>

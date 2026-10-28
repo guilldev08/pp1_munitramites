@@ -17,7 +17,7 @@ comportamiento del asistente.
 from types import SimpleNamespace
 from unittest import mock
 
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 
 from munitramites.models import (
@@ -25,6 +25,7 @@ from munitramites.models import (
 )
 from munitramites.services.chatbot import generacion, indexar, llm, responder
 from munitramites.services.chatbot.generacion import PlantillaLocal
+from munitramites.views.chatbot import _segmentos_con_enlaces
 
 from .base import TestCase, ciudadano, tramite
 
@@ -101,6 +102,16 @@ class PipelineTests(TestCase):
     def test_saludo_y_ayuda(self):
         self.assertIn('Hola', responder('hola')['texto'])
         self.assertIn('buscar', responder('ayuda')['texto'])
+
+    def test_el_titulo_del_tramite_gana_a_un_requisito_que_menciona_la_palabra(self):
+        """«DNI» tiene que llevar a la ficha de DNI, no a otro trámite."""
+        tramite()
+        tramite(titulo='Carnet sanitario')
+        indexar.invalidar()
+
+        rta = responder('¿qué necesito para hacer el DNI?')
+
+        self.assertEqual(rta['tramites'][0].titulo, 'Renovacion de DNI')
 
     def test_un_saludo_con_pregunta_no_tapa_la_pregunta(self):
         """«hola, ¿qué necesito…?» tenía que buscar, no saludar igual."""
@@ -365,6 +376,7 @@ class BuscadorTests(TestCase):
             r = self.client.get(reverse('buscador_api'),
                                 {'q': 'renovacion de DNI'})
 
+        self.assertEqual(post.call_count, 1)
         self.assertEqual(r.json()['texto'], 'Respuesta de prueba.')
         post.assert_called_once()
         self.assertEqual(
@@ -582,6 +594,75 @@ class HistorialPersistenteTests(TestCase):
         r = self.client.get(reverse('chatbot_api'), {'conversacion': primera})
         self.assertEqual(len(r.json()['historial']), 2)
         self.assertEqual(len(r.json()['conversaciones']), 2)
+
+
+class EnlacesInlineTests(SimpleTestCase):
+    """Los enlaces van DENTRO del texto, no en un bloque de fuentes."""
+
+    def test_enlaza_la_palabra_del_tramite_aunque_no_el_titulo_completo(self):
+        texto = 'Para hacer el DNI tenés que pedir turno.'
+        tramites = [{
+            'titulo': 'Renovacion de DNI',
+            'url': '/tramites/7/',
+        }]
+
+        segmentos = _segmentos_con_enlaces(texto, tramites)
+
+        enlaces = [s for s in segmentos if s['url']]
+        self.assertEqual(len(enlaces), 1)
+        self.assertEqual(enlaces[0]['texto'], 'DNI')
+        self.assertEqual(enlaces[0]['url'], '/tramites/7/')
+        self.assertEqual(
+            ''.join(s['texto'] for s in segmentos), texto
+        )
+
+    def test_enlaza_el_titulo_con_tildes_respetando_el_texto_original(self):
+        texto = 'Encontré «Renovación de DNI», mirá la ficha.'
+        tramites = [{
+            'titulo': 'Renovacion de DNI',
+            'url': '/tramites/7/',
+        }]
+
+        segmentos = _segmentos_con_enlaces(texto, tramites)
+
+        enlaces = [s for s in segmentos if s['url']]
+        self.assertEqual(len(enlaces), 1)
+        self.assertEqual(enlaces[0]['texto'], 'Renovación de DNI')
+        self.assertEqual(
+            ''.join(s['texto'] for s in segmentos), texto
+        )
+
+    def test_no_enlaza_palabras_genericas_como_anos(self):
+        """«años» aparece en muchos títulos: enlazarlo confunde, no ayuda."""
+        texto = 'Actualizá el DNI a los 14 años o a los 5-8 años.'
+        tramites = [
+            {'titulo': 'Actualización de DNI a los 14 años', 'url': '/t/1/'},
+            {'titulo': 'Actualización de DNI de 5 a 8 años', 'url': '/t/2/'},
+        ]
+
+        segmentos = _segmentos_con_enlaces(texto, tramites)
+
+        self.assertNotIn(
+            'años', [s['texto'] for s in segmentos if s['url']]
+        )
+        self.assertEqual(
+            [s['texto'] for s in segmentos if s['url']], ['DNI']
+        )
+
+    def test_no_parte_un_titulo_por_una_palabra_compartida(self):
+        """«DNI Exprés» va entero; «Exprés» no se lleva el resto a otra ficha."""
+        texto = 'Para el DNI Exprés necesitás turno.'
+        tramites = [
+            {'titulo': 'DNI Exprés', 'url': '/tramites/205/'},
+            {'titulo': 'Pasaporte Exprés', 'url': '/tramites/215/'},
+        ]
+
+        segmentos = _segmentos_con_enlaces(texto, tramites)
+
+        enlaces = [s for s in segmentos if s['url']]
+        self.assertEqual(len(enlaces), 1)
+        self.assertEqual(enlaces[0]['texto'], 'DNI Exprés')
+        self.assertEqual(enlaces[0]['url'], '/tramites/205/')
 
 
 class PlantillaLocalTests(TestCase):

@@ -34,7 +34,7 @@ VACIAS = {
 # Sinónimos del dominio: se agregan a la consulta con un peso menor.
 # Si mañana aparece un trámite nuevo, se agregan acá sus palabras clave.
 SINONIMOS = {
-    'dni': ('documento', 'identidad', 'carnet', 'dni'),
+    'dni': ('documento', 'identidad', 'dni'),
     'renovacion': ('renovar', 'renovacion', 'tramitar'),
     'renovar': ('renovacion', 'renovar'),
     'licencia': ('conducir', 'chofer', 'automotor', 'licencia'),
@@ -95,8 +95,14 @@ def _consulta_pesada(pregunta):
     return salida
 
 
-def _puntuar_bm25(pesos, docs_tokens, k1=1.5, b=0.75):
-    """BM25 ponderado: cada consulta viene como [(termino, peso)]."""
+def _puntuar_bm25(pesos, docs_tokens, docs_titulos=None, k1=1.5, b=0.75):
+    """BM25 ponderado: cada consulta viene como [(termino, peso)].
+
+    Si se pasan los títulos de cada fragmento, suma un bono cuando una
+    palabra de la pregunta aparece en el título del trámite. Así «DNI»
+    prioriza las fichas de DNI antes que un requisito de otro trámite
+    que solo menciona el documento al pasar.
+    """
     n_docs = len(docs_tokens)
     if not n_docs:
         return []
@@ -110,8 +116,20 @@ def _puntuar_bm25(pesos, docs_tokens, k1=1.5, b=0.75):
     largos = [len(t) for t in docs_tokens]
     largo_prom = (sum(largos) / n_docs) or 1
 
+    # Solo los términos que escribió el usuario (peso 1): los sinónimos
+    # no deberían decidir qué título es el protagonista.
+    originales = [(t, w) for t, w in pesos if w >= 1.0]
+    titulos = [
+        set(tokens) if tokens else set()
+        for tokens in (docs_titulos or [()] * n_docs)
+    ]
+
+    def idf_de(termino):
+        aparece = df.get(termino, 0)
+        return math.log(1 + (n_docs - aparece + 0.5) / (aparece + 0.5))
+
     puntajes = []
-    for tokens, largo in zip(docs_tokens, largos):
+    for tokens, largo, titulo in zip(docs_tokens, largos, titulos):
         frec = {}
         for t in tokens:
             frec[t] = frec.get(t, 0) + 1
@@ -121,10 +139,13 @@ def _puntuar_bm25(pesos, docs_tokens, k1=1.5, b=0.75):
             tf = frec.get(termino)
             if not tf:
                 continue
-            aparece = df.get(termino, 0)
-            idf = math.log(1 + (n_docs - aparece + 0.5) / (aparece + 0.5))
             denom = tf + k1 * (1 - b + b * largo / largo_prom)
-            score += peso * idf * (tf * (k1 + 1)) / denom
+            score += peso * idf_de(termino) * (tf * (k1 + 1)) / denom
+
+        for termino, peso in originales:
+            if termino in titulo:
+                score += peso * idf_de(termino)
+
         puntajes.append(score)
     return puntajes
 
@@ -148,7 +169,8 @@ def buscar(pregunta, top_k=None, umbral=None):
         return []
 
     docs_tokens = [tokenizar(f.texto) for f in fragmentos]
-    puntajes = _puntuar_bm25(consulta, docs_tokens)
+    docs_titulos = [tokenizar(f.tramite_titulo) for f in fragmentos]
+    puntajes = _puntuar_bm25(consulta, docs_tokens, docs_titulos)
 
     encontrados = [
         (fragmento, puntaje)

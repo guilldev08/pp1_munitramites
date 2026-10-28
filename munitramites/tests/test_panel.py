@@ -791,22 +791,65 @@ class TemasTests(TestCase):
         self.assertContains(r, 'Medio')  # el form de alta está en la página
 
 
-class DisenoTests(TestCase):
-    """El panel usa el layout propio: pestañas, tablas y el CSS del sitio."""
+class DashboardTests(TestCase):
+    """El resumen general: contadores y gráficos del tablero."""
 
     def setUp(self):
         self.client.force_login(administrador())
 
-    def test_las_pestanas_de_seccion_estan_en_todas_las_paginas(self):
+    def test_el_resumen_trae_el_tablero_completo(self):
+        tramite('Renovacion de DNI')
+        r = self.client.get(reverse('panel'))
+
+        self.assertContains(r, 'pn-resumen')
+        self.assertContains(r, 'pn-bienvenida')
+        self.assertContains(r, 'Trámites por tema')
+        self.assertContains(r, 'Consultas por estado')
+        self.assertContains(r, 'Trámites por modalidad')
+
+    def test_el_anillo_pinta_un_tramo_por_estado(self):
+        Consulta.objects.create(asunto='Una consulta', contenido='Hola')
+        r = self.client.get(reverse('panel'))
+
+        self.assertContains(r, 'conic-gradient(')
+        for color in ('var(--m-rojo)', 'var(--m-verde)', 'var(--m-azul)'):
+            self.assertContains(r, color)
+
+    def test_sin_datos_los_graficos_no_rompen(self):
+        r = self.client.get(reverse('panel'))
+
+        # Sin consultas el anillo queda gris y ninguna barra divide por cero.
+        self.assertContains(r, 'conic-gradient(var(--s-ln) 0 100%)')
+        self.assertEqual(r.status_code, 200)
+
+    def test_el_resumen_muestra_los_ultimos_movimientos(self):
+        t = tramite('Cambio de domicilio')
+        Consulta.objects.create(
+            asunto='No me llego el turno', contenido='Detalle',
+            tramite=t, usuario=ciudadano(),
+        )
+        r = self.client.get(reverse('panel'))
+
+        self.assertContains(r, 'Cambio de domicilio')
+        self.assertContains(r, 'No me llego el turno')
+
+
+class DisenoTests(TestCase):
+    """El panel usa el layout propio: menú lateral, tablas y el CSS del sitio."""
+
+    def setUp(self):
+        self.client.force_login(administrador())
+
+    def test_el_menu_de_seccion_esta_en_todas_las_paginas(self):
         for nombre in ('panel', 'panel_tramites', 'panel_consultas',
                        'panel_usuarios', 'panel_temas'):
             r = self.client.get(reverse(nombre))
 
-            self.assertContains(r, 'class="pestanas"', msg_prefix=nombre)
+            self.assertContains(r, 'class="pn-menu"', msg_prefix=nombre)
             self.assertContains(r, 'Centro de Trámites', msg_prefix=nombre)
             self.assertContains(r, 'Centro de Consultas', msg_prefix=nombre)
 
-    def test_la_pestana_de_usuarios_solo_la_ve_el_administrador(self):
+    def test_el_item_de_usuarios_solo_lo_ve_el_administrador(self):
         self.client.force_login(administrativo())
         r = self.client.get(reverse('panel'))
         self.assertNotContains(r, reverse('panel_usuarios'))
@@ -817,10 +860,10 @@ class DisenoTests(TestCase):
         r = self.client.get(reverse('panel'))
         self.assertContains(r, reverse('panel_usuarios'))
 
-    def test_las_pestanas_marcan_la_seccion_actual(self):
+    def test_el_menu_marca_la_seccion_actual(self):
         r = self.client.get(reverse('panel_consultas'))
 
-        self.assertContains(r, 'pestanas')
+        self.assertContains(r, 'pn-menu__item activo')
 
     def test_el_header_y_el_pie_linkean_al_panel(self):
         r = self.client.get(reverse('inicio'))
@@ -831,9 +874,11 @@ class DisenoTests(TestCase):
         r = self.client.get(reverse('panel'))
 
         self.assertContains(r, 'css/app.css')
+        self.assertContains(r, 'css/panel.css')
         # La URL lleva la fecha del archivo: el navegador no reusa la copia
         # vieja cuando cambia el CSS (ver templatetags/estaticos.py).
         self.assertContains(r, 'css/app.css?v=')
+        self.assertContains(r, 'css/panel.css?v=')
 
     def test_los_formularios_del_panel_traen_el_token_csrf(self):
         for nombre in ('panel_tramite_nuevo', 'panel_usuario_nuevo',

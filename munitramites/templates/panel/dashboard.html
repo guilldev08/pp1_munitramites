@@ -1,4 +1,5 @@
 {% extends "panel/base_panel.html" %}
+{% load hora %}
 
 {% block panel_titulo %}Resumen general{% endblock %}
 {% block panel_bajada %}
@@ -6,41 +7,140 @@
 {% endblock %}
 
 {% block panel_contenido %}
-<div class="rejilla">
-  <div class="tarjeta">
-    <h3><a href="{% url 'panel_tramites' %}">Centro de Trámites</a></h3>
-    <p>Creá, editá, publicá y destacá los trámites que ven los ciudadanos.</p>
-    <div class="tarjeta__meta">
-      <span class="etiqueta etiqueta--activo">{{ tramites_activos }} activos</span>
-      <span>de {{ tramites_total }} cargados</span>
+{# --- Fila 1: bienvenida + los números que importan ----------------------- #}
+<div class="pn-resumen">
+  <div class="pn-bienvenida">
+    <div>
+      <p class="pn-bienvenida__rotulo">Bienvenido de nuevo</p>
+      <h3>{{ user.get_full_name|default:user.username }}</h3>
+      <p>
+        {% if pendientes %}
+          Hay <strong>{{ pendientes }}</strong> consulta{{ pendientes|pluralize }} sin responder esperando tu respuesta.
+        {% else %}
+          No hay consultas pendientes. ¡Todo al día!
+        {% endif %}
+      </p>
     </div>
+    <a class="pn-bienvenida__boton" href="{% url 'panel_consultas' %}?estado=pendiente">Ver consultas</a>
   </div>
 
-  <div class="tarjeta">
-    <h3><a href="{% url 'panel_consultas' %}">Centro de Consultas</a></h3>
-    <p>Mirá lo que preguntan los ciudadanos y contestá desde acá.</p>
-    <div class="tarjeta__meta">
-      <span class="etiqueta etiqueta--pendiente">{{ pendientes }} sin responder</span>
-      <span>de {{ consultas_total }} recibidas</span>
-    </div>
-  </div>
+  <a class="pn-stat" style="--c: var(--m-azul)" href="{% url 'panel_tramites' %}">
+    <span class="pn-stat__icono">🗂️</span>
+    <span class="pn-stat__rotulo">Trámites publicados</span>
+    <strong class="pn-stat__valor">{{ tramites_activos }}</strong>
+    <span class="pn-stat__pie">de {{ tramites_total }} cargados · {{ destacados }} destacado{{ destacados|pluralize }}</span>
+    <span class="pn-stat__barra"><i style="width: {{ pct_activos }}%"></i></span>
+  </a>
+
+  <a class="pn-stat" style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}">
+    <span class="pn-stat__icono">💬</span>
+    <span class="pn-stat__rotulo">Consultas sin responder</span>
+    <strong class="pn-stat__valor">{{ pendientes }}</strong>
+    <span class="pn-stat__pie">de {{ consultas_total }} recibidas</span>
+    <span class="pn-stat__barra"><i style="width: {{ pct_pendientes }}%"></i></span>
+  </a>
 
   {% if gestiona_cuentas %}
-  <div class="tarjeta">
-    <h3><a href="{% url 'panel_usuarios' %}">Usuarios</a></h3>
-    <p>Creá cuentas y definí quiénes entran al panel como administradores.</p>
-    <div class="tarjeta__meta">
-      <span>{{ usuarios }} cuentas activas</span>
-    </div>
-  </div>
+  <a class="pn-stat" style="--c: var(--m-verde)" href="{% url 'panel_usuarios' %}">
+    <span class="pn-stat__icono">👥</span>
+    <span class="pn-stat__rotulo">Usuarios</span>
+    <strong class="pn-stat__valor">{{ usuarios }}</strong>
+    <span class="pn-stat__pie">cuentas activas</span>
+  </a>
   {% endif %}
 
-  <div class="tarjeta">
-    <h3><a href="{% url 'panel_temas' %}">Temas</a></h3>
-    <p>Los temas con los que se agrupan los trámites del catálogo.</p>
-    <div class="tarjeta__meta">
-      <span>{{ temas }} temas cargados</span>
+  <a class="pn-stat" style="--c: var(--m-azul)" href="{% url 'panel_temas' %}">
+    <span class="pn-stat__icono">🏷️</span>
+    <span class="pn-stat__rotulo">Temas</span>
+    <strong class="pn-stat__valor">{{ temas }}</strong>
+    <span class="pn-stat__pie">temas cargados</span>
+  </a>
+</div>
+
+{# --- Fila 2: barras por tema + anillo de consultas ----------------------- #}
+<div class="pn-fila pn-fila--2-1">
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Trámites por tema</h3>
+      <span class="texto-suave texto-chico">Los temas con más trámites</span>
     </div>
+    {% if grafico_temas %}
+      <div class="pn-barras" role="img" aria-label="Cantidad de trámites por tema">
+        {% for g in grafico_temas %}
+          <div class="pn-barra" style="--alto: {{ g.alto }}; --i: {{ forloop.counter0 }}; --c: var(--m-{% cycle 'azul' 'verde' 'rojo' %})">
+            <span class="pn-barra__n">{{ g.n }}</span>
+            <i class="pn-barra__col"></i>
+            <span class="pn-barra__nombre" title="{{ g.nombre }}">{{ g.nombre }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="texto-suave texto-chico mb-0">Todavía no hay temas cargados.</p>
+    {% endif %}
+  </div>
+
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Consultas por estado</h3>
+      <a class="texto-chico" href="{% url 'panel_consultas' %}">Ver →</a>
+    </div>
+    <div class="pn-donut" style="background: {{ donut }}">
+      <div class="pn-donut__centro"><strong>{{ consultas_total }}</strong><span>consultas</span></div>
+    </div>
+    <ul class="pn-leyenda">
+      {% for e in por_estado %}
+        <li style="--c: {{ e.color }}"><i></i>{{ e.texto }}<b>{{ e.n }}</b></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{# --- Fila 3: últimas consultas, últimos trámites y modalidades ----------- #}
+<div class="pn-fila pn-fila--3">
+  <div class="pn-card">
+    <div class="pn-card__cab"><h3>Últimas consultas</h3><a class="texto-chico" href="{% url 'panel_consultas' %}">Ver →</a></div>
+    {% if ultimas_consultas %}
+    <ul class="pn-lista">
+      {% for c in ultimas_consultas %}
+        <li>
+          <a href="{% url 'panel_consulta' c.pk %}">
+            <span class="pn-avatar">{{ c.usuario.username|default:"?"|slice:":1"|upper }}</span>
+            <span class="pn-lista__txt"><strong>{{ c.asunto|truncatechars:30 }}</strong>
+              <small>{{ c.usuario.username|default:"Anónimo" }} · {{ c.fecha|hora_local|date:"d/m H:i" }}</small></span>
+            <span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="texto-suave texto-chico mb-0">Todavía no llegaron consultas.</p>{% endif %}
+  </div>
+
+  <div class="pn-card">
+    <div class="pn-card__cab"><h3>Últimos trámites</h3><a class="texto-chico" href="{% url 'panel_tramites' %}">Ver →</a></div>
+    {% if ultimos_tramites %}
+    <ul class="pn-lista">
+      {% for t in ultimos_tramites %}
+        <li>
+          <a href="{% url 'panel_tramite_editar' t.pk %}">
+            <span class="pn-avatar pn-avatar--cuadrado">{{ t.titulo|slice:":1"|upper }}</span>
+            <span class="pn-lista__txt"><strong>{{ t.titulo|truncatechars:30 }}</strong>
+              <small>{{ t.tema }} · {{ t.municipio }}</small></span>
+            {% if t.activo %}<span class="etiqueta etiqueta--activo">Publicado</span>{% else %}<span class="etiqueta etiqueta--inactivo">Inactivo</span>{% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="texto-suave texto-chico mb-0">Todavía no hay trámites cargados.</p>{% endif %}
+  </div>
+
+  <div class="pn-card">
+    <div class="pn-card__cab"><h3>Trámites por modalidad</h3></div>
+    {% for m in por_modalidad %}
+      <div class="pn-prog" style="--c: var(--m-{% cycle 'azul' 'verde' 'rojo' %}); --i: {{ forloop.counter0 }}">
+        <div class="pn-prog__fila"><span>{{ m.texto }}</span><b>{{ m.n }}</b></div>
+        <div class="pn-prog__pista"><i style="width: {{ m.pct }}%"></i></div>
+      </div>
+    {% endfor %}
   </div>
 </div>
 

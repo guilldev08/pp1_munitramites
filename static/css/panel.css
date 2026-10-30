@@ -5,6 +5,23 @@
    sitio.css (--s-*, --m-*), así que acompaña al tema claro/oscuro.
    Se carga desde panel/base_panel.html. Solo pinta: no toca la lógica.
    ========================================================================= */
+/* Tokens propios del panel, definidos a partir de los del sitio (app.css)
+   para que el panel acompañe al tema claro/oscuro sin duplicar valores. */
+:root {
+  --s-cd: var(--sup);
+  --s-ln: var(--gris-200);
+  --s-tx: var(--gris-900);
+  --s-mu: var(--gris-500);
+  --s-hover: var(--gris-100);
+  --s-th: var(--gris-100);
+  --s-cd2: var(--gris-100);
+  --s-sombra: var(--sombra);
+  --s-sombra-hover: var(--sombra);
+  --m-azul: var(--azul);
+  --m-verde: var(--verde);
+  --m-rojo: var(--rojo);
+  --m-linea: var(--gris-200);
+}
 .pn .contenedor{max-width:1200px}
 .pn-layout{display:grid;grid-template-columns:228px minmax(0,1fr);gap:20px;align-items:start}
 .pn-principal{min-width:0}

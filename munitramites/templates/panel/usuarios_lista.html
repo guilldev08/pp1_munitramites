@@ -30,7 +30,7 @@
       <tbody>
         {% for u in pagina %}
           <tr>
-            <td><strong>{{ u.username }}</strong></td>
+            <td><span class="pn-usuario"><span class="pn-avatar">{{ u.username|slice:":1"|upper }}</span><strong>{{ u.username }}</strong></span></td>
             <td>{{ u.email|default:"—" }}</td>
             <td>
               {% if u.is_superuser %}

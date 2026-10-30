@@ -114,6 +114,10 @@ urlpatterns = [
     path('panel/', views.panel, name='panel'),
     path('panel/tramites/', views.panel_tramites, name='panel_tramites'),
     path(
+        'panel/tramites/accion/', views.panel_tramites_accion,
+        name='panel_tramites_accion',
+    ),
+    path(
         'panel/tramites/nuevo/', views.panel_tramite_nuevo,
         name='panel_tramite_nuevo',
     ),

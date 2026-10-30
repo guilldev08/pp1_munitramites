@@ -1,11 +1,11 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}{% load estaticos %}<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Munitramites - {% block titulo %}Trámites de Misiones{% endblock %}</title>
   <meta name="description" content="Información de trámites públicos de la provincia de Misiones.">
-  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% estatico 'css/app.css' %}">
   <script>
     /* Tema: se aplica ANTES de pintar para que no destelle el otro tema.
        Manda la preferencia guardada; si el usuario nunca eligió, la del

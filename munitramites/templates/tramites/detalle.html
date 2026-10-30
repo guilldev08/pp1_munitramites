@@ -85,7 +85,7 @@
         <div class="panel">
           <h3 class="mt-0">Organismo responsable</h3>
           <p class="mb-1"><strong>{{ tramite.organismo.nombre }}</strong></p>
-          <p class="texto-suave texto-chico mb-2">📍 {{ tramite.organismo.direccion }}</p>
+          <p class="texto-suave texto-chico mb-2">{{ tramite.organismo.direccion }}</p>
           <a class="boton boton--secundario boton--ancho" href="{% url 'consulta_nueva' %}?tramite={{ tramite.pk }}">
             Hacer una consulta sobre este trámite
           </a>
@@ -106,7 +106,7 @@
             </div>
             <h3>{{ t.titulo }}</h3>
             <div class="tarjeta__meta">
-              <span>📍 {{ t.municipio.nombre }}</span>
+              <span>{{ t.municipio.nombre }}</span>
             </div>
           </a>
         {% endfor %}

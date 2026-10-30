@@ -97,7 +97,7 @@
 
 {% else %}
   <div class="vacio">
-    <div class="vacio__icono">🗂️</div>
+    <div class="vacio__icono"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
     <h3>No hay trámites{% if estado == 'inactivos' %} inactivos{% elif estado == 'activos' %} activos{% endif %}</h3>
     <p>Cargá el primero y los ciudadanos van a poder verlo en el sitio.</p>
     <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>

@@ -38,7 +38,7 @@
 {% if filtros.q.value %}
   <section class="asistente-barra" id="respuesta-ia"
            data-consulta="{{ filtros.q.value }}" aria-live="polite">
-    <h2 class="asistente-barra__titulo">🤖 Respuesta del asistente</h2>
+    <h2 class="asistente-barra__titulo">Respuesta del asistente</h2>
     <div id="respuesta-ia-cuerpo">
       <p class="texto-suave mb-0">Consultando la base de conocimiento…</p>
       <noscript>
@@ -67,8 +67,8 @@
         <h3>{{ t.titulo }}</h3>
         <p>{{ t.descripcion|truncatewords:20 }}</p>
         <div class="tarjeta__meta">
-          <span>🏛 {{ t.organismo.nombre }}</span>
-          <span>📍 {{ t.municipio.nombre }} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
+          <span>{{ t.organismo.nombre }}</span>
+          <span>{{ t.municipio.nombre }} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
         </div>
       </a>
     {% endfor %}

@@ -21,18 +21,18 @@
       <p class="pn-lateral__rotulo">Panel</p>
       <nav class="pn-menu" aria-label="Secciones del panel">
         <a class="pn-menu__item{% if request.resolver_match.url_name == 'panel' %} activo{% endif %}"
-           style="--c: var(--m-azul)" href="{% url 'panel' %}"><span class="pn-menu__icono">📊</span>Resumen</a>
+           style="--c: var(--m-azul)" href="{% url 'panel' %}"><span class="pn-menu__icono"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Resumen</a>
         <a class="pn-menu__item{% if 'panel_tramite' in request.resolver_match.url_name %} activo{% endif %}"
-           style="--c: var(--m-verde)" href="{% url 'panel_tramites' %}"><span class="pn-menu__icono">🗂️</span>Centro de Trámites</a>
+           style="--c: var(--m-verde)" href="{% url 'panel_tramites' %}"><span class="pn-menu__icono"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>Centro de Trámites</a>
         <a class="pn-menu__item{% if 'panel_consulta' in request.resolver_match.url_name %} activo{% endif %}"
-           style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}"><span class="pn-menu__icono">💬</span>Centro de Consultas</a>
+           style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}"><span class="pn-menu__icono"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Centro de Consultas</a>
         {# Usuarios es para el rol administrador (y el superusuario) #}
         {% if gestiona_cuentas %}
         <a class="pn-menu__item{% if 'panel_usuario' in request.resolver_match.url_name %} activo{% endif %}"
-           style="--c: var(--m-azul)" href="{% url 'panel_usuarios' %}"><span class="pn-menu__icono">👥</span>Usuarios</a>
+           style="--c: var(--m-azul)" href="{% url 'panel_usuarios' %}"><span class="pn-menu__icono"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Usuarios</a>
         {% endif %}
         <a class="pn-menu__item{% if request.resolver_match.url_name == 'panel_temas' %} activo{% endif %}"
-           style="--c: var(--m-verde)" href="{% url 'panel_temas' %}"><span class="pn-menu__icono">🏷️</span>Temas</a>
+           style="--c: var(--m-verde)" href="{% url 'panel_temas' %}"><span class="pn-menu__icono"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>Temas</a>
       </nav>
 
       <a class="boton boton--ancho pn-lateral__nuevo" href="{% url 'panel_tramite_nuevo' %}">+ Nuevo trámite</a>

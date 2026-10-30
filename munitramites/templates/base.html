@@ -53,7 +53,7 @@
           {% endif %}
           <a href="{% url 'perfil' %}"
              {% if request.resolver_match.url_name == 'perfil' %}class="activo"{% endif %}>Mi perfil</a>
-          <span class="nav__usuario">👤 {{ user.username }}</span>
+          <span class="nav__usuario"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> {{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" style="display:inline">
             {% csrf_token %}
             <button class="boton boton--secundario boton--chico" type="submit">Salir</button>
@@ -70,7 +70,7 @@
       {# Interruptor de tema: el icono lo pone app.js según data-tema #}
       <button class="tema-boton" type="button" id="cambiar-tema"
               aria-pressed="false" aria-label="Cambiar al tema oscuro"
-              title="Tema oscuro">🌙</button>
+              title="Tema oscuro"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     </nav>
   </div>
 </header>
@@ -268,7 +268,7 @@
 </div>
 
 {# Boton flotante: reabre el chat desde cualquier pagina #}
-<button class="fab" type="button" data-abrir="modal-chat" aria-label="Abrir el asistente">💬</button>
+<button class="fab" type="button" data-abrir="modal-chat" aria-label="Abrir el asistente"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
 
 <script>
   window.MT = {

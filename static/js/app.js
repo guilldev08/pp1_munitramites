@@ -195,8 +195,7 @@
     d.style.padding = '40px 10px';
 
     var icono = document.createElement('div');
-    icono.textContent = '👋';
-    icono.style.fontSize = '2.2rem';
+    icono.innerHTML = '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
     icono.style.marginBottom = '8px';
 
     var p1 = document.createElement('p');
@@ -420,7 +419,9 @@
   function pintarTema() {
     if (!botonTema) return;
     var oscuro = temaActual() === 'oscuro';
-    botonTema.textContent = oscuro ? '☀️' : '🌙';
+    botonTema.innerHTML = oscuro
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
     botonTema.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
     botonTema.setAttribute('aria-label',
       oscuro ? 'Cambiar al tema claro' : 'Cambiar al tema oscuro');

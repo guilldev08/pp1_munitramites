@@ -24,6 +24,8 @@ staticfiles/
 # Firebird (bases de datos locales, NO subir)
 *.fdb
 *.gdb
+# Base visible del proyecto (bind mount de Docker). No se versiona.
+/datos/firebird/
 
 # Archivos del sistema
 .DS_Store

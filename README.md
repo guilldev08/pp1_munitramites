@@ -796,7 +796,10 @@ Para agregar vocabulario del dominio, sumá entradas a `SINONIMOS` en
 
 ## Respaldo de la base (RNF-10)
 
-La base vive en el volumen `firebird_data`. Opciones:
+La base es un archivo visible en el proyecto:
+**`datos/firebird/munitramites.fdb`** (Docker lo monta en
+`/var/lib/firebird/data` del contenedor; ver `docker-compose.yml`).
+Opciones de respaldo:
 
 ```powershell
 # A) Dump lógico con gbak (portable, se puede restaurar en otra versión)
@@ -818,8 +821,9 @@ docker compose exec firebird gbak -c -user SYSDBA -password masterkey \
   /tmp/munitramites.fbk /var/lib/firebird/data/munitramites_restaurada.fdb
 ```
 
-> **Ojo:** `docker compose down -v` **borra el volumen** y con él la base.
-> Hacé el dump antes.
+> **Ojo:** borrar `datos/firebird/munitramites.fdb` (o el volumen viejo
+> `munitramites_firebird_data` con `docker compose down -v` sobre un compose
+> anterior) **elimina la base**. Hacé el dump antes.
 
 ## Accesibilidad (RNF-11)
 
@@ -888,10 +892,12 @@ Credenciales de la base (solo desarrollo): `SYSDBA` / `masterkey`
   en UTC, así que el filtro `|hora_local` (en `templatetags/hora.py`) convierte
   a hora local antes de mostrar. Usalo siempre: `{{ fecha|hora_local|date:"d/m/Y H:i" }}`.
 - `settings.py` apunta a `/var/lib/firebird/data/...`, que es la ruta **vista
-  desde el servidor Firebird**, no desde tu PC.
-- El volumen `firebird_data` guarda la base. Para llevarla a otra PC, hacé el
-  dump de [Respaldo de la base (RNF-10)](#respaldo-de-la-base-rnf-10) antes de
-  `docker compose down -v`.
+  desde el servidor Firebird**, no desde tu PC. Ese directorio está montado
+  sobre `datos/firebird/`, así que el archivo que ves en el proyecto
+  (`datos/firebird/munitramites.fdb`) **es** la base en vivo.
+- Para llevarla a otra PC, alcanza con copiar `datos/firebird/` con el
+  contenedor parado, o hacer el dump de
+  [Respaldo de la base (RNF-10)](#respaldo-de-la-base-rnf-10).
 - **Los correos salen por la consola**: `EMAIL_BACKEND` está en la consola, así
   que el enlace de recuperación de contraseña (RF-15) se ve con
   `docker compose logs web`. En producción hay que poner un backend SMTP.

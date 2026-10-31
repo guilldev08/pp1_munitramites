@@ -5,7 +5,7 @@ código. El proyecto es un portal de trámites de Misiones (Django + Firebird)
 que corre entero con Docker Compose.
 
 - Repo: `C:\Users\guille\Desktop\pp1_munitramites\munitramites`
-- Rama de trabajo: `master` (último commit: `685e78c`)
+- Rama de trabajo: `master`
 - No commitear ni pushear nada mientras se esté trabajando en esta etapa.
 - No tocar la rama `feature/frontend`.
 - No agregar dependencias nuevas.
@@ -14,9 +14,14 @@ que corre entero con Docker Compose.
 
 - Base local: **138 trámites** y **682 requisitos**, sin códigos ni
   referencias internas. Es la fuente de verdad.
+- El archivo de la base es **visible** en
+  `datos/firebird/munitramites.fdb` (bind mount de Docker). Para Windows es
+  esa ruta; dentro del contenedor sigue siendo
+  `/var/lib/firebird/data/munitramites.fdb`. El volumen viejo
+  `munitramites_firebird_data` queda como respaldo.
 - Migración `0012_conversacionchat_mensajechat_fuentemensaje` aplicada en
   Firebird.
-- Suite completa: **288 tests OK** (`docker compose exec -T web python
+- Suite completa: **307 tests OK** (`docker compose exec -T web python
   manage.py test --noinput`).
 - Servidor Docker arriba en `http://localhost:8000/`. La IP de LAN
   (`http://192.168.22.47:8000/`) responde desde este equipo; para que entren
@@ -24,7 +29,7 @@ que corre entero con Docker Compose.
   restringida a `192.168.22.0/24` (requiere UAC).
 - Cambios sin commitear: modelos/migración/vistas/plantillas/JS/CSS del
   historial del chatbot, limpieza de datos y el arreglo visual de numeración
-  en `static/css/tramites.css`. `_scratch/` está sin trackear y no se commitea.
+  en `static/css/tramites.css`.
 
 ## Comandos útiles
 
@@ -50,10 +55,11 @@ termine en `OK`; mirar la línea `Ran N tests` / `OK`.
 
 - `management/commands/cargar_datos.py` es **no-op** a propósito: no volver a
   ejecutarlo para “recargar” datos.
-- **No ejecutar** `_scratch/aplicar_limpios.py`: la limpieza ya está aplicada.
-- Para validar la base usar `_scratch/validar_final.py` (DB-only).
-- No borrar ni recrear el volumen `firebird_data` sin un backup: se pierden
-  los 138 trámites, los requisitos y todo el historial de chat.
+- **No ejecutar** scripts viejos de limpieza de `_scratch/` (la carpeta ya no
+  existe): la limpieza ya está aplicada en la base.
+- No borrar `datos/firebird/munitramites.fdb` ni recrear el volumen viejo
+  `firebird_data` sin un backup: se pierden los 138 trámites, los requisitos y
+  todo el historial de chat.
 - No copiar el CSV de fuentes al Escritorio hasta que se pida.
 - `usuarios.txt` contiene credenciales de prueba y una clave de Groq en texto
   plano. No copiar claves a código, docs ni commits; si se puede, rotarla y

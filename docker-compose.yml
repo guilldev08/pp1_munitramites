@@ -40,13 +40,12 @@ services:
     ports:
       - "3050:3050"
     volumes:
-      - firebird_data:/var/lib/firebird/data
+      # La base es un ARCHIVO VISIBLE en el proyecto: datos/firebird/munitramites.fdb
+      # (antes vivia en el volumen nombrado `firebird_data`, invisible desde Windows).
+      - ./datos/firebird:/var/lib/firebird/data
     healthcheck:
       test: ["CMD-SHELL", "bash -c ':>/dev/tcp/127.0.0.1/3050' || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 30
       start_period: 15s
-
-volumes:
-  firebird_data:

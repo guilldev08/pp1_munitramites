@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from ..forms import ConsultaForm
 from ..models import Consulta
@@ -80,3 +81,27 @@ def consulta_detalle(request, pk):
         'consulta': consulta,
         'puede_responder': request.user.is_staff,
     })
+
+
+@login_required
+@require_POST
+def consulta_eliminar(request, pk):
+    """Borra una consulta. Puede el dueño o el staff; siempre por POST.
+
+    GET no borra nada: así un enlace o un redirect no elimina datos por
+    accidente. Si la consulta no es del usuario, se trata como inexistente.
+    """
+    consulta = get_object_or_404(Consulta, pk=pk)
+    es_duenio = consulta.usuario_id == request.user.pk
+    if not (es_duenio or request.user.is_staff):
+        messages.error(request, 'No podés borrar esa consulta.')
+        return redirect('consultas')
+
+    numero = consulta.pk
+    consulta.delete()
+    messages.success(request, f'Consulta #{numero} eliminada.')
+
+    # El panel vuelve al Centro de Consultas; el ciudadano, a «Mis consultas».
+    if request.POST.get('origen') == 'panel' and request.user.is_staff:
+        return redirect('panel_consultas')
+    return redirect('consultas')

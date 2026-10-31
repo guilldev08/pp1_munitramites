@@ -105,6 +105,10 @@ urlpatterns = [
     path('consultas/', views.consultas, name='consultas'),
     path('consultas/nueva/', views.consulta_nueva, name='consulta_nueva'),
     path('consultas/<int:pk>/', views.consulta_detalle, name='consulta_detalle'),
+    path(
+        'consultas/<int:pk>/eliminar/', views.consulta_eliminar,
+        name='consulta_eliminar',
+    ),
 
     # 4. Panel propio de administración (rol Administrador y superusuario) --
     # /admin/ de Django queda reservado al superusuario (ver middleware.py):

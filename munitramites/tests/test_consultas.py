@@ -232,3 +232,68 @@ class GestionDelAdminTests(TestCase):
         r = self.client.get(reverse('consulta_detalle', args=[self.consulta.pk]))
 
         self.assertContains(r, 'Te respondemos hoy.')
+
+
+class EliminarConsultasTests(TestCase):
+    """El dueño puede borrar su consulta; nadie más (salvo el staff).
+
+    El borrado va por POST y con confirmación en el navegador: un GET no
+    tiene que eliminar nada.
+    """
+
+    def setUp(self):
+        self.duenio = ciudadano(username='ana')
+        self.consulta = Consulta.objects.create(
+            usuario=self.duenio, asunto='Consulta de Ana',
+            contenido='Contenido de la consulta.',
+        )
+
+    def test_el_duenio_borra_su_consulta(self):
+        self.client.force_login(self.duenio)
+
+        r = self.client.post(
+            reverse('consulta_eliminar', args=[self.consulta.pk])
+        )
+
+        self.assertRedirects(r, reverse('consultas'))
+        self.assertFalse(Consulta.objects.filter(pk=self.consulta.pk).exists())
+
+    def test_otro_ciudadano_no_puede_borrarla(self):
+        self.client.force_login(ciudadano(username='otra'))
+
+        r = self.client.post(
+            reverse('consulta_eliminar', args=[self.consulta.pk])
+        )
+
+        self.assertRedirects(r, reverse('consultas'))
+        self.assertTrue(Consulta.objects.filter(pk=self.consulta.pk).exists())
+
+    def test_un_get_no_borra(self):
+        self.client.force_login(self.duenio)
+
+        r = self.client.get(
+            reverse('consulta_eliminar', args=[self.consulta.pk])
+        )
+
+        self.assertEqual(r.status_code, 405)
+        self.assertTrue(Consulta.objects.filter(pk=self.consulta.pk).exists())
+
+    def test_sin_sesion_manda_al_login(self):
+        r = self.client.post(
+            reverse('consulta_eliminar', args=[self.consulta.pk])
+        )
+
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse('login'), r['Location'])
+        self.assertTrue(Consulta.objects.filter(pk=self.consulta.pk).exists())
+
+    def test_el_admin_puede_borrar_y_vuelve_al_panel(self):
+        self.client.force_login(administrador())
+
+        r = self.client.post(
+            reverse('consulta_eliminar', args=[self.consulta.pk]),
+            {'origen': 'panel'},
+        )
+
+        self.assertRedirects(r, reverse('panel_consultas'))
+        self.assertFalse(Consulta.objects.filter(pk=self.consulta.pk).exists())

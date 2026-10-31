@@ -76,6 +76,14 @@
             </p>
           </div>
         {% endif %}
+
+        <form method="post" action="{% url 'consulta_eliminar' consulta.pk %}"
+              onsubmit="return confirm('¿Eliminar la consulta #{{ consulta.pk }}? Esta acción no se puede deshacer.')">
+          {% csrf_token %}
+          <button class="boton boton--peligro boton--ancho" type="submit">
+            Eliminar consulta
+          </button>
+        </form>
       </aside>
     </div>
   </div>

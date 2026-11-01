@@ -21,11 +21,12 @@ db.sqlite3
 staticfiles/
 /media/
 
-# Firebird (bases de datos locales, NO subir)
+# Firebird: solo la base del proyecto va al repo; backups y copias quedan afuera.
 *.fdb
 *.gdb
-# Base visible del proyecto (bind mount de Docker). No se versiona.
-/datos/firebird/
+# Base visible del proyecto (bind mount de Docker): única excepción.
+/datos/firebird/*
+!/datos/firebird/munitramites.fdb
 
 # Archivos del sistema
 .DS_Store
@@ -35,6 +36,9 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Instrucciones para agentes de IA (locales, no se versionan)
+AGENTS.md
 
 # Docker (se regeneran en cada build)
 *.tar

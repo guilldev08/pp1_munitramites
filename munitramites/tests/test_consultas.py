@@ -297,3 +297,124 @@ class EliminarConsultasTests(TestCase):
 
         self.assertRedirects(r, reverse('panel_consultas'))
         self.assertFalse(Consulta.objects.filter(pk=self.consulta.pk).exists())
+
+
+class EditarConsultasTests(TestCase):
+    """El dueño (o el staff) puede editar una consulta y queda la hora.
+
+    La edición no toca el estado ni la respuesta: eso se maneja desde el
+    detalle. Al guardar se completa `fecha_edicion`.
+    """
+
+    def setUp(self):
+        self.duenio = ciudadano(username='ana')
+        self.consulta = Consulta.objects.create(
+            usuario=self.duenio, asunto='Consulta de Ana',
+            contenido='Contenido original de la consulta.',
+        )
+        self.url = reverse('consulta_editar', args=[self.consulta.pk])
+
+    def test_el_duenio_edita_y_se_guarda_la_hora(self):
+        self.client.force_login(self.duenio)
+
+        r = self.client.post(self.url, {
+            'tipo': 'sugerencia',
+            'tramite': '',
+            'asunto': 'Asunto corregido',
+            'contenido': 'Contenido corregido de la consulta.',
+        })
+
+        self.assertRedirects(
+            r, reverse('consulta_detalle', args=[self.consulta.pk])
+        )
+        self.consulta.refresh_from_db()
+        self.assertEqual(self.consulta.asunto, 'Asunto corregido')
+        self.assertEqual(self.consulta.tipo, 'sugerencia')
+        self.assertIsNotNone(self.consulta.fecha_edicion)
+        self.assertEqual(self.consulta.estado, 'pendiente')
+
+    def test_la_hora_de_edicion_se_muestra_en_el_detalle(self):
+        self.client.force_login(self.duenio)
+        self.client.post(self.url, {
+            'tipo': 'consulta',
+            'tramite': '',
+            'asunto': 'Consulta de Ana',
+            'contenido': 'Contenido corregido de la consulta.',
+        })
+
+        r = self.client.get(
+            reverse('consulta_detalle', args=[self.consulta.pk])
+        )
+
+        self.assertContains(r, 'Última edición')
+
+    def test_antes_de_editar_no_hay_hora(self):
+        self.assertIsNone(self.consulta.fecha_edicion)
+
+        self.client.force_login(self.duenio)
+        r = self.client.get(
+            reverse('consulta_detalle', args=[self.consulta.pk])
+        )
+
+        self.assertNotContains(r, 'Última edición')
+
+    def test_el_formulario_viene_precargado(self):
+        self.client.force_login(self.duenio)
+
+        r = self.client.get(self.url)
+
+        self.assertContains(r, 'Contenido original de la consulta.')
+
+    def test_otro_ciudadano_no_puede_editar(self):
+        self.client.force_login(ciudadano(username='otra'))
+
+        self.client.post(self.url, {
+            'tipo': 'consulta',
+            'tramite': '',
+            'asunto': 'Secuestrada',
+            'contenido': 'No debería guardarse este contenido.',
+        })
+
+        self.consulta.refresh_from_db()
+        self.assertEqual(self.consulta.asunto, 'Consulta de Ana')
+        self.assertIsNone(self.consulta.fecha_edicion)
+
+    def test_un_form_invalido_no_marca_la_edicion(self):
+        self.client.force_login(self.duenio)
+
+        r = self.client.post(self.url, {
+            'tipo': 'consulta',
+            'tramite': '',
+            'asunto': '',
+            'contenido': 'corto',
+        })
+
+        self.assertEqual(r.status_code, 200)
+        self.consulta.refresh_from_db()
+        self.assertIsNone(self.consulta.fecha_edicion)
+
+    def test_el_admin_edita_y_vuelve_al_panel(self):
+        self.client.force_login(administrador())
+
+        r = self.client.post(
+            self.url + '?origen=panel',
+            {
+                'tipo': 'consulta',
+                'tramite': '',
+                'asunto': 'Editada por el admin',
+                'contenido': 'Contenido revisado por el administrador.',
+            },
+        )
+
+        self.assertRedirects(
+            r, reverse('panel_consulta', args=[self.consulta.pk])
+        )
+        self.consulta.refresh_from_db()
+        self.assertEqual(self.consulta.asunto, 'Editada por el admin')
+        self.assertIsNotNone(self.consulta.fecha_edicion)
+
+    def test_sin_sesion_manda_al_login(self):
+        r = self.client.get(self.url)
+
+        self.assertEqual(r.status_code, 302)
+        self.assertIn(reverse('login'), r['Location'])

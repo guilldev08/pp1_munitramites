@@ -30,6 +30,12 @@
       <span class="etiqueta etiqueta--{{ consulta.estado }}">{{ consulta.get_estado_display }}</span>
     </div>
 
+    {% if consulta.fecha_edicion %}
+      <p class="texto-suave texto-chico mb-2">
+        Última edición: {{ consulta.fecha_edicion|hora_local|date:"d/m/Y H:i" }}.
+      </p>
+    {% endif %}
+
     <div class="dos-columnas">
       <div class="panel">
         <h3 class="mt-0">Consulta enviada</h3>
@@ -76,6 +82,11 @@
             </p>
           </div>
         {% endif %}
+
+        <a class="boton boton--secundario boton--ancho" style="margin-bottom:10px"
+           href="{% url 'consulta_editar' consulta.pk %}">
+          Editar consulta
+        </a>
 
         <form method="post" action="{% url 'consulta_eliminar' consulta.pk %}"
               onsubmit="return confirm('¿Eliminar la consulta #{{ consulta.pk }}? Esta acción no se puede deshacer.')">

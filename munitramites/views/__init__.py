@@ -21,7 +21,8 @@ Para AGREGAR UNA VISTA NUEVA:
 from .api import api_tramites
 from .chatbot import buscador_api, chatbot_api
 from .consultas import (
-    consulta_detalle, consulta_eliminar, consulta_nueva, consultas,
+    consulta_detalle, consulta_editar, consulta_eliminar, consulta_nueva,
+    consultas,
 )
 from .cuenta import LoginDeSitio, perfil, registro
 from .pagina import inicio
@@ -41,6 +42,7 @@ __all__ = [
     'buscador_api',
     'chatbot_api',
     'consulta_detalle',
+    'consulta_editar',
     'consulta_eliminar',
     'consulta_nueva',
     'consultas',

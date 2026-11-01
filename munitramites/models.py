@@ -460,6 +460,10 @@ class Consulta(models.Model):
     )
     respuesta = models.TextField(blank=True, default='')
     fecha = models.DateTimeField(auto_now_add=True)
+    fecha_edicion = models.DateTimeField(
+        null=True, blank=True, verbose_name='Última edición',
+        help_text='Se completa cuando el autor o el staff editan la consulta.',
+    )
 
     class Meta:
         verbose_name = 'Consulta'

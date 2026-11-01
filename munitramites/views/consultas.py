@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from ..forms import ConsultaForm
@@ -80,6 +81,44 @@ def consulta_detalle(request, pk):
     return render(request, 'consultas/detalle.html', {
         'consulta': consulta,
         'puede_responder': request.user.is_staff,
+    })
+
+
+@login_required
+def consulta_editar(request, pk):
+    """Edición de una consulta. Puede el dueño o el staff.
+
+    Solo se tocan los campos del formulario (tipo, trámite, asunto y
+    contenido); el estado y la respuesta se manejan desde el detalle.
+    Al guardar se registra la hora de la última edición.
+    """
+    consulta = get_object_or_404(Consulta, pk=pk)
+    es_duenio = consulta.usuario_id == request.user.pk
+    if not (es_duenio or request.user.is_staff):
+        messages.error(request, 'No podés editar esa consulta.')
+        return redirect('consultas')
+
+    # Si se editó desde el panel, se vuelve al panel en vez de a la vista
+    # del ciudadano.
+    origen = request.POST.get('origen') or request.GET.get('origen') or ''
+
+    if request.method == 'POST':
+        form = ConsultaForm(request.POST, instance=consulta)
+        if form.is_valid():
+            consulta = form.save(commit=False)
+            consulta.fecha_edicion = timezone.now()
+            consulta.save()
+            messages.success(request, 'Consulta actualizada.')
+            if origen == 'panel' and request.user.is_staff:
+                return redirect('panel_consulta', pk=consulta.pk)
+            return redirect('consulta_detalle', pk=consulta.pk)
+    else:
+        form = ConsultaForm(instance=consulta)
+
+    return render(request, 'consultas/editar.html', {
+        'form': form,
+        'consulta': consulta,
+        'origen': origen,
     })
 
 

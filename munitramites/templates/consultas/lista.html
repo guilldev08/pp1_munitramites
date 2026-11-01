@@ -69,15 +69,26 @@
                   </td>
                 {% endif %}
                 <td><span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
-                <td class="texto-chico">{{ c.fecha|hora_local|date:"d/m/Y H:i" }}</td>
+                <td class="texto-chico">
+                  {{ c.fecha|hora_local|date:"d/m/Y H:i" }}
+                  {% if c.fecha_edicion %}
+                    <div class="texto-suave">
+                      Editada {{ c.fecha_edicion|hora_local|date:"d/m/Y H:i" }}
+                    </div>
+                  {% endif %}
+                </td>
                 <td>
-                  <form method="post" action="{% url 'consulta_eliminar' c.pk %}"
-                        onsubmit="return confirm('¿Eliminar la consulta #{{ c.pk }}? Esta acción no se puede deshacer.')">
-                    {% csrf_token %}
-                    <button class="boton boton--peligro boton--chico" type="submit">
-                      Eliminar
-                    </button>
-                  </form>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap">
+                    <a class="boton boton--secundario boton--chico"
+                       href="{% url 'consulta_editar' c.pk %}">Editar</a>
+                    <form method="post" action="{% url 'consulta_eliminar' c.pk %}"
+                          onsubmit="return confirm('¿Eliminar la consulta #{{ c.pk }}? Esta acción no se puede deshacer.')">
+                      {% csrf_token %}
+                      <button class="boton boton--peligro boton--chico" type="submit">
+                        Eliminar
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             {% endfor %}

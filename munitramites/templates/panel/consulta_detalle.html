@@ -8,6 +8,7 @@
   {{ consulta.fecha|hora_local|date:"d/m/Y H:i" }}
 {% endblock %}
 {% block panel_acciones %}
+  <a class="boton" href="{% url 'consulta_editar' consulta.pk %}?origen=panel">Editar consulta</a>
   <a class="boton boton--secundario" href="{% url 'panel_consultas' %}">← Volver al listado</a>
 {% endblock %}
 
@@ -24,6 +25,12 @@
       {% endif %}
       · <span class="etiqueta etiqueta--{{ consulta.estado }}">{{ consulta.get_estado_display }}</span>
     </p>
+
+    {% if consulta.fecha_edicion %}
+      <p class="texto-suave texto-chico">
+        Última edición: {{ consulta.fecha_edicion|hora_local|date:"d/m/Y H:i" }}.
+      </p>
+    {% endif %}
 
     <h3>Enviada por</h3>
     <p class="texto-suave texto-chico">

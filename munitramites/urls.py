@@ -106,6 +106,10 @@ urlpatterns = [
     path('consultas/nueva/', views.consulta_nueva, name='consulta_nueva'),
     path('consultas/<int:pk>/', views.consulta_detalle, name='consulta_detalle'),
     path(
+        'consultas/<int:pk>/editar/', views.consulta_editar,
+        name='consulta_editar',
+    ),
+    path(
         'consultas/<int:pk>/eliminar/', views.consulta_eliminar,
         name='consulta_eliminar',
     ),

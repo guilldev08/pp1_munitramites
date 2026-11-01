@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load hora %}
+
+{% block titulo %}Editar consulta #{{ consulta.pk }}{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="miga">
+      <a href="{% url 'inicio' %}">Inicio</a><span>/</span>
+      <a href="{% url 'consultas' %}">Consultas</a><span>/</span>
+      <a href="{% url 'consulta_detalle' consulta.pk %}">#{{ consulta.pk }}</a><span>/</span>Editar
+    </div>
+
+    <div class="titulo-seccion">
+      <div>
+        <h2>Editar consulta</h2>
+        <p>
+          Enviada el {{ consulta.fecha|hora_local|date:"d/m/Y H:i" }}.
+          {% if consulta.fecha_edicion %}
+            Última edición: {{ consulta.fecha_edicion|hora_local|date:"d/m/Y H:i" }}.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <form class="formulario formulario--medio" method="post" novalidate>
+      {% csrf_token %}
+      {% if origen %}<input type="hidden" name="origen" value="{{ origen }}">{% endif %}
+
+      {% if form.non_field_errors %}
+        <div class="alerta alerta--error">
+          {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="campo">
+        <label for="{{ form.tipo.id_for_label }}">Tipo de mensaje</label>
+        {{ form.tipo }}
+        {% for e in form.tipo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.tramite.id_for_label }}">Trámite relacionado <span class="texto-suave">(opcional)</span></label>
+        {{ form.tramite }}
+        {% for e in form.tramite.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.asunto.id_for_label }}">Asunto</label>
+        {{ form.asunto }}
+        {% for e in form.asunto.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="campo">
+        <label for="{{ form.contenido.id_for_label }}">Consulta</label>
+        {{ form.contenido }}
+        <span class="ayuda">Mínimo 10 caracteres. Cuantos más detalles, mejor podremos ayudarte.</span>
+        {% for e in form.contenido.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+      </div>
+
+      <div class="acciones">
+        <button class="boton" type="submit">Guardar cambios</button>
+        <a class="boton boton--secundario" href="{% url 'consulta_detalle' consulta.pk %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

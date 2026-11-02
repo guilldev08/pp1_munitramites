@@ -1,34 +1,27 @@
 # Munitramites
 
-![Captura de la página pública de Munitramites](docs/img/captura-pagina-publica.png)
-
-## ¿Qué es?
-
-Munitramites es una página web que reúne la información de los trámites
-públicos de la provincia de Misiones. En vez de preguntar por teléfono o ir
-hasta una oficina solo para saber qué papeles hacen falta, acá está todo
-junto: qué se necesita, dónde se hace y con qué organismo hay que hablar.
+Portal web con la información de los trámites públicos de la provincia de
+Misiones: qué papeles se necesitan, dónde se hace cada uno y con qué
+organismo hay que hablar.
 
 ## ¿Qué hace?
 
-- **Busca trámites.** Se puede filtrar por tema, municipio o modalidad
-  (presencial, digital o mixta) y ver una ficha con los requisitos, el
-  organismo responsable y los enlaces oficiales.
-- **Contesta preguntas.** Tiene un asistente que responde con la información
-  de los trámites cargados y dice de qué trámite sacó la respuesta. Si no
-  sabe, lo aclara en lugar de inventar.
-- **Recibe consultas.** Cualquier persona puede crear una cuenta, mandar una
-  consulta, una sugerencia o un reclamo, y seguir la respuesta.
-- **Administra el contenido.** Las cuentas del sitio que tienen permiso entran
-  a un panel privado para cargar y editar trámites, crear temas y responder
-  las consultas que llegan.
+- **Busca trámites** por tema, municipio o modalidad (presencial, digital o
+  mixta) y muestra una ficha con los requisitos, el organismo responsable y
+  los enlaces oficiales.
+- **Responde preguntas** con un asistente que cita el trámite del que saca
+  cada dato. Si no sabe, lo aclara en lugar de inventar.
+- **Recibe consultas, sugerencias y reclamos** de la gente, y permite seguir
+  la respuesta.
+- **Administra el contenido** desde un panel privado: cargar y editar
+  trámites, crear temas y responder lo que llega.
 
 ## ¿Para qué sirve?
 
 Para que la gente pierda menos tiempo y menos viajes: toda la información de
-un trámite está en un solo lugar, actualizada y explicada en lenguaje simple.
-Del otro lado, le da al organismo una sola herramienta para publicar los
-trámites y atender lo que la gente pregunta.
+un trámite está en un solo lugar, actualizada y en lenguaje simple. Del otro
+lado, le da al organismo una sola herramienta para publicar los trámites y
+atender lo que la gente pregunta.
 
 ## Cómo ejecutarla
 
@@ -43,14 +36,11 @@ git switch feature/frontend
 docker compose up -d --build
 ```
 
-La primera vez tarda unos minutos porque arma el entorno. Cuando termina,
-la página queda disponible en:
+La primera vez tarda unos minutos. Cuando termina, la página queda en:
 
 **http://localhost:8000/**
 
-### Primer arranque
-
-La base empieza vacía. Para cargar los trámites de ejemplo y crear la cuenta
+La base arranca vacía. Para cargar los trámites de ejemplo y crear la cuenta
 de administrador:
 
 ```powershell
@@ -58,20 +48,15 @@ docker compose exec web python manage.py cargar_datos
 docker compose exec web python manage.py createsuperuser
 ```
 
-Después se entra con esa cuenta y se puede ver el panel de administración en
+Después se entra con esa cuenta y el panel de administración está en
 **http://localhost:8000/panel/**.
 
-### Para apagarla
+Para apagar todo:
 
 ```powershell
 docker compose down
 ```
 
-## ¿Qué se puede visitar?
+## Captura
 
-| Dirección | Qué hay |
-|---|---|
-| http://localhost:8000/ | Página de inicio |
-| http://localhost:8000/tramites/ | Buscador de trámites |
-| http://localhost:8000/chatbot/ | Asistente virtual |
-| http://localhost:8000/panel/ | Panel de administración (pide iniciar sesión) |
+<img src="docs/img/captura-pagina-publica.png" width="720" alt="Captura de la página pública de Munitramites">

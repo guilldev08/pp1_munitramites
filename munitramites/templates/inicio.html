@@ -6,12 +6,15 @@
 {# Portada sin barra superior (como antes): el bloque encabezado va vacío. #}
 {% block encabezado %}{% endblock %}
 
+{# Sin botón flotante del chat: acá el chat se abre desde su propia sección. #}
+{% block fab %}{% endblock %}
+
 {% block contenido %}
 <link rel="stylesheet" href="{% estatico 'css/landing.css' %}">
 <div class="lp">
 <section class="lp-hero"><div class="lp-wrap">
   <p class="lp-marca"><span>Muni</span><span>tra</span><span>mites</span></p>
-  <h1>Tus trámites de Misiones, sin vueltas</h1>
+  <h1>Toda la información de tramites de todo Misiones al toque</h1>
   <p>Encontrá qué necesitás, cuándo, dónde y con qué papeles. Todo en un solo lugar.</p>
   {% if user.is_authenticated %}
   <a class="lp-btn lp-btn--fill" href="{% url 'tramites' %}">Ver trámites</a>
@@ -21,22 +24,20 @@
 {% endif %}
 </div></section>
 
-<nav class="lp-tabs"><a href="#como">Cómo funciona</a><a href="#tramites">Trámites</a><a href="#asistente">Asistente virtual</a><a href="#mapa">Municipios</a></nav>
-
 <section class="lp-sec revelar" id="como"><div class="lp-wrap"><h2>Hacé tu trámite en 3 pasos</h2><div class="lp-bar"></div>
 <div class="lp-pasos">
 <div class="lp-paso" style="--c:var(--lp-azul)"><b>1</b><h3>Buscá</h3><p>Filtrá por tema, municipio o modalidad en la lista de trámites.</p></div>
 <div class="lp-paso" style="--c:var(--lp-verde)"><b>2</b><h3>Revisá los requisitos</h3><p>Cada ficha detalla los documentos necesarios y el organismo responsable.</p></div>
-<div class="lp-paso" style="--c:var(--lp-rojo)"><b>3</b><h3>Tramitá</h3><p>Seguí el enlace oficial o acercate al organismo con la lista de requisitos.</p></div>
+<div class="lp-paso" style="--c:var(--lp-rojo)"><b>3</b><h3>Tramitá</h3><p>Seguí el enlace oficial o acercate al organismo con todo lo que necesitas</p></div>
 </div></div></section>
 
 <section class="lp-sec lp-alt" id="tramites"><div class="lp-wrap lp-row"><div><span class="lp-tag">Buscador de trámites</span><h3>Todo lo que necesitás saber</h3>
 <p>Requisitos, organismo responsable y enlaces oficiales, siempre actualizados.</p><a class="lp-btn" href="{% url 'tramites' %}">Ver trámites ›</a></div>
 <div class="lp-card"><b>Ejemplo de ficha</b><div style="margin:8px 0"><span class="lp-chip" style="background:var(--lp-azul)">Tema</span><span class="lp-chip" style="background:var(--lp-verde)">Modalidad</span><span class="lp-chip" style="background:var(--lp-rojo)">Municipio</span></div>
-<small>Organismo responsable · requisitos · enlaces oficiales</small></div></div></section>
+<small>Organismo responsable · requisitos · enlaces oficiales · documentos</small></div></div></section>
 
 <section class="lp-sec" id="asistente"><div class="lp-wrap lp-row"><div class="lp-card"><div class="lp-q">¿Qué necesito para este trámite?</div>
-<div class="lp-a">Te lo respondo con los requisitos de la ficha. <small>Fuente: ficha del trámite ›</small></div></div>
+<div class="lp-a">Te lo respondo con los requisitos de la<small>ficha</small>     </div></div>
 <div><span class="lp-tag">Asistente virtual</span><h3>Preguntale, te responde con fuentes</h3>
 <p>Busca en los trámites reales y cita de dónde sale cada dato. Si no sabe, lo dice: no inventa.</p><a class="lp-btn" href="{% url 'tramites' %}" data-abrir="modal-chat">Abrir el chat ›</a></div></div></section>
 

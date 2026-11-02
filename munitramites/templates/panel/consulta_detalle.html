@@ -8,8 +8,8 @@
   {{ consulta.fecha|hora_local|date:"d/m/Y H:i" }}
 {% endblock %}
 {% block panel_acciones %}
-  <a class="boton" href="{% url 'consulta_editar' consulta.pk %}?origen=panel">Editar consulta</a>
-  <a class="boton boton--secundario" href="{% url 'panel_consultas' %}">← Volver al listado</a>
+  <a class="uv-btn" href="{% url 'consulta_editar' consulta.pk %}?origen=panel">Editar consulta</a>
+  <a class="uv-btn uv-btn--outline" href="{% url 'panel_consultas' %}">← Volver al listado</a>
 {% endblock %}
 
 {% block panel_contenido %}
@@ -43,7 +43,7 @@
 
     {% if consulta.respuesta %}
       <h3>Respuesta enviada</h3>
-      <div class="alerta alerta--ok">{{ consulta.respuesta|linebreaksbr }}</div>
+      <div class="uv-alerta uv-alerta--ok">{{ consulta.respuesta|linebreaksbr }}</div>
     {% endif %}
   </div>
 
@@ -63,7 +63,7 @@
         </div>
       {% endfor %}
 
-      <button class="boton boton--ancho" type="submit">
+      <button class="uv-btn uv-btn--ancho" type="submit">
         {% if consulta.respuesta %}Actualizar respuesta{% else %}Enviar respuesta{% endif %}
       </button>
 

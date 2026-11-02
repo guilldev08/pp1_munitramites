@@ -119,11 +119,13 @@
 .tr select,.tr .filtros input[type=text],.tr .filtros input[type=search]{min-width:170px;padding:10px 14px;background:var(--cd2);color:var(--tx);border:1px solid var(--ln);border-radius:10px;font:inherit;transition:border-color .2s,box-shadow .2s}
 .tr select:focus,.tr .filtros input:focus{outline:0;border-color:var(--az);box-shadow:0 0 0 3px rgba(77,151,230,.25)}
 .tr select option{background:var(--cd);color:var(--tx)}
-.tr .paginacion{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:36px 0 0}
+.tr .paginacion{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:36px 0 0;align-items:center}
 .tr .paginacion a,.tr .paginacion span{padding:8px 15px;background:var(--cd);border:1px solid var(--ln);border-radius:10px;transition:transform .2s,border-color .2s}
 .tr .paginacion a:hover{transform:translateY(-2px);border-color:var(--az)}
 .tr .paginacion .actual,.tr .paginacion .activo,.tr .paginacion [aria-current]{background:var(--az);border-color:var(--az);color:var(--bg);font-weight:700}
 .tr .paginacion .inactivo{background:var(--cd2);color:var(--mu)}
+/* Relleno "…" de la ventana: sin caja, solo marca que hay más páginas */
+.tr .paginacion .puntos{padding:8px 4px;background:none;border-color:transparent;color:var(--mu);letter-spacing:.1em;user-select:none;pointer-events:none}
 .tr .vacio{padding:50px 20px;text-align:center;color:var(--mu);border:1px dashed var(--ln);border-radius:14px}
 .tr .tarjeta:nth-child(n+5){animation-delay:.3s}
 @media(max-width:600px){.tr .barra-chat{border-radius:18px;flex-direction:column}.tr .barra-chat .boton{width:100%}}

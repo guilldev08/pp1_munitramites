@@ -403,6 +403,7 @@ main { min-height: 62vh; }
   border-radius: 10px;
 }
 .paginacion a:hover { border-color: var(--m-azul); transform: translateY(-2px); }
+.paginacion .puntos { padding: 7px 3px; background: none; border-color: transparent; color: var(--s-mu, #8b93a5); letter-spacing: .1em; user-select: none; pointer-events: none; }
 
 /* --- Chat (modal y página) --------------------------------------------- */
 .chat {

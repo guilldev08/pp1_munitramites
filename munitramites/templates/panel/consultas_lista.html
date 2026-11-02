@@ -1,5 +1,5 @@
 {% extends "panel/base_panel.html" %}
-{% load hora %}
+{% load hora estaticos paginacion %}
 
 {% block panel_titulo %}Centro de Consultas{% endblock %}
 {% block panel_bajada %}Consultas, sugerencias y reclamos que mandan los ciudadanos.{% endblock %}
@@ -14,7 +14,7 @@
 
 {% if pagina.object_list %}
   <div class="tabla-wrap">
-    <table class="tabla">
+    <table class="uv-tabla tabla">
       <thead>
         <tr>
           <th>#</th>
@@ -36,7 +36,7 @@
               <strong><a href="{% url 'panel_consulta' c.pk %}">{{ c.asunto }}</a></strong>
               <div class="texto-suave texto-chico">{{ c.contenido|truncatewords:16 }}</div>
               {% if c.respuesta %}
-                <div class="alerta alerta--ok" style="margin-top:8px; margin-bottom:0">
+                <div class="uv-alerta uv-alerta--ok" style="margin-top:8px; margin-bottom:0; font-size:.85rem">
                   <strong>Respuesta:</strong> {{ c.respuesta|truncatewords:20 }}
                 </div>
               {% endif %}
@@ -55,7 +55,7 @@
                 </div>
               {% else %}—{% endif %}
             </td>
-            <td><span class="etiqueta etiqueta--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
+            <td><span class="uv-badge uv-badge--{{ c.estado }}">{{ c.get_estado_display }}</span></td>
             <td class="texto-chico">
               {{ c.fecha|hora_local|date:"d/m/Y H:i" }}
               {% if c.fecha_edicion %}
@@ -66,13 +66,13 @@
             </td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap">
-                <a class="boton boton--secundario boton--chico"
+                <a class="uv-btn uv-btn--outline uv-btn--chico"
                    href="{% url 'consulta_editar' c.pk %}?origen=panel">Editar</a>
                 <form method="post" action="{% url 'consulta_eliminar' c.pk %}"
                       onsubmit="return confirm('¿Eliminar la consulta #{{ c.pk }}? Esta acción no se puede deshacer.')">
                   {% csrf_token %}
                   <input type="hidden" name="origen" value="panel">
-                  <button class="boton boton--peligro boton--chico" type="submit">
+                  <button class="uv-btn uv-btn--peligro uv-btn--chico" type="submit">
                     Eliminar
                   </button>
                 </form>
@@ -90,8 +90,9 @@
         <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">← Anterior</a>
       {% else %}<span class="inactivo">← Anterior</span>{% endif %}
 
-      {% for n in pagina.paginator.page_range %}
-        {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+      {% for n in pagina|paginas_ventana %}
+        {% if n == '…' %}<span class="puntos" aria-hidden="true">…</span>
+        {% elif n == pagina.number %}<span class="actual">{{ n }}</span>
         {% else %}<a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ n }}">{{ n }}</a>{% endif %}
       {% endfor %}
 
@@ -103,7 +104,7 @@
 
 {% else %}
   <div class="vacio">
-    <div class="vacio__icono">💬</div>
+    <div class="vacio__icono"><img class="ic" src="{% estatico 'img/iconos/message-circle.svg' %}" alt=""></div>
     <h3>No hay consultas{% if estado %} con ese estado{% endif %}</h3>
     <p>Cuando un ciudadano mande una consulta, aparece acá para que la respondas.</p>
   </div>

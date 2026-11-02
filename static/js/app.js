@@ -32,6 +32,18 @@
     return m ? m[1] : '';
   }
 
+  /* Icono SVG local (set Lucide). La ruta la pasa base.html en MT.rutaIconos
+     para no hardcodear STATIC_URL acá. `alt=""` porque los iconos van siempre
+     junto a texto o en un botón con aria-label. */
+  function crearIcono(nombre, clase) {
+    var img = document.createElement('img');
+    img.className = 'ic' + (clase ? ' ' + clase : '');
+    img.src = (window.MT && window.MT.rutaIconos ? window.MT.rutaIconos : '/static/img/iconos/') + nombre + '.svg';
+    img.alt = '';
+    img.setAttribute('aria-hidden', 'true');
+    return img;
+  }
+
   /* --------------------------------------------------------------------
      Ver / ocultar la contraseña (login, registro y cualquier form de
      clave: cambio y recuperación, alta en el panel…). El botón ya viene
@@ -349,7 +361,7 @@
 
     var icono = document.createElement('div');
     icono.className = 'chat__vacio-icono';
-    icono.textContent = '👋';
+    icono.appendChild(generarIcono('hand'));
 
     var p1 = document.createElement('p');
     p1.className = 'mb-0';
@@ -751,7 +763,8 @@
   function pintarTema() {
     if (!botonTema) return;
     var oscuro = temaActual() === 'oscuro';
-    botonTema.textContent = oscuro ? '☀️' : '🌙';
+    botonTema.textContent = '';
+    botonTema.appendChild(crearIcono(oscuro ? 'sun' : 'moon'));
     botonTema.setAttribute('aria-pressed', oscuro ? 'true' : 'false');
     botonTema.setAttribute('aria-label',
       oscuro ? 'Cambiar al tema claro' : 'Cambiar al tema oscuro');

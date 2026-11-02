@@ -43,7 +43,7 @@
 
         {% if consulta.respuesta %}
           <h3>Respuesta del equipo</h3>
-          <div class="alerta alerta--ok">
+          <div class="uv-alerta uv-alerta--ok">
             {{ consulta.respuesta|linebreaksbr }}
           </div>
         {% else %}
@@ -69,7 +69,7 @@
                         placeholder="Escribí la respuesta para el ciudadano…"
                         minlength="5">{{ consulta.respuesta }}</textarea>
             </div>
-            <button class="boton boton--ancho" type="submit">
+            <button class="uv-btn uv-btn--ancho" type="submit">
               {% if consulta.respuesta %}Actualizar respuesta{% else %}Enviar respuesta{% endif %}
             </button>
           </form>
@@ -83,7 +83,7 @@
           </div>
         {% endif %}
 
-        <a class="boton boton--secundario boton--ancho" style="margin-bottom:10px"
+        <a class="uv-btn uv-btn--secundario boton--ancho" style="margin-bottom:10px"
            href="{% url 'consulta_editar' consulta.pk %}">
           Editar consulta
         </a>
@@ -91,7 +91,7 @@
         <form method="post" action="{% url 'consulta_eliminar' consulta.pk %}"
               onsubmit="return confirm('¿Eliminar la consulta #{{ consulta.pk }}? Esta acción no se puede deshacer.')">
           {% csrf_token %}
-          <button class="boton boton--peligro boton--ancho" type="submit">
+          <button class="uv-btn uv-btn--peligro uv-btn--ancho" type="submit">
             Eliminar consulta
           </button>
         </form>

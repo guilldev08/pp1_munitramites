@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load hora %}
 
 {% block titulo %}Nueva consulta{% endblock %}
 
@@ -17,43 +18,43 @@
       </div>
     </div>
 
-    <form class="formulario formulario--medio" method="post" novalidate>
+    <form class="uv-form formulario formulario--medio" method="post" novalidate>
       {% csrf_token %}
 
       {% if form.non_field_errors %}
-        <div class="alerta alerta--error">
+        <div class="uv-alerta uv-alerta--error">
           {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
         </div>
       {% endif %}
 
-      <div class="campo">
+      <div class="campo uv-campo">
         <label for="{{ form.tipo.id_for_label }}">Tipo de mensaje</label>
-        {{ form.tipo }}
+        {{ form.tipo|add_class:"uv-input" }}
         {% for e in form.tipo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
       </div>
 
-      <div class="campo">
+      <div class="campo uv-campo">
         <label for="{{ form.tramite.id_for_label }}">Trámite relacionado <span class="texto-suave">(opcional)</span></label>
-        {{ form.tramite }}
+        {{ form.tramite|add_class:"uv-input" }}
         {% for e in form.tramite.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
       </div>
 
-      <div class="campo">
+      <div class="campo uv-campo">
         <label for="{{ form.asunto.id_for_label }}">Asunto</label>
-        {{ form.asunto }}
+        {{ form.asunto|add_class:"uv-input" }}
         {% for e in form.asunto.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
       </div>
 
-      <div class="campo">
+      <div class="campo uv-campo">
         <label for="{{ form.contenido.id_for_label }}">Consulta</label>
-        {{ form.contenido }}
+        {{ form.contenido|add_class:"uv-input" }}
         <span class="ayuda">Mínimo 10 caracteres. Cuantos más detalles, mejor podremos ayudarte.</span>
         {% for e in form.contenido.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
       </div>
 
       <div class="acciones">
-        <button class="boton" type="submit">Enviar consulta</button>
-        <a class="boton boton--secundario" href="{% url 'consultas' %}">Cancelar</a>
+        <button class="uv-btn" type="submit">Enviar consulta</button>
+        <a class="uv-btn uv-btn--outline" href="{% url 'consultas' %}">Cancelar</a>
       </div>
     </form>
   </div>

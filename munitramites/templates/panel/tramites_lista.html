@@ -1,5 +1,5 @@
 {% extends "panel/base_panel.html" %}
-{% load panel_tags %}
+{% load panel_tags estaticos paginacion %}
 
 {% block panel_titulo %}Centro de Trámites{% endblock %}
 {% block panel_bajada %}Alta, edición y publicación de los trámites del sitio.{% endblock %}
@@ -107,7 +107,7 @@
                   <span class="etiqueta etiqueta--inactivo">Inactivo</span>
                 {% endif %}
                 {% if t.destacado %}
-                  <span class="etiqueta etiqueta--destacado">★ Destacado</span>
+                  <span class="etiqueta etiqueta--destacado"><img class="ic" src="{% estatico 'img/iconos/star.svg' %}" alt=""> Destacado</span>
                 {% endif %}
               </span>
             </div>
@@ -132,7 +132,7 @@
             <button class="boton boton--secundario boton--chico" type="submit"
                     name="fila_{{ t.pk }}"
                     value="{% if t.destacado %}quitar_destacado{% else %}destacar{% endif %}">
-              {% if t.destacado %}Quitar ★{% else %}Destacar{% endif %}
+              {% if t.destacado %}Quitar <img class="ic" src="{% estatico 'img/iconos/star.svg' %}" alt="">{% else %}Destacar{% endif %}
             </button>
           </div>
         </li>
@@ -150,8 +150,9 @@
           <a href="{% qs pagina=pagina.previous_page_number %}">← Anterior</a>
         {% else %}<span class="inactivo">← Anterior</span>{% endif %}
 
-        {% for n in pagina.paginator.page_range %}
-          {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+        {% for n in pagina|paginas_ventana %}
+          {% if n == '…' %}<span class="puntos" aria-hidden="true">…</span>
+          {% elif n == pagina.number %}<span class="actual">{{ n }}</span>
           {% else %}<a href="{% qs pagina=n %}">{{ n }}</a>{% endif %}
         {% endfor %}
 
@@ -163,7 +164,7 @@
   </form>
 {% else %}
   <div class="vacio">
-    <div class="vacio__icono">🗂️</div>
+    <div class="vacio__icono"><img class="ic" src="{% estatico 'img/iconos/folders.svg' %}" alt=""></div>
     <h3>{% if hay_filtros %}No hay trámites que coincidan{% else %}No hay trámites{% endif %}</h3>
     <p>
       {% if hay_filtros %}

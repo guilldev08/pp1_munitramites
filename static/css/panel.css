@@ -113,6 +113,7 @@
 .pn .paginacion a,.pn .paginacion span{padding:4px 11px;border-radius:8px;border:1px solid var(--s-ln);background:var(--s-cd);font-size:.84rem;transition:transform .2s,border-color .2s}
 .pn .paginacion a:hover{transform:translateY(-2px);border-color:var(--m-azul)}
 .pn .paginacion .actual{background:var(--azul);border-color:var(--azul);color:#fff;font-weight:700}.pn .paginacion .inactivo{opacity:.45}
+.pn .paginacion .puntos{padding:4px 2px;background:none;border-color:transparent;color:var(--s-mu,#8b93a5);letter-spacing:.1em;user-select:none;pointer-events:none;opacity:.8}
 .pn .vacio{padding:28px 16px;text-align:center;background:var(--s-cd);border:1px dashed var(--s-ln);border-radius:18px}
 .pn .inline-fila{background:var(--s-cd2);border:1px solid var(--s-ln);border-radius:12px}
 

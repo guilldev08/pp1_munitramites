@@ -1,5 +1,5 @@
 {% extends "panel/base_panel.html" %}
-{% load hora %}
+{% load hora estaticos %}
 
 {% block panel_titulo %}Resumen general{% endblock %}
 {% block panel_bajada %}
@@ -25,7 +25,7 @@
   </div>
 
   <a class="pn-stat" style="--c: var(--m-azul)" href="{% url 'panel_tramites' %}">
-    <span class="pn-stat__icono">🗂️</span>
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/folders.svg' %}')" aria-hidden="true"></span></span>
     <span class="pn-stat__rotulo">Trámites publicados</span>
     <strong class="pn-stat__valor">{{ tramites_activos }}</strong>
     <span class="pn-stat__pie">de {{ tramites_total }} cargados · {{ destacados }} destacado{{ destacados|pluralize }}</span>
@@ -33,7 +33,7 @@
   </a>
 
   <a class="pn-stat" style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}">
-    <span class="pn-stat__icono">💬</span>
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/message-circle.svg' %}')" aria-hidden="true"></span></span>
     <span class="pn-stat__rotulo">Consultas sin responder</span>
     <strong class="pn-stat__valor">{{ pendientes }}</strong>
     <span class="pn-stat__pie">de {{ consultas_total }} recibidas</span>
@@ -42,7 +42,7 @@
 
   {% if gestiona_cuentas %}
   <a class="pn-stat" style="--c: var(--m-verde)" href="{% url 'panel_usuarios' %}">
-    <span class="pn-stat__icono">👥</span>
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/users.svg' %}')" aria-hidden="true"></span></span>
     <span class="pn-stat__rotulo">Usuarios</span>
     <strong class="pn-stat__valor">{{ usuarios }}</strong>
     <span class="pn-stat__pie">cuentas activas</span>
@@ -50,7 +50,7 @@
   {% endif %}
 
   <a class="pn-stat" style="--c: var(--m-azul)" href="{% url 'panel_temas' %}">
-    <span class="pn-stat__icono">🏷️</span>
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/tag.svg' %}')" aria-hidden="true"></span></span>
     <span class="pn-stat__rotulo">Temas</span>
     <strong class="pn-stat__valor">{{ temas }}</strong>
     <span class="pn-stat__pie">temas cargados</span>

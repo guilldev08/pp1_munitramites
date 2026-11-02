@@ -21,18 +21,18 @@
       <p class="pn-lateral__rotulo">Panel</p>
       <nav class="pn-menu" aria-label="Secciones del panel">
         <a class="pn-menu__item{% if request.resolver_match.url_name == 'panel' %} activo{% endif %}"
-           style="--c: var(--m-azul)" href="{% url 'panel' %}"><span class="pn-menu__icono">📊</span>Resumen</a>
+           style="--c: var(--m-azul)" href="{% url 'panel' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/chart-column.svg' %}')" aria-hidden="true"></span></span>Resumen</a>
         <a class="pn-menu__item{% if 'panel_tramite' in request.resolver_match.url_name %} activo{% endif %}"
-           style="--c: var(--m-verde)" href="{% url 'panel_tramites' %}"><span class="pn-menu__icono">🗂️</span>Centro de Trámites</a>
+           style="--c: var(--m-verde)" href="{% url 'panel_tramites' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/folders.svg' %}')" aria-hidden="true"></span></span>Centro de Trámites</a>
         <a class="pn-menu__item{% if 'panel_consulta' in request.resolver_match.url_name %} activo{% endif %}"
-           style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}"><span class="pn-menu__icono">💬</span>Centro de Consultas</a>
+           style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/message-circle.svg' %}')" aria-hidden="true"></span></span>Centro de Consultas</a>
         {# Usuarios es para el rol administrador (y el superusuario) #}
         {% if gestiona_cuentas %}
         <a class="pn-menu__item{% if 'panel_usuario' in request.resolver_match.url_name %} activo{% endif %}"
-           style="--c: var(--m-azul)" href="{% url 'panel_usuarios' %}"><span class="pn-menu__icono">👥</span>Usuarios</a>
+           style="--c: var(--m-azul)" href="{% url 'panel_usuarios' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/users.svg' %}')" aria-hidden="true"></span></span>Usuarios</a>
         {% endif %}
         <a class="pn-menu__item{% if request.resolver_match.url_name == 'panel_temas' %} activo{% endif %}"
-           style="--c: var(--m-verde)" href="{% url 'panel_temas' %}"><span class="pn-menu__icono">🏷️</span>Temas</a>
+           style="--c: var(--m-verde)" href="{% url 'panel_temas' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/tag.svg' %}')" aria-hidden="true"></span></span>Temas</a>
       </nav>
 
       <a class="boton boton--ancho pn-lateral__nuevo" href="{% url 'panel_tramite_nuevo' %}">+ Nuevo trámite</a>

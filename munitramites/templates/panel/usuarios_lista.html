@@ -1,4 +1,5 @@
 {% extends "panel/base_panel.html" %}
+{% load estaticos paginacion %}
 
 {% block panel_titulo %}Usuarios{% endblock %}
 {% block panel_bajada %}Cuentas del sitio y quiénes entran al panel como administradores.{% endblock %}
@@ -79,8 +80,9 @@
         <a href="?{% if q %}q={{ q }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">← Anterior</a>
       {% else %}<span class="inactivo">← Anterior</span>{% endif %}
 
-      {% for n in pagina.paginator.page_range %}
-        {% if n == pagina.number %}<span class="actual">{{ n }}</span>
+      {% for n in pagina|paginas_ventana %}
+        {% if n == '…' %}<span class="puntos" aria-hidden="true">…</span>
+        {% elif n == pagina.number %}<span class="actual">{{ n }}</span>
         {% else %}<a href="?{% if q %}q={{ q }}&amp;{% endif %}pagina={{ n }}">{{ n }}</a>{% endif %}
       {% endfor %}
 
@@ -92,7 +94,7 @@
 
 {% else %}
   <div class="vacio">
-    <div class="vacio__icono">👥</div>
+    <div class="vacio__icono"><img class="ic" src="{% estatico 'img/iconos/users.svg' %}" alt=""></div>
     <h3>No hay usuarios{% if q %} que coincidan con «{{ q }}»{% endif %}</h3>
     <p>Creá cuentas nuevas desde el botón «Nuevo usuario».</p>
     <a class="boton" href="{% url 'panel_usuario_nuevo' %}">Nuevo usuario</a>

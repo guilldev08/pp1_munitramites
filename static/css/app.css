@@ -514,6 +514,8 @@ img { max-width: 100%; }
 }
 .paginacion .actual { background: var(--azul); color: #fff; border-color: var(--azul); font-weight: 700; }
 .paginacion .inactivo { color: var(--gris-400); background: var(--gris-50); }
+/* Relleno "…" de la ventana: sin caja, solo marca que hay más páginas */
+.paginacion .puntos { padding: 7px 3px; background: none; border-color: transparent; color: var(--gris-400); letter-spacing: .1em; user-select: none; pointer-events: none; }
 
 /* --- Chatbot ------------------------------------------------------------ */
 .chat__historial {
@@ -1102,7 +1104,7 @@ html.revelar-activo .revelar.visible { opacity: 1; transform: none; }
 /* =========================================================================
    TEMA OSCURO
    =========================================================================
-   Se activa con <html data-tema="oscuro">: lo pone el botón 🌙 de la barra
+   Se activa con <html data-tema="oscuro">: lo pone el botón de tema de la barra
    (la preferencia queda en localStorage) y, si el usuario nunca eligió, se
    toma la del sistema (prefers-color-scheme) en base.html.
 

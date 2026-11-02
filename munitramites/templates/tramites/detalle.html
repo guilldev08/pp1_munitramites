@@ -21,9 +21,9 @@
       <div class="titulo-seccion">
         <div>
           <div class="etiquetas mb-1">
-            <span class="etiqueta etiqueta--tema">{{ tramite.tema }}</span>
-            <span class="etiqueta etiqueta--{{ tramite.modalidad }}">{{ tramite.get_modalidad_display }}</span>
-            {% if tramite.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
+            <span class="etiqueta uv-badge uv-badge--azul etiqueta--tema">{{ tramite.tema }}</span>
+            <span class="etiqueta uv-badge etiqueta--{{ tramite.modalidad }}">{{ tramite.get_modalidad_display }}</span>
+            {% if tramite.destacado %}<span class="etiqueta uv-badge uv-badge--rojo etiqueta--destacado">Destacado</span>{% endif %}
           </div>
           <h2>{{ tramite.titulo }}</h2>
           <p>{{ tramite.organismo.nombre }} · {{ tramite.municipio.nombre }}</p>
@@ -66,7 +66,7 @@
               </div>
             {% endfor %}
           {% else %}
-            <p class="texto-suave mb-1">📍 {{ tramite.organismo.direccion }} · {{ tramite.municipio.nombre }}</p>
+            <p class="texto-suave mb-1"><img class="ic" src="{% estatico 'img/iconos/map-pin.svg' %}" alt=""> {{ tramite.organismo.direccion }} · {{ tramite.municipio.nombre }}</p>
             <p class="texto-suave texto-chico mb-0">Todavía no se cargaron sedes adicionales para este trámite.</p>
           {% endif %}
         </div>
@@ -94,7 +94,7 @@
                   <span class="archivo__tipo">{{ a.get_tipo_display }}</span>
                   <div class="archivo__datos">
                     <a class="archivo__titulo" href="{{ a.archivo.url }}" download>
-                      {{ a.titulo }} <span aria-hidden="true">↓</span>
+                      {{ a.titulo }} <span aria-hidden="true"><img class="ic" src="{% estatico 'img/iconos/download.svg' %}" alt=""></span>
                     </a>
                     {% if a.descripcion %}
                       <span class="texto-suave texto-chico">{{ a.descripcion }}</span>
@@ -112,18 +112,18 @@
             <h3 class="mt-0">Enlaces oficiales</h3>
             <div class="acciones">
               {% for e in tramite.enlaces.all %}
-                <a class="boton" href="{{ e.url }}" target="_blank" rel="noopener">
-                  {{ e.nombre }} ↗
+                <a class="uv-btn" href="{{ e.url }}" target="_blank" rel="noopener">
+                  {{ e.nombre }} <img class="ic ic-flecha" src="{% estatico 'img/iconos/external-link.svg' %}" alt="">
                 </a>
               {% empty %}
                 {% if tramite.enlace_turnos %}
-                  <a class="boton" href="{{ tramite.enlace_turnos }}" target="_blank" rel="noopener">
-                    Pedir turno ↗
+                  <a class="uv-btn uv-btn--verde" href="{{ tramite.enlace_turnos }}" target="_blank" rel="noopener">
+                    Pedir turno <img class="ic ic-flecha" src="{% estatico 'img/iconos/external-link.svg' %}" alt="">
                   </a>
                 {% endif %}
                 {% if tramite.enlace_oficial %}
-                  <a class="boton boton--secundario" href="{{ tramite.enlace_oficial }}" target="_blank" rel="noopener">
-                    Sitio del organismo ↗
+                  <a class="uv-btn uv-btn--outline" href="{{ tramite.enlace_oficial }}" target="_blank" rel="noopener">
+                    Sitio del organismo <img class="ic ic-flecha" src="{% estatico 'img/iconos/external-link.svg' %}" alt="">
                   </a>
                 {% endif %}
               {% endfor %}
@@ -149,8 +149,8 @@
         <div class="panel">
           <h3 class="mt-0">Organismo responsable</h3>
           <p class="mb-1"><strong>{{ tramite.organismo.nombre }}</strong></p>
-          <p class="texto-suave texto-chico mb-2">📍 {{ tramite.organismo.direccion }}</p>
-          <a class="boton boton--secundario boton--ancho" href="{% url 'consulta_nueva' %}?tramite={{ tramite.pk }}">
+          <p class="texto-suave texto-chico mb-2"><img class="ic" src="{% estatico 'img/iconos/map-pin.svg' %}" alt=""> {{ tramite.organismo.direccion }}</p>
+          <a class="uv-btn uv-btn--outline uv-btn--ancho" href="{% url 'consulta_nueva' %}?tramite={{ tramite.pk }}">
             Hacer una consulta sobre este trámite
           </a>
         </div>
@@ -158,7 +158,7 @@
         <div class="panel panel--ayuda">
           <h3 class="mt-0">¿Tenés dudas?</h3>
           <p class="texto-suave texto-chico">El asistente responde con los requisitos reales y cita la fuente.</p>
-          <a class="boton boton--ancho" href="{% url 'tramites' %}" data-abrir="modal-chat">Preguntale al asistente</a>
+          <a class="uv-btn uv-btn--outline uv-btn--ancho" href="{% url 'tramites' %}" data-abrir="modal-chat">Preguntale al asistente</a>
         </div>
       </aside>
     </div>
@@ -171,12 +171,12 @@
         {% for t in relacionados %}
           <a class="tarjeta" href="{% url 'tramite_detalle' t.pk %}">
             <div class="etiquetas">
-              <span class="etiqueta etiqueta--tema">{{ t.tema }}</span>
-              <span class="etiqueta etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
+              <span class="etiqueta uv-badge uv-badge--azul etiqueta--tema">{{ t.tema }}</span>
+              <span class="etiqueta uv-badge etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
             </div>
             <h3>{{ t.titulo }}</h3>
             <div class="tarjeta__meta">
-              <span>📍 {{ t.municipio.nombre }}</span>
+              <span><img class="ic" src="{% estatico 'img/iconos/map-pin.svg' %}" alt=""> {{ t.municipio.nombre }}</span>
             </div>
           </a>
         {% endfor %}

@@ -18,9 +18,6 @@
 .lp-hero .lp-btn{color:#fff;border-color:#fff;margin:4px}
 .lp-hero .lp-btn--fill{background:var(--lp-verde);border-color:var(--lp-verde)}
 .lp-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,#0b5cab 33%,#1f9d55 33% 66%,#d62f3a 66%)}
-.lp-tabs{display:flex;justify-content:center;gap:28px;padding:16px 20px 0;border-bottom:1px solid var(--lp-line);font-size:14px;font-weight:600;overflow-x:auto}
-.lp-tabs a{padding-bottom:8px;color:var(--lp-mut);white-space:nowrap}
-.lp-tabs a:first-child{color:var(--lp-azul);border-bottom:3px solid var(--lp-azul)}
 .lp-sec{padding:64px 0}.lp-alt{background:var(--lp-bg2)}
 .lp h2{font-size:clamp(26px,3.6vw,36px);font-weight:300;text-align:center;margin:0}
 .lp-sub{text-align:center;color:var(--lp-mut);margin:6px 0 0}

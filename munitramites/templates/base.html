@@ -1,4 +1,4 @@
-{% load static estaticos %}<!DOCTYPE html>
+{% load static estaticos hora %}<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -7,6 +7,7 @@
   <meta name="description" content="Información de trámites públicos de la provincia de Misiones.">
   <link rel="stylesheet" href="{% estatico 'css/app.css' %}">
   <link rel="stylesheet" href="{% estatico 'css/sitio.css' %}">
+  <link rel="stylesheet" href="{% estatico 'css/uiverse.css' %}">
   <script>
     /* Tema: se aplica ANTES de pintar para que no destelle el otro tema.
        Manda la preferencia guardada; si el usuario nunca eligió, la del
@@ -54,24 +55,24 @@
           {% endif %}
           <a href="{% url 'perfil' %}"
              {% if request.resolver_match.url_name == 'perfil' %}class="activo"{% endif %}>Mi perfil</a>
-          <span class="nav__usuario">👤 {{ user.username }}</span>
+          <span class="nav__usuario"><img class="ic" src="{% estatico 'img/iconos/user.svg' %}" alt=""> {{ user.username }}</span>
           <form method="post" action="{% url 'logout' %}" style="display:inline">
             {% csrf_token %}
-            <button class="boton boton--secundario boton--chico" type="submit">Salir</button>
+            <button class="uv-btn uv-btn--peligro uv-btn--chico" type="submit">Salir</button>
           </form>
         </span>
       {% else %}
         {# Sin JS estos enlaces llevan a /login/ y /registro/, que abren el modal solos #}
         <span class="nav__sesion">
           <a href="{% url 'registro' %}" data-abrir="modal-auth" data-tab="registro">Crear cuenta</a>
-          <a class="boton boton--chico" href="{% url 'login' %}" data-abrir="modal-auth" data-tab="login">Ingresar</a>
+          <a class="uv-btn uv-btn--chico" href="{% url 'login' %}" data-abrir="modal-auth" data-tab="login">Ingresar</a>
         </span>
       {% endif %}
 
       {# Interruptor de tema: el icono lo pone app.js según data-tema #}
       <button class="tema-boton" type="button" id="cambiar-tema"
               aria-pressed="false" aria-label="Cambiar al tema oscuro"
-              title="Tema oscuro">🌙</button>
+              title="Tema oscuro"><img class="ic" src="{% estatico 'img/iconos/moon.svg' %}" alt=""></button>
     </nav>
   </div>
 </header>
@@ -80,7 +81,7 @@
 {% if messages %}
   <div class="contenedor mensajes" style="margin-top:18px">
     {% for message in messages %}
-      <div class="alerta alerta--{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}ok{% else %}info{% endif %}">
+      <div class="uv-alerta uv-alerta--{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}ok{% else %}info{% endif %}">
         {{ message }}
       </div>
     {% endfor %}
@@ -94,17 +95,8 @@
 <footer class="footer">
   <div class="contenedor footer__fila">
     <div>
-      <strong>Munitramites</strong> — Información de trámites públicos de Misiones.<br>
-      Desarrollado con Django + Firebird.
-    </div>
-    <div>
-      <a href="{% url 'tramites' %}">Trámites</a> ·
-      <a href="{% url 'soporte' %}">Soporte</a> ·
-      <a href="{% url 'tramites' %}" data-abrir="modal-chat">Chatbot</a> ·
-      <a href="{% url 'api_tramites' %}">API</a>
-      {% if user.is_staff or user.is_superuser %}
-        · <a href="{% url 'panel' %}">Administración</a>
-      {% endif %}
+      <strong>Munitramites</strong> — Proyecto de Practica Profesionalizante 1 de Olmedo y Zarza.<br>
+      Motor de base de datos: Firebird
     </div>
   </div>
 </footer>
@@ -121,7 +113,7 @@
      {% if not form.password1 and not form.username %}hidden{% endif %}
      role="dialog" aria-modal="true" aria-labelledby="modal-auth-titulo">
   <div class="modal__caja modal__caja--auth" data-modal-caja>
-    <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button>
+    <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar"><img class="ic" src="{% estatico 'img/iconos/x.svg' %}" alt=""></button>
 
     <div class="modal__pestanas" role="tablist">
       <button type="button" class="modal__pestana{% if not form.password1 %} activo{% endif %}"
@@ -152,20 +144,20 @@
           </div>
         {% endif %}
 
-        <div class="campo">
+        <div class="campo uv-campo">
           <label for="id_modal_username">Usuario</label>
           <input type="text" id="id_modal_username" name="username"
                  value="{{ form.username.value|default:'' }}"
-                 autocomplete="username" required autofocus>
+                 autocomplete="username" required autofocus class="uv-input">
           {% for e in form.username.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
         </div>
 
-        <div class="campo">
+        <div class="campo uv-campo">
           <label for="id_modal_password">Contraseña</label>
           <span class="campo__clave">
             <input type="password" id="id_modal_password" name="password"
-                   autocomplete="current-password" required>
-            <button type="button" class="campo__ver" data-ver-clave
+                   autocomplete="current-password" required class="uv-input">
+            <button type="button" class="campo__ver uv-btn uv-btn--ghost uv-btn--chico" data-ver-clave
                     aria-pressed="false" aria-label="Mostrar la contraseña">Mostrar</button>
           </span>
           {% for e in form.password.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
@@ -177,7 +169,7 @@
 
         <input type="hidden" name="next" id="id_modal_next" value="{{ next|default:'' }}">
 
-        <button class="boton boton--ancho" type="submit">Entrar</button>
+        <button class="uv-btn uv-btn--ancho" type="submit">Entrar</button>
       </form>
 
       <p class="centrado texto-chico mt-2 mb-0">
@@ -202,16 +194,16 @@
         {% endif %}
 
         {% for campo in form_registro %}
-          <div class="campo">
+          <div class="campo uv-campo">
             <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
             {% if campo.field.widget.input_type == 'password' %}
               <span class="campo__clave">
                 {{ campo }}
-                <button type="button" class="campo__ver" data-ver-clave
+                <button type="button" class="campo__ver uv-btn uv-btn--ghost uv-btn--chico" data-ver-clave
                         aria-pressed="false" aria-label="Mostrar la contraseña">Mostrar</button>
               </span>
             {% else %}
-              {{ campo }}
+              {{ campo|add_class:"uv-input" }}
             {% endif %}
             {% if campo.help_text %}
               <span class="ayuda">{{ campo.help_text|safe }}</span>
@@ -222,7 +214,7 @@
           </div>
         {% endfor %}
 
-        <button class="boton boton--ancho" type="submit">Crear cuenta</button>
+        <button class="uv-btn uv-btn--ancho" type="submit">Crear cuenta</button>
       </form>
 
       <p class="centrado texto-chico mt-2 mb-0">
@@ -247,7 +239,7 @@
         <div class="chat-panel__cabecera">
           <strong class="chat-panel__titulo">Tus conversaciones</strong>
           <button class="chat-panel__cerrar" type="button" data-cerrar-panel
-                  aria-label="Cerrar conversaciones">✕</button>
+                  aria-label="Cerrar conversaciones"><img class="ic" src="{% estatico 'img/iconos/x.svg' %}" alt=""></button>
         </div>
         <button class="boton boton--ancho chat-panel__nuevo" type="button"
                 id="chat-nuevo-panel">+ Nuevo chat</button>
@@ -279,7 +271,7 @@
         {% if user.is_authenticated %}
           <button class="boton boton--secundario boton--chico" type="button" id="chat-nuevo">+ Nuevo</button>
         {% endif %}
-        <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar">✕</button>
+        <button class="modal__cerrar" type="button" data-cerrar aria-label="Cerrar"><img class="ic" src="{% estatico 'img/iconos/x.svg' %}" alt=""></button>
       </div>
     </div>
 
@@ -299,8 +291,10 @@
   </div>
 </div>
 
-{# Boton flotante: reabre el chat desde cualquier pagina #}
-<button class="fab" type="button" data-abrir="modal-chat" aria-label="Abrir el asistente">💬</button>
+{# Boton flotante del chat. La landing lo vacía con {% block fab %}{% endblock %}. #}
+{% block fab %}
+<button class="fab" type="button" data-abrir="modal-chat" aria-label="Abrir el asistente"><img class="ic" src="{% estatico 'img/iconos/message-circle.svg' %}" alt=""></button>
+{% endblock %}
 
 <script>
   window.MT = {
@@ -308,7 +302,11 @@
     buscadorApi: "{% url 'buscador_api' %}",
     urlLogin: "{% url 'login' %}",
     urlRegistro: "{% url 'registro' %}",
-    sesionIniciada: {% if user.is_authenticated %}true{% else %}false{% endif %},
+    rutaIconos: "{% estatico 'img/iconos/' %}",
+    /* El valor va entre comillas para que este bloque siga siendo JS
+       válido en el editor (VS Code parsea este <script> como JavaScript):
+       yesno emite "true"/"false" y la comparación devuelve un booleano. */
+    sesionIniciada: "{{ user.is_authenticated|yesno:'true,false' }}" === "true",
     usuarioId: "{{ user.pk|default:'' }}"
   };
 </script>

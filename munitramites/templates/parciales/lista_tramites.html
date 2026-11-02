@@ -7,29 +7,30 @@
    igual en las dos páginas.
    =========================================================================
 {% endcomment %}
+{% load hora estaticos paginacion %}
 
 {# --- Filtros (GET, se guardan en la URL) --- #}
 <form class="filtros" method="get">
-  <div class="campo">
+  <div class="campo uv-campo">
     <label for="{{ filtros.q.id_for_label }}">Buscar</label>
-    {{ filtros.q }}
+    {{ filtros.q|add_class:"uv-input" }}
   </div>
-  <div class="campo">
+  <div class="campo uv-campo">
     <label for="{{ filtros.tema.id_for_label }}">Tema</label>
-    {{ filtros.tema }}
+    {{ filtros.tema|add_class:"uv-input" }}
   </div>
-  <div class="campo">
+  <div class="campo uv-campo">
     <label for="{{ filtros.municipio.id_for_label }}">Municipio</label>
-    {{ filtros.municipio }}
+    {{ filtros.municipio|add_class:"uv-input" }}
   </div>
-  <div class="campo">
+  <div class="campo uv-campo">
     <label for="{{ filtros.modalidad.id_for_label }}">Modalidad</label>
-    {{ filtros.modalidad }}
+    {{ filtros.modalidad|add_class:"uv-input" }}
   </div>
   <div class="campo">
-    <button class="boton" type="submit">Filtrar</button>
+    <button class="uv-btn" type="submit">Filtrar</button>
     {% if hay_filtros %}
-      <a class="boton boton--secundario" href="?">Limpiar</a>
+      <a class="uv-btn uv-btn--outline" href="?">Limpiar</a>
     {% endif %}
   </div>
 </form>
@@ -38,7 +39,7 @@
 {% if filtros.q.value %}
   <section class="asistente-barra" id="respuesta-ia"
            data-consulta="{{ filtros.q.value }}" aria-live="polite">
-    <h2 class="asistente-barra__titulo">🤖 Respuesta del asistente</h2>
+    <h2 class="asistente-barra__titulo"><img class="ic" src="{% estatico 'img/iconos/bot.svg' %}" alt=""> Respuesta del asistente</h2>
     <div id="respuesta-ia-cuerpo">
       <p class="texto-suave mb-0">Consultando la base de conocimiento…</p>
       <noscript>
@@ -48,7 +49,7 @@
       </noscript>
     </div>
     <p class="asistente-barra__pie">
-      <a href="{% url 'tramites' %}" data-abrir="modal-chat"
+      <a class="uv-btn uv-btn--outline" href="{% url 'tramites' %}" data-abrir="modal-chat"
          data-chat-pregunta="{{ filtros.q.value }}">Seguir en el chat →</a>
     </p>
   </section>
@@ -60,15 +61,15 @@
     {% for t in pagina %}
       <a class="tarjeta" href="{% url 'tramite_detalle' t.pk %}">
         <div class="etiquetas">
-          <span class="etiqueta etiqueta--tema">{{ t.tema }}</span>
-          <span class="etiqueta etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
-          {% if t.destacado %}<span class="etiqueta etiqueta--destacado">Destacado</span>{% endif %}
+          <span class="etiqueta uv-badge uv-badge--azul etiqueta--tema">{{ t.tema }}</span>
+          <span class="etiqueta uv-badge etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
+          {% if t.destacado %}<span class="etiqueta uv-badge uv-badge--rojo etiqueta--destacado">Destacado</span>{% endif %}
         </div>
         <h3>{{ t.titulo }}</h3>
         <p>{{ t.descripcion|truncatewords:20 }}</p>
         <div class="tarjeta__meta">
-          <span>🏛 {{ t.organismo.nombre }}</span>
-          <span>📍 {{ t.municipio.nombre }}{% if t.direcciones.all %} · {{ t.direcciones.all|length }} sede{{ t.direcciones.all|length|pluralize }}{% endif %} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
+          <span><img class="ic" src="{% estatico 'img/iconos/landmark.svg' %}" alt=""> {{ t.organismo.nombre }}</span>
+          <span><img class="ic" src="{% estatico 'img/iconos/map-pin.svg' %}" alt=""> {{ t.municipio.nombre }}{% if t.direcciones.all %} · {{ t.direcciones.all|length }} sede{{ t.direcciones.all|length|pluralize }}{% endif %} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
         </div>
       </a>
     {% endfor %}
@@ -83,9 +84,11 @@
         <span class="inactivo">← Anterior</span>
       {% endif %}
 
-      {% for n in pagina.paginator.page_range %}
-        {% if n == pagina.number %}
-          <span class="actual">{{ n }}</span>
+      {% for n in pagina|paginas_ventana %}
+        {% if n == '…' %}
+          <span class="puntos" aria-hidden="true">…</span>
+        {% elif n == pagina.number %}
+          <span class="actual" aria-current="page">{{ n }}</span>
         {% else %}
           <a href="?{% if qs %}{{ qs }}&amp;{% endif %}pagina={{ n }}">{{ n }}</a>
         {% endif %}
@@ -101,9 +104,9 @@
 
 {% else %}
   <div class="vacio">
-    <div class="vacio__icono">🔍</div>
+    <div class="vacio__icono"><img class="ic" src="{% estatico 'img/iconos/search.svg' %}" alt=""></div>
     <h3>No encontramos trámites</h3>
     <p>Probá con otros términos o limpiá los filtros.</p>
-    <a class="boton" href="?">Ver todos</a>
+    <a class="uv-btn" href="?">Ver todos</a>
   </div>
 {% endif %}

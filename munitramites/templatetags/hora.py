@@ -34,3 +34,9 @@ def hora_local(value):
         value = timezone.make_aware(value, dt_timezone.utc)
 
     return timezone.localtime(value)
+
+
+@register.filter
+def add_class(value, css_class):
+    """Agrega una clase CSS a un widget de formulario."""
+    return value.as_widget(attrs={'class': css_class})

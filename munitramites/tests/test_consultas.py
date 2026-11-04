@@ -13,7 +13,9 @@ from django.urls import reverse
 from munitramites.models import Consulta
 from munitramites.views import PREFIJO_SOPORTE
 
-from .base import TestCase, administrador, ciudadano, tramite
+from .base import (
+    TestCase, administrador, administrativo, ciudadano, superusuario, tramite,
+)
 
 
 class EnviarConsultasTests(TestCase):
@@ -287,8 +289,22 @@ class EliminarConsultasTests(TestCase):
         self.assertIn(reverse('login'), r['Location'])
         self.assertTrue(Consulta.objects.filter(pk=self.consulta.pk).exists())
 
-    def test_el_admin_puede_borrar_y_vuelve_al_panel(self):
+    def test_el_admin_no_puede_borrar_la_consulta_de_otro(self):
+        """Editar/borrar consultas ajenas quedó reservado al superusuario."""
         self.client.force_login(administrador())
+
+        r = self.client.post(
+            reverse('consulta_eliminar', args=[self.consulta.pk]),
+            {'origen': 'panel'},
+        )
+
+        self.assertRedirects(
+            r, reverse('panel_consulta', args=[self.consulta.pk])
+        )
+        self.assertTrue(Consulta.objects.filter(pk=self.consulta.pk).exists())
+
+    def test_el_superusuario_puede_borrar_y_vuelve_al_panel(self):
+        self.client.force_login(superusuario())
 
         r = self.client.post(
             reverse('consulta_eliminar', args=[self.consulta.pk]),
@@ -393,7 +409,8 @@ class EditarConsultasTests(TestCase):
         self.consulta.refresh_from_db()
         self.assertIsNone(self.consulta.fecha_edicion)
 
-    def test_el_admin_edita_y_vuelve_al_panel(self):
+    def test_el_admin_no_puede_editar_la_consulta_de_otro(self):
+        """Solo el dueño o el superusuario editan el texto de una consulta."""
         self.client.force_login(administrador())
 
         r = self.client.post(
@@ -410,7 +427,27 @@ class EditarConsultasTests(TestCase):
             r, reverse('panel_consulta', args=[self.consulta.pk])
         )
         self.consulta.refresh_from_db()
-        self.assertEqual(self.consulta.asunto, 'Editada por el admin')
+        self.assertEqual(self.consulta.asunto, 'Consulta de Ana')
+        self.assertIsNone(self.consulta.fecha_edicion)
+
+    def test_el_superusuario_edita_y_vuelve_al_panel(self):
+        self.client.force_login(superusuario())
+
+        r = self.client.post(
+            self.url + '?origen=panel',
+            {
+                'tipo': 'consulta',
+                'tramite': '',
+                'asunto': 'Editada por el superusuario',
+                'contenido': 'Contenido revisado desde desarrollo.',
+            },
+        )
+
+        self.assertRedirects(
+            r, reverse('panel_consulta', args=[self.consulta.pk])
+        )
+        self.consulta.refresh_from_db()
+        self.assertEqual(self.consulta.asunto, 'Editada por el superusuario')
         self.assertIsNotNone(self.consulta.fecha_edicion)
 
     def test_sin_sesion_manda_al_login(self):
@@ -418,3 +455,65 @@ class EditarConsultasTests(TestCase):
 
         self.assertEqual(r.status_code, 302)
         self.assertIn(reverse('login'), r['Location'])
+
+
+class StaffSinConsultasTests(TestCase):
+    """El staff no envía consultas ni ve los accesos de ciudadano.
+
+    Su canal son las respuestas a las consultas que llegan (panel) y los
+    tickets internos del dashboard.
+    """
+
+    def test_el_administrativo_no_entra_al_alta_de_consultas(self):
+        self.client.force_login(administrativo())
+
+        r = self.client.get(reverse('consulta_nueva'))
+
+        self.assertRedirects(r, reverse('panel'))
+        self.assertFalse(Consulta.objects.exists())
+
+    def test_el_administrativo_no_crea_consultas_por_post(self):
+        self.client.force_login(administrativo())
+
+        self.client.post(reverse('consulta_nueva'), {
+            'tipo': 'consulta', 'tramite': '',
+            'asunto': 'Consulta del gestor',
+            'contenido': 'El gestor no debería enviar consultas.',
+        })
+
+        self.assertFalse(Consulta.objects.exists())
+
+    def test_el_administrador_tampoco_envia_consultas(self):
+        self.client.force_login(administrador())
+
+        r = self.client.get(reverse('consulta_nueva'))
+
+        self.assertRedirects(r, reverse('panel'))
+
+    def test_la_barra_del_staff_no_muestra_soporte_ni_mis_consultas(self):
+        self.client.force_login(administrativo())
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertNotContains(r, '>Soporte<')
+        self.assertNotContains(r, '>Mis consultas<')
+
+    def test_el_administrativo_no_usa_el_soporte_ciudadano(self):
+        self.client.force_login(administrativo())
+
+        r = self.client.get(reverse('soporte'))
+        self.assertRedirects(r, reverse('panel'))
+
+        self.client.post(reverse('soporte'), {
+            'asunto': 'Problema del sitio',
+            'mensaje': 'El gestor no debería enviar soporte ciudadano.',
+        })
+        self.assertFalse(Consulta.objects.exists())
+
+    def test_el_ciudadano_si_ve_los_accesos(self):
+        self.client.force_login(ciudadano())
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertContains(r, '>Soporte<')
+        self.assertContains(r, '>Mis consultas<')

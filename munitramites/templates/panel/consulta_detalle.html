@@ -8,7 +8,9 @@
   {{ consulta.fecha|hora_local|date:"d/m/Y H:i" }}
 {% endblock %}
 {% block panel_acciones %}
-  <a class="uv-btn" href="{% url 'consulta_editar' consulta.pk %}?origen=panel">Editar consulta</a>
+  {% if user.is_superuser or consulta.usuario_id == user.id %}
+    <a class="uv-btn" href="{% url 'consulta_editar' consulta.pk %}?origen=panel">Editar consulta</a>
+  {% endif %}
   <a class="uv-btn uv-btn--outline" href="{% url 'panel_consultas' %}">← Volver al listado</a>
 {% endblock %}
 

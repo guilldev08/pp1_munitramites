@@ -118,6 +118,10 @@ urlpatterns = [
     # /admin/ de Django queda reservado al superusuario (ver middleware.py):
     # el día a día se maneja acá, con vistas y plantillas propias.
     path('panel/', views.panel, name='panel'),
+    path(
+        'panel/dashboard/datos/', views.panel_dashboard_datos,
+        name='panel_dashboard_datos',
+    ),
     path('panel/tramites/', views.panel_tramites, name='panel_tramites'),
     path(
         'panel/tramites/nuevo/', views.panel_tramite_nuevo,
@@ -141,6 +145,17 @@ urlpatterns = [
     path(
         'panel/consultas/<int:pk>/', views.panel_consulta,
         name='panel_consulta',
+    ),
+    path(
+        'panel/tickets/', views.panel_tickets, name='panel_tickets'
+    ),
+    path(
+        'panel/tickets/<int:pk>/', views.panel_ticket_detalle,
+        name='panel_ticket_detalle',
+    ),
+    path(
+        'panel/tickets/<int:pk>/eliminar/', views.panel_ticket_eliminar,
+        name='panel_ticket_eliminar',
     ),
     path('panel/usuarios/', views.panel_usuarios, name='panel_usuarios'),
     path(

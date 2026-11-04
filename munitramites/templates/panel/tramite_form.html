@@ -3,9 +3,9 @@
 {% block panel_titulo %}{% if tramite.pk %}Editar trámite{% else %}Nuevo trámite{% endif %}{% endblock %}
 {% block panel_bajada %}
   {% if tramite.pk %}
-    Editando «{{ tramite.titulo }}». Requisitos, enlaces y direcciones se cargan abajo.
+    Editando «{{ tramite.titulo }}». El formulario se completa por etapas.
   {% else %}
-    Completá los datos; requisitos, enlaces oficiales y direcciones se cargan en la misma página.
+    Completalo por etapas: datos, requisitos, enlaces oficiales, direcciones y archivos.
   {% endif %}
 {% endblock %}
 {% block panel_acciones %}
@@ -13,7 +13,24 @@
 {% endblock %}
 
 {% block panel_contenido %}
-<form class="formulario" method="post" enctype="multipart/form-data" novalidate>
+{% comment %} =========================================================================
+   Formulario de trámite por ETAPAS (SPEC 2026-11).
+
+   - Un solo <form> contra /panel/tramites/nuevo/ (o /editar/); la página
+     nunca cambia de URL.
+   - Cada etapa vive en <section data-paso="…"> y app.js (prepararPasos
+     Tramite) las muestra y esconde. Sin JavaScript se ve todo junto y
+     funciona el envío único de siempre (degradación amable).
+   - «Siguiente» valida la etapa actual antes de avanzar (obligatorios y
+     filas con datos); «Atrás» nunca pide validación y no pierde datos.
+   - Enlaces y direcciones solo aplican según la modalidad (data-solo-
+     modalidad): el JS salta esas etapas si no tocan.
+   - El envío real lo dispara el botón final (data-enviar) tras pasar la
+     revisión; el backend revalida TODO igual: nada confía solo en el
+     navegador.
+   ========================================================================= {% endcomment %}
+<form class="formulario formulario-tramite" method="post" enctype="multipart/form-data" novalidate
+      data-pasos-tramite>
   {% csrf_token %}
 
   {% if form.non_field_errors %}
@@ -22,30 +39,50 @@
     </div>
   {% endif %}
 
-  <div class="dos-columnas">
-    {# --- Columna 1: los datos del trámite --- #}
+  {# --- Barra de etapas: en qué se está y cuáles ya están listas ---------- #}
+  <ol class="pasos" aria-label="Etapas del formulario">
+    <li class="pasos__item" data-item="datos"><button class="pasos__boton" type="button" data-ir="datos">1 · Datos del trámite</button></li>
+    <li class="pasos__item" data-item="requisitos"><button class="pasos__boton" type="button" data-ir="requisitos">2 · Requisitos</button></li>
+    <li class="pasos__item" data-item="enlaces"><button class="pasos__boton" type="button" data-ir="enlaces">3 · Enlaces oficiales</button></li>
+    <li class="pasos__item" data-item="direcciones"><button class="pasos__boton" type="button" data-ir="direcciones">4 · Direcciones</button></li>
+    <li class="pasos__item" data-item="archivos"><button class="pasos__boton" type="button" data-ir="archivos">5 · Archivos</button></li>
+  </ol>
+
+  {% comment %} =========================================================================
+     ETAPA 1 — Datos del trámite
+     ========================================================================= {% endcomment %}
+  <section class="paso" data-paso="datos">
     <div class="panel">
       <h3 class="mt-0">Datos del trámite</h3>
 
       {% for campo in form %}
         {% if not campo.field.widget.is_hidden %}
-          <div class="campo">
-            <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-            {{ campo }}
-            {% if campo.name == 'municipio' %}
+          <div class="campo{% if campo.name == 'municipios' %} campo--municipios{% endif %}">
+            {% if campo.name == 'municipios' %}
+              <span class="campo__rotulo">{{ campo.label }}</span>
+            {% elif campo.name == 'activo' or campo.name == 'destacado' %}
+              <label class="campo__casilla" for="{{ campo.id_for_label }}">{{ campo }} {{ campo.label }}</label>
+            {% else %}
+              <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            {% endif %}
+            {% if campo.name == 'municipios' %}
+              <div class="municipios-grilla">{{ campo }}</div>
               <input type="text" name="municipio_nuevo" id="id_municipio_nuevo"
                      class="campo__nuevo"
                      value="{{ form.data.municipio_nuevo|default:'' }}"
-                     placeholder="o escribí el nombre de un municipio nuevo…">
+                     placeholder="Si falta algún municipio, escribí su nombre acá…">
               <span class="ayuda">Si escribís acá, se crea al guardar y se usa ese.</span>
             {% elif campo.name == 'organismo' %}
+              {{ campo }}
               <input type="text" name="organismo_nuevo" id="id_organismo_nuevo"
                      class="campo__nuevo"
                      value="{{ form.data.organismo_nuevo|default:'' }}"
                      placeholder="o escribí el nombre de un organismo nuevo…">
               <span class="ayuda">Si escribís acá, se crea al guardar y se usa ese.</span>
+            {% elif campo.name != 'activo' and campo.name != 'destacado' %}
+              {{ campo }}
             {% endif %}
-            {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+            {% if campo.help_text and campo.name != 'municipios' %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
             {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
           </div>
         {% else %}
@@ -53,237 +90,306 @@
         {% endif %}
       {% endfor %}
     </div>
+  </section>
 
-    {# --- Columna 2: los dos inlines (formsets de Django) --- #}
-    <div>
-      <div class="panel">
-        <h3 class="mt-0">Requisitos</h3>
-        <p class="texto-suave texto-chico">Se numeran solos y se guardan en ese orden, de arriba hacia abajo. Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo). Si necesitás más de tres, tocá «+ Agregar requisito».</p>
+  {% comment %} =========================================================================
+     ETAPA 2 — Requisitos (1 a N, numerados por posición)
+     ========================================================================= {% endcomment %}
+  <section class="paso" data-paso="requisitos">
+    <div class="panel">
+      <h3 class="mt-0">Requisitos</h3>
+      <p class="texto-suave texto-chico">Cada requisito se numera solo («Requisitos 1», «Requisitos 2»…) y se guarda en ese orden. Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo). Si necesitás más de tres, tocá «+ Agregar requisito».</p>
 
-        {{ requisitos.management_form }}
-        {% if requisitos.non_form_errors %}
-          <div class="alerta alerta--error">
-            {% for e in requisitos.non_form_errors %}<div>{{ e }}</div>{% endfor %}
-          </div>
-        {% endif %}
+      {{ requisitos.management_form }}
+      {% if requisitos.non_form_errors %}
+        <div class="alerta alerta--error">
+          {% for e in requisitos.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
 
-        <div class="inline-filas" data-filas="requisitos" data-numerar>
-          {% for rf in requisitos %}
-            <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
-              <p class="inline-fila__numero">Requisito <span data-numero>{{ forloop.counter }}</span></p>
-              {% for campo in rf %}
-                {% if not campo.field.widget.is_hidden %}
+      <div class="inline-filas" data-filas="requisitos" data-numerar>
+        {% for rf in requisitos %}
+          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+            <p class="inline-fila__titulo">Requisitos <span data-numero>{{ forloop.counter }}</span></p>
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
                   <div class="campo">
                     <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
                     {{ campo }}
                     {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
                   </div>
-                {% else %}
-                  {{ campo }}
                 {% endif %}
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-
-        <p class="texto-suave texto-chico" data-aviso-borrado="requisito" hidden>
-          <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
-        </p>
-
-        {# Fila vacía que clona el botón de abajo (ver app.js) #}
-        <template data-vacio="requisitos">
-          {% with rf=requisitos.empty_form %}
-            <div class="inline-fila">
-              <p class="inline-fila__numero">Requisito <span data-numero></span></p>
-              {% for campo in rf %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endwith %}
-        </template>
-        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
-                data-agregar-fila="requisitos">+ Agregar requisito</button>
-      </div>
-
-      <div class="panel">
-        <h3 class="mt-0">Enlaces oficiales</h3>
-        <p class="texto-suave texto-chico">Cada botón se muestra en la ficha con el nombre que escribas, ej.: «Pedir turno» → https://… Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo).</p>
-
-        {{ enlaces.management_form }}
-        {% if enlaces.non_form_errors %}
-          <div class="alerta alerta--error">
-            {% for e in enlaces.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
           </div>
-        {% endif %}
-
-        <div class="inline-filas" data-filas="enlaces">
-          {% for rf in enlaces %}
-            <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
-              {% for campo in rf %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-
-        <p class="texto-suave texto-chico" data-aviso-borrado="enlace" hidden>
-          <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
-        </p>
-
-        {# Fila vacía que clona el botón de abajo (ver app.js) #}
-        <template data-vacio="enlaces">
-          {% with rf=enlaces.empty_form %}
-            <div class="inline-fila">
-              {% for campo in rf %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endwith %}
-        </template>
-        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
-                data-agregar-fila="enlaces">+ Agregar enlace</button>
+        {% endfor %}
       </div>
 
-      <div class="panel">
-        <h3 class="mt-0">Direcciones de atención</h3>
-        <p class="texto-suave texto-chico">Un trámite puede tener varias sedes, incluso en municipios distintos. Cada fila lleva el nombre del lugar, su municipio y la dirección. Si no cargás ninguna, la ficha muestra la dirección del organismo responsable.</p>
+      <p class="texto-suave texto-chico" data-aviso-borrado="requisito" hidden>
+        <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
+      </p>
 
-        {{ direcciones.management_form }}
-        {% if direcciones.non_form_errors %}
-          <div class="alerta alerta--error">
-            {% for e in direcciones.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+      {# Fila vacía que clona el botón de abajo (ver app.js) #}
+      <template data-vacio="requisitos">
+        {% with rf=requisitos.empty_form %}
+          <div class="inline-fila">
+            <p class="inline-fila__titulo">Requisitos <span data-numero></span></p>
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
           </div>
-        {% endif %}
-
-        <div class="inline-filas" data-filas="direcciones">
-          {% for rf in direcciones %}
-            <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
-              {% for campo in rf %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-
-        <p class="texto-suave texto-chico" data-aviso-borrado="dirección" data-aviso-plural="direcciones" hidden>
-          <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
-        </p>
-
-        {# Fila vacía que clona el botón de abajo (ver app.js) #}
-        <template data-vacio="direcciones">
-          {% with rf=direcciones.empty_form %}
-            <div class="inline-fila">
-              {% for campo in rf %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endwith %}
-        </template>
-        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
-                data-agregar-fila="direcciones">+ Agregar dirección</button>
-      </div>
-      <div class="panel">
-        <h3 class="mt-0">Documentos y formularios</h3>
-        <p class="texto-suave texto-chico">Archivos que el ciudadano puede descargar desde la ficha: formularios rellenables, instructivos o documentos de consulta. Se numeran y se muestran en el orden de las filas. Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo).</p>
-
-        {{ archivos.management_form }}
-        {% if archivos.non_form_errors %}
-          <div class="alerta alerta--error">
-            {% for e in archivos.non_form_errors %}<div>{{ e }}</div>{% endfor %}
-          </div>
-        {% endif %}
-
-        <div class="inline-filas" data-filas="archivos" data-numerar>
-          {% for af in archivos %}
-            <div class="inline-fila{% if af.DELETE.value %} inline-fila--borrar{% endif %}">
-              <p class="inline-fila__numero">Archivo <span data-numero>{{ forloop.counter }}</span></p>
-              {% for campo in af %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                    {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
-                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-
-        <p class="texto-suave texto-chico" data-aviso-borrado="archivo" data-aviso-plural="archivos" hidden>
-          <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
-        </p>
-
-        {# Fila vacía que clona el botón de abajo (ver app.js) #}
-        <template data-vacio="archivos">
-          {% with af=archivos.empty_form %}
-            <div class="inline-fila">
-              <p class="inline-fila__numero">Archivo <span data-numero></span></p>
-              {% for campo in af %}
-                {% if not campo.field.widget.is_hidden %}
-                  <div class="campo">
-                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
-                    {{ campo }}
-                    {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
-                  </div>
-                {% else %}
-                  {{ campo }}
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endwith %}
-        </template>
-        <button class="boton boton--secundario boton--chico agregar-fila" type="button"
-                data-agregar-fila="archivos">+ Agregar archivo</button>
-      </div>
+        {% endwith %}
+      </template>
+      <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+              data-agregar-fila="requisitos">+ Agregar requisito</button>
     </div>
-  </div>
+  </section>
 
-  <div class="acciones" style="margin-top: 22px">
-    <button class="boton" type="submit">
+  {% comment %} =========================================================================
+     ETAPA 3 — Enlaces oficiales (solo modalidad Virtual o Mixta)
+     ========================================================================= {% endcomment %}
+  <section class="paso" data-paso="enlaces" data-solo-modalidad="virtual,mixta">
+    <div class="panel">
+      <h3 class="mt-0">Enlaces oficiales</h3>
+      <p class="texto-suave texto-chico">Cada botón se muestra en la ficha con el nombre que escribas, ej.: «Pedir turno» → https://… Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo).</p>
+
+      {{ enlaces.management_form }}
+      {% if enlaces.non_form_errors %}
+        <div class="alerta alerta--error">
+          {% for e in enlaces.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="inline-filas" data-filas="enlaces" data-numerar>
+        {% for rf in enlaces %}
+          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+            <p class="inline-fila__titulo">Enlace oficial <span data-numero></span></p>
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="texto-suave texto-chico" data-aviso-borrado="enlace" hidden>
+        <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
+      </p>
+
+      {# Fila vacía que clona el botón de abajo (ver app.js) #}
+      <template data-vacio="enlaces">
+        {% with rf=enlaces.empty_form %}
+          <div class="inline-fila">
+            <p class="inline-fila__titulo">Enlace oficial <span data-numero></span></p>
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
+          </div>
+        {% endwith %}
+      </template>
+      <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+              data-agregar-fila="enlaces">+ Agregar enlace</button>
+    </div>
+  </section>
+
+  {% comment %} =========================================================================
+     ETAPA 4 — Direcciones (solo modalidad Presencial o Mixta)
+     ========================================================================= {% endcomment %}
+  <section class="paso" data-paso="direcciones" data-solo-modalidad="presencial,mixta">
+    <div class="panel">
+      <h3 class="mt-0">Direcciones de atención</h3>
+      <p class="texto-suave texto-chico">Un trámite puede tener varias sedes, incluso en municipios distintos. Cada fila lleva el nombre del lugar, su municipio y la dirección. Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo).</p>
+
+      {{ direcciones.management_form }}
+      {% if direcciones.non_form_errors %}
+        <div class="alerta alerta--error">
+          {% for e in direcciones.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="inline-filas" data-filas="direcciones" data-numerar>
+        {% for rf in direcciones %}
+          <div class="inline-fila{% if rf.DELETE.value %} inline-fila--borrar{% endif %}">
+            <p class="inline-fila__titulo">Dirección <span data-numero></span></p>
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="texto-suave texto-chico" data-aviso-borrado="dirección" data-aviso-plural="direcciones" hidden>
+        <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
+      </p>
+
+      {# Fila vacía que clona el botón de abajo (ver app.js) #}
+      <template data-vacio="direcciones">
+        {% with rf=direcciones.empty_form %}
+          <div class="inline-fila">
+            <p class="inline-fila__titulo">Dirección <span data-numero></span></p>
+            {% for campo in rf %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
+          </div>
+        {% endwith %}
+      </template>
+      <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+              data-agregar-fila="direcciones">+ Agregar dirección</button>
+    </div>
+  </section>
+
+  {% comment %} =========================================================================
+     ETAPA 5 — Archivos (opcionales: vacía se avanza igual; completa va entera)
+     ========================================================================= {% endcomment %}
+  <section class="paso" data-paso="archivos">
+    <div class="panel">
+      <h3 class="mt-0">Documentos y formularios</h3>
+      <p class="texto-suave texto-chico">Esta etapa es <strong>opcional</strong>: se puede avanzar sin subir archivos. Si cargás alguno, tiene que quedar completo; la descripción es la única del campo opcional. Si marcás «Eliminar», la fila sale de la lista (podés deshacerlo).</p>
+
+      {{ archivos.management_form }}
+      {% if archivos.non_form_errors %}
+        <div class="alerta alerta--error">
+          {% for e in archivos.non_form_errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="inline-filas" data-filas="archivos" data-numerar>
+        {% for af in archivos %}
+          <div class="inline-fila{% if af.DELETE.value %} inline-fila--borrar{% endif %}">
+            <p class="inline-fila__titulo">Archivo <span data-numero>{{ forloop.counter }}</span></p>
+            {% for campo in af %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo{% if campo.name == 'descripcion' %} campo--opcional{% endif %}">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
+                    {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <p class="texto-suave texto-chico" data-aviso-borrado="archivo" data-aviso-plural="archivos" hidden>
+        <span data-texto></span> <a href="#" data-deshacer>Deshacer</a>
+      </p>
+
+      {# Fila vacía que clona el botón de abajo (ver app.js) #}
+      <template data-vacio="archivos">
+        {% with af=archivos.empty_form %}
+          <div class="inline-fila">
+            <p class="inline-fila__titulo">Archivo <span data-numero></span></p>
+            {% for campo in af %}
+              {% if not campo.field.widget.is_hidden %}
+                {% if campo.name == 'DELETE' %}
+                  <label class="casilla-borrar">{{ campo }} Eliminar</label>
+                {% else %}
+                  <div class="campo{% if campo.name == 'descripcion' %} campo--opcional{% endif %}">
+                    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                    {{ campo }}
+                    {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
+                  </div>
+                {% endif %}
+              {% else %}
+                {{ campo }}
+              {% endif %}
+            {% endfor %}
+            <button class="inline-fila__quitar" type="button" data-quitar-fila>✕ Eliminar</button>
+          </div>
+        {% endwith %}
+      </template>
+      <button class="boton boton--secundario boton--chico agregar-fila" type="button"
+              data-agregar-fila="archivos">+ Agregar archivo</button>
+    </div>
+  </section>
+
+  {# --- Resumen de la revisión final + mensaje de error de validación ----- #}
+  <p class="paso__resumen" data-resumen hidden></p>
+  <p class="paso__error" data-errores-paso hidden></p>
+
+  {# --- Navegación entre etapas (app.js: prepararPasosTramite) ------------- #}
+  <div class="paso__nav">
+    <button class="boton boton--secundario" type="button" data-atras hidden>← Etapa anterior</button>
+    <p class="paso__estado" aria-live="polite" data-estado-pasos></p>
+    <button class="boton" type="button" data-siguiente hidden>Siguiente →</button>
+    <button class="boton boton--enviar" type="submit" data-enviar>
       {% if tramite.pk %}Guardar cambios{% else %}Crear trámite{% endif %}
     </button>
-    <a class="boton boton--secundario" href="{% url 'panel_tramites' %}">Cancelar</a>
   </div>
 </form>
 {% endblock %}

@@ -1,0 +1,276 @@
+{% load hora estaticos %}
+{# Contenido del tablero. Se incluye en la página y lo devuelve tal cual #}
+{# el endpoint /panel/dashboard/datos/ para refrescar sin recargar.     #}
+<div id="pn-dashboard-contenido">
+
+{# --- Fila 1: bienvenida + los números que importan ----------------------- #}
+<div class="pn-resumen">
+  <div class="pn-bienvenida">
+    <div>
+      <p class="pn-bienvenida__rotulo">Bienvenido de nuevo</p>
+      <h3>{{ user.get_full_name|default:user.username }}</h3>
+      <p>
+        {% if consultas_pendientes %}
+          Hay <strong>{{ consultas_pendientes }}</strong> consulta{{ consultas_pendientes|pluralize }} sin responder esperando tu respuesta.
+        {% else %}
+          No hay consultas pendientes. ¡Todo al día!
+        {% endif %}
+      </p>
+    </div>
+    <div class="pn-bienvenida__acciones">
+      <a class="pn-bienvenida__boton pn-bienvenida__boton--nuevo" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
+      <a class="pn-bienvenida__boton" href="{% url 'panel_consultas' %}?estado=pendiente">Ver consultas</a>
+    </div>
+  </div>
+
+  <a class="pn-stat" style="--c: var(--m-verde)" href="{% url 'panel_tramites' %}?estado=activos" title="Trámites publicados y visibles en el sitio">
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/folders.svg' %}')" aria-hidden="true"></span></span>
+    <span class="pn-stat__rotulo">Trámites activos</span>
+    <strong class="pn-stat__valor">{{ tramites_activos }}</strong>
+    <span class="pn-stat__pie">de {{ tramites_total }} cargados · {{ destacados }} destacado{{ destacados|pluralize }}</span>
+    <span class="pn-stat__barra"><i style="width: {{ pct_activos }}%"></i></span>
+  </a>
+
+  <a class="pn-stat" style="--c: var(--s-mu)" href="{% url 'panel_tramites' %}?estado=inactivos" title="Trámites desactivados o no publicados">
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/folders.svg' %}')" aria-hidden="true"></span></span>
+    <span class="pn-stat__rotulo">Trámites inactivos</span>
+    <strong class="pn-stat__valor">{{ tramites_inactivos }}</strong>
+    <span class="pn-stat__pie">fuera del sitio público</span>
+  </a>
+
+  <a class="pn-stat" style="--c: var(--m-azul)" href="{% url 'panel_consultas' %}" title="Consultas recibidas en {{ filtros.etiqueta }}">
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/message-circle.svg' %}')" aria-hidden="true"></span></span>
+    <span class="pn-stat__rotulo">Consultas recibidas</span>
+    <strong class="pn-stat__valor">{{ consultas_total }}</strong>
+    <span class="pn-stat__pie">en {{ filtros.etiqueta|lower }}</span>
+  </a>
+
+  <a class="pn-stat" style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}?estado=pendiente" title="Consultas que todavía requieren atención">
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/inbox.svg' %}')" aria-hidden="true"></span></span>
+    <span class="pn-stat__rotulo">Consultas pendientes</span>
+    <strong class="pn-stat__valor">{{ consultas_pendientes }}</strong>
+    <span class="pn-stat__pie">de {{ consultas_total }} recibidas</span>
+    <span class="pn-stat__barra"><i style="width: {{ pct_pendientes }}%"></i></span>
+  </a>
+
+  {% if gestiona_cuentas %}
+  <a class="pn-stat" style="--c: var(--m-verde)" href="{% url 'panel_usuarios' %}" title="Cuentas de ciudadanos registradas">
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/users.svg' %}')" aria-hidden="true"></span></span>
+    <span class="pn-stat__rotulo">Usuarios registrados</span>
+    <strong class="pn-stat__valor">{{ usuarios }}</strong>
+    <span class="pn-stat__pie">cuentas de ciudadanos</span>
+  </a>
+  {% endif %}
+
+  <a class="pn-stat" style="--c: var(--m-azul)" href="{% url 'panel_tickets' %}?estado=abierto" title="{% if gestiona_cuentas %}Tickets de soporte abiertos{% else %}Tus tickets internos abiertos{% endif %}">
+    <span class="pn-stat__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/inbox.svg' %}')" aria-hidden="true"></span></span>
+    <span class="pn-stat__rotulo">Tickets pendientes</span>
+    <strong class="pn-stat__valor">{{ tickets_pendientes }}</strong>
+    <span class="pn-stat__pie">{% if gestiona_cuentas %}de {{ tickets_total }} internos{% else %}de tus {{ tickets_total }} internos{% endif %}</span>
+  </a>
+</div>
+
+{# --- Seguimiento: problemas y tiempos de atención ------------------------ #}
+<div class="pn-seguimiento">
+  <div class="pn-mini">
+    <span class="pn-mini__rotulo">Consultas sin responder</span>
+    <strong>{{ consultas_pendientes }}</strong>
+    <small>{% if consultas_pendientes %}Requieren intervención{% else %}Nada pendiente{% endif %}</small>
+  </div>
+  <div class="pn-mini" title="Tiempo entre la recepción y la primera respuesta de las consultas respondidas en el período">
+    <span class="pn-mini__rotulo">Tiempo promedio de respuesta</span>
+    {% if promedio_respuesta %}
+      <strong>{{ promedio_respuesta }}</strong>
+      <small>Sobre {{ respuestas_medidas }} respuesta{{ respuestas_medidas|pluralize }} medida{{ respuestas_medidas|pluralize }}</small>
+    {% else %}
+      <strong class="pn-mini__sin-dato">Sin datos</strong>
+      <small>Se mide desde la primera respuesta</small>
+    {% endif %}
+  </div>
+  <div class="pn-mini">
+    <span class="pn-mini__rotulo">Tickets de soporte abiertos</span>
+    <strong>{{ tickets_pendientes }}</strong>
+    <small>{% if gestiona_cuentas %}Pendientes de respuesta o cierre{% else %}De los tickets que abriste{% endif %}</small>
+  </div>
+</div>
+
+{# --- Fila 2: consultas en el tiempo + distribución por estado ------------ #}
+<div class="pn-fila pn-fila--2-1">
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <div>
+        <h3>Consultas por período</h3>
+        <span class="texto-suave texto-chico">{{ filtros.etiqueta }}{% if serie_consultas.por_mes %} · agrupado por mes{% endif %}</span>
+      </div>
+      <strong class="pn-serie__total">{{ serie_consultas.total|default:0 }} consulta{{ serie_consultas.total|default:0|pluralize }}</strong>
+    </div>
+    {% if serie_consultas.puntos %}
+      <svg class="pn-serie" viewBox="0 0 640 190" role="img"
+           aria-label="Consultas recibidas: {{ serie_consultas.total }} en {{ filtros.etiqueta }}">
+        <line class="pn-serie__base" x1="12" y1="{{ serie_consultas.base }}" x2="628" y2="{{ serie_consultas.base }}"></line>
+        <path class="pn-serie__area" d="{{ serie_consultas.area }}"></path>
+        <path class="pn-serie__linea" d="{{ serie_consultas.linea }}"></path>
+        {% for p in serie_consultas.puntos %}
+          <circle class="pn-serie__punto" cx="{{ p.x }}" cy="{{ p.y }}" r="4">
+            <title>{{ p.etiqueta }}: {{ p.n }} consulta{{ p.n|pluralize }}</title>
+          </circle>
+        {% endfor %}
+      </svg>
+      <div class="pn-serie__eje">
+        <span>{{ serie_consultas.eje_inicio }}</span>
+        <span>Máximo: {{ serie_consultas.maximo }}</span>
+        <span>{{ serie_consultas.eje_fin }}</span>
+      </div>
+    {% else %}
+      <p class="pn-vacio-texto">No hay consultas registradas en este período.</p>
+    {% endif %}
+  </div>
+
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Consultas por estado</h3>
+      <a class="texto-chico" href="{% url 'panel_consultas' %}">Ver →</a>
+    </div>
+    <div class="pn-donut" style="background: {{ donut }}">
+      <div class="pn-donut__centro"><strong>{{ consultas_grafico_total }}</strong><span>consultas</span></div>
+    </div>
+    <ul class="pn-leyenda">
+      {% for e in por_estado %}
+        <li style="--c: {{ e.color }}">
+          <i></i>
+          <a href="{% url 'panel_consultas' %}?estado={{ e.valor }}">{{ e.texto }}</a>
+          <b>{{ e.n }}</b>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{# --- Fila 3: ranking + municipios ---------------------------------------- #}
+<div class="pn-fila pn-fila--2">
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Trámites más consultados</h3>
+      <span class="texto-suave texto-chico">Ranking del período</span>
+    </div>
+    {% if ranking %}
+      <ol class="pn-ranking">
+        {% for r in ranking %}
+          <li>
+            <span class="pn-ranking__puesto">{{ forloop.counter }}</span>
+            <a href="{% url 'panel_tramite_editar' r.pk %}" title="Abrir el trámite «{{ r.titulo }}»">{{ r.titulo }}</a>
+            <b>{{ r.n }}</b>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="pn-vacio-texto">Todavía no hay consultas asociadas a trámites en este período.</p>
+    {% endif %}
+  </div>
+
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Consultas por municipio</h3>
+      <span class="texto-suave texto-chico">Según el trámite asociado</span>
+    </div>
+    {% if por_municipio %}
+      {% for m in por_municipio %}
+        <div class="pn-prog" style="--c: var(--m-azul); --i: {{ forloop.counter0 }}"
+             title="{{ m.nombre }}: {{ m.n }} consulta{{ m.n|pluralize }}">
+          <div class="pn-prog__fila">
+            {% if m.pk %}
+              <a href="{% url 'panel_tramites' %}?municipio={{ m.pk }}">{{ m.nombre }}</a>
+            {% else %}
+              <span>{{ m.nombre }}</span>
+            {% endif %}
+            <b>{{ m.n }}</b>
+          </div>
+          <div class="pn-prog__pista"><i style="width: {{ m.alto }}%"></i></div>
+        </div>
+      {% endfor %}
+      <p class="pn-nota">Solo se cuentan consultas con un trámite asociado.</p>
+    {% else %}
+      <p class="pn-vacio-texto">No hay datos de municipio para mostrar en este período.</p>
+    {% endif %}
+  </div>
+</div>
+
+{# --- Fila 4: trámites por tema y modalidad ------------------------------- #}
+<div class="pn-fila pn-fila--2">
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Trámites por tema</h3>
+      <span class="texto-suave texto-chico">Los temas con más trámites</span>
+    </div>
+    {% if grafico_temas %}
+      <div class="pn-barras" role="img" aria-label="Cantidad de trámites por tema">
+        {% for g in grafico_temas %}
+          <a class="pn-barra" href="{% url 'panel_tramites' %}?tema={{ g.pk }}"
+             style="--alto: {{ g.alto }}; --i: {{ forloop.counter0 }}; --c: var(--m-{% cycle 'azul' 'verde' 'rojo' %})"
+             title="{{ g.nombre }}: {{ g.n }} trámite{{ g.n|pluralize }}">
+            <span class="pn-barra__n">{{ g.n }}</span>
+            <i class="pn-barra__col"></i>
+            <span class="pn-barra__nombre">{{ g.nombre }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="pn-vacio-texto">Todavía no hay trámites cargados con estos filtros.</p>
+    {% endif %}
+  </div>
+
+  <div class="pn-card">
+    <div class="pn-card__cab">
+      <h3>Trámites por modalidad</h3>
+      <span class="texto-suave texto-chico">{{ tramites_total }} trámite{{ tramites_total|pluralize }}</span>
+    </div>
+    {% for m in por_modalidad %}
+      <div class="pn-prog" style="--c: var(--m-{% cycle 'azul' 'verde' 'rojo' %}); --i: {{ forloop.counter0 }}"
+           title="{{ m.texto }}: {{ m.n }} trámite{{ m.n|pluralize }} ({{ m.pct }}%)">
+        <div class="pn-prog__fila"><a href="{% url 'panel_tramites' %}?modalidad={{ m.valor }}">{{ m.texto }}</a><b>{{ m.n }}</b></div>
+        <div class="pn-prog__pista"><i style="width: {{ m.pct }}%"></i></div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{# --- Fila 5: actividad reciente ------------------------------------------ #}
+<div class="pn-card">
+  <div class="pn-card__cab">
+    <h3>Actividad reciente</h3>
+    <span class="texto-suave texto-chico">Últimos movimientos registrados en {{ filtros.etiqueta|lower }}</span>
+  </div>
+  {% if actividad %}
+    <ul class="pn-lista pn-actividad">
+      {% for e in actividad %}
+        <li>
+          <a href="{{ e.url }}">
+            <span class="pn-actividad__punto" style="--c: var(--m-{{ e.color }})" aria-hidden="true"></span>
+            <span class="pn-lista__txt">
+              <strong>{{ e.texto }}</strong>
+              <small>{% if e.usuario %}{{ e.usuario }} · {% endif %}{{ e.fecha|hora_local|date:"d/m/Y H:i" }}</small>
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="pn-vacio-texto">No hay movimientos registrados en este período.</p>
+  {% endif %}
+</div>
+
+{# --- Acciones rápidas ------------------------------------------------------ #}
+<div class="acciones" style="margin-top: 22px">
+  <a class="boton" href="{% url 'panel_tramite_nuevo' %}">Nuevo trámite</a>
+  {% if gestiona_cuentas %}
+    <a class="boton boton--secundario" href="{% url 'panel_usuario_nuevo' %}">Nuevo usuario</a>
+  {% endif %}
+</div>
+
+<p class="texto-suave texto-chico" style="margin-top: 18px">
+  Organismos y municipios se cargan desde el /admin/ de Django, que es
+  exclusivo del superusuario: no hay botón, se entra escribiendo la
+  dirección (o por enlace directo).
+</p>
+
+</div>

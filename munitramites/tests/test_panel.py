@@ -14,14 +14,17 @@ Matriz de aceptación del panel de administración:
 
 import tempfile
 import uuid
+from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from munitramites.models import (
-    ArchivoTramite, Consulta, Direccion, Perfil, Requisito, Tema, Tramite,
+    ArchivoTramite, Consulta, Direccion, Perfil, Requisito, Tema, Ticket,
+    Tramite,
 )
 
 from .base import (
@@ -32,7 +35,7 @@ from .base import (
 # URLs del panel, para barrer el acceso en un solo test
 URLS_PANEL = (
     'panel', 'panel_tramites', 'panel_tramite_nuevo', 'panel_consultas',
-    'panel_usuarios', 'panel_usuario_nuevo', 'panel_temas',
+    'panel_tickets', 'panel_usuarios', 'panel_usuario_nuevo', 'panel_temas',
 )
 
 
@@ -93,11 +96,14 @@ class AccesoTests(TestCase):
     def test_las_urls_de_detalle_tambien_estan_cerradas(self):
         t = tramite()
         c = Consulta.objects.create(asunto='Hola', contenido='¿Abren?')
+        ticket = Ticket.objects.create(asunto='Ticket', descripcion='...')
         self.client.force_login(ciudadano(username='ana'))
 
         for url in (reverse('panel_tramite_editar', args=[t.pk]),
                     reverse('panel_tramite_estado', args=[t.pk]),
                     reverse('panel_consulta', args=[c.pk]),
+                    reverse('panel_ticket_detalle', args=[ticket.pk]),
+                    reverse('panel_ticket_eliminar', args=[ticket.pk]),
                     reverse('panel_usuario_editar', args=[1]),
                     reverse('panel_usuario_eliminar', args=[1])):
             r = self.client.get(url)
@@ -203,7 +209,7 @@ class CentroDeTramitesTests(TestCase):
             'titulo': 'Registro de Bicicletas',
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'presencial',
-            'municipio': municipio().pk,
+            'municipios': [municipio().pk],
             'organismo': '',
             'organismo_nuevo': 'Direccion de Licencias de Trafico',
             'descripcion': 'Se tramita en el municipio.',
@@ -225,7 +231,6 @@ class CentroDeTramitesTests(TestCase):
             'titulo': 'Trámite de Oberá',
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'presencial',
-            'municipio': '',
             'municipio_nuevo': 'Obera',
             'organismo': organismo().pk,
             'organismo_nuevo': '',
@@ -258,7 +263,7 @@ class CentroDeTramitesTests(TestCase):
         r = self.client.get(reverse('panel_tramite_nuevo'))
 
         self.assertContains(r, 'data-numerar')
-        self.assertContains(r, 'Requisito <span data-numero>1</span>')
+        self.assertContains(r, 'Requisitos <span data-numero>1</span>')
         self.assertContains(r, 'data-aviso-borrado="requisito"')
         self.assertContains(r, 'data-aviso-borrado="enlace"')
         self.assertContains(r, 'data-aviso-borrado="dirección"')
@@ -268,9 +273,9 @@ class CentroDeTramitesTests(TestCase):
         r = self.client.get(reverse('panel_tramite_nuevo'))
 
         self.assertNotContains(r, 'Enlace turnos')
-        self.assertNotContains(r, 'Enlace oficial')
         self.assertNotContains(r, 'name="enlace_turnos"')
         self.assertNotContains(r, 'name="enlace_oficial"')
+        self.assertContains(r, 'Enlace oficial <span data-numero')
         self.assertContains(r, 'enlaces-0-nombre')
         self.assertContains(r, 'enlaces-0-url')
 
@@ -279,7 +284,7 @@ class CentroDeTramitesTests(TestCase):
             'titulo': 'Pasaporte argentino',
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'presencial',
-            'municipio': municipio().pk,
+            'municipios': [municipio().pk],
             'organismo': organismo().pk,
             'descripcion': 'Se tramita con turno previo.',
             'destacado': 'on', 'activo': 'on',
@@ -310,7 +315,7 @@ class CentroDeTramitesTests(TestCase):
             'titulo': 'Trámite con dos sedes',
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'presencial',
-            'municipio': municipio().pk,
+            'municipios': [municipio().pk],
             'organismo': organismo().pk,
             'descripcion': 'Se puede hacer en dos municipios.',
             'destacado': '', 'activo': 'on',
@@ -351,7 +356,7 @@ class CentroDeTramitesTests(TestCase):
             'titulo': 'Certificado de residencia',
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'presencial',
-            'municipio': municipio().pk,
+            'municipios': [municipio().pk],
             'organismo': organismo().pk,
             'descripcion': 'Se pide en la municipalidad.',
             'destacado': '', 'activo': 'on',
@@ -392,7 +397,7 @@ class CentroDeTramitesTests(TestCase):
         r = self.client.post(
             reverse('panel_tramite_editar', args=[t.pk]), {
                 'titulo': t.titulo, 'tema': t.tema.pk,
-                'modalidad': t.modalidad, 'municipio': t.municipio.pk,
+                'modalidad': t.modalidad, 'municipios': [t.municipio.pk],
                 'organismo': t.organismo.pk, 'descripcion': t.descripcion,
                 'destacado': '', 'activo': 'on',
                 'requisitos-TOTAL_FORMS': '0',
@@ -423,11 +428,17 @@ class CentroDeTramitesTests(TestCase):
             tramite=t, lugar='Sede vieja', municipio=t.municipio,
             direccion='Calle Falsa 123',
         )
+        # Con la validación por modalidad (SPEC 2026-11) un presencial
+        # no puede quedarse sin direcciones: se deja otra viva.
+        otra = Direccion.objects.create(
+            tramite=t, lugar='Sede nueva', municipio=t.municipio,
+            direccion='Av. Siempre Viva 742',
+        )
 
         r = self.client.post(
             reverse('panel_tramite_editar', args=[t.pk]), {
                 'titulo': t.titulo, 'tema': t.tema.pk,
-                'modalidad': t.modalidad, 'municipio': t.municipio.pk,
+                'modalidad': t.modalidad, 'municipios': [t.municipio.pk],
                 'organismo': t.organismo.pk, 'descripcion': t.descripcion,
                 'destacado': '', 'activo': 'on',
                 'requisitos-TOTAL_FORMS': '0',
@@ -437,8 +448,8 @@ class CentroDeTramitesTests(TestCase):
                 'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
                 'enlaces-MIN_NUM_FORMS': '0',
                 'enlaces-MAX_NUM_FORMS': '1000',
-                'direcciones-TOTAL_FORMS': '1',
-                'direcciones-INITIAL_FORMS': '1',
+                'direcciones-TOTAL_FORMS': '2',
+                'direcciones-INITIAL_FORMS': '2',
                 'direcciones-MIN_NUM_FORMS': '0',
                 'direcciones-MAX_NUM_FORMS': '1000',
                 'direcciones-0-id': str(d.pk),
@@ -446,18 +457,23 @@ class CentroDeTramitesTests(TestCase):
                 'direcciones-0-municipio': d.municipio.pk,
                 'direcciones-0-direccion': d.direccion,
                 'direcciones-0-DELETE': 'on',
+                'direcciones-1-id': str(otra.pk),
+                'direcciones-1-lugar': otra.lugar,
+                'direcciones-1-municipio': otra.municipio.pk,
+                'direcciones-1-direccion': otra.direccion,
             },
         )
 
         self.assertEqual(r.status_code, 302)
         self.assertFalse(Direccion.objects.filter(pk=d.pk).exists())
+        self.assertTrue(Direccion.objects.filter(pk=otra.pk).exists())
 
     def test_solo_pasa_el_tramite_si_los_datos_no_cierran(self):
         total_antes = Tramite.objects.count()
 
         r = self.client.post(reverse('panel_tramite_nuevo'), {
             'titulo': '',  # obligatorio
-            'tema': '', 'modalidad': '', 'municipio': '', 'organismo': '',
+            'tema': '', 'modalidad': '', 'municipios': '', 'organismo': '',
             'descripcion': '',
             'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
             'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
@@ -478,7 +494,7 @@ class CentroDeTramitesTests(TestCase):
                 'titulo': 'Renovación de DNI (editado)',
                 'tema': t.tema.pk,
                 'modalidad': t.modalidad,
-                'municipio': t.municipio.pk,
+                'municipios': [t.municipio.pk],
                 'organismo': t.organismo.pk,
                 'descripcion': 'Descripción actualizada.',
                 'destacado': '', 'activo': 'on',
@@ -511,7 +527,7 @@ class CentroDeTramitesTests(TestCase):
             'titulo': t.titulo,
             'tema': t.tema.pk,
             'modalidad': t.modalidad,
-            'municipio': t.municipio.pk,
+            'municipios': [t.municipio.pk],
             'organismo': t.organismo.pk,
             'descripcion': t.descripcion,
             'destacado': '', 'activo': 'on',
@@ -566,6 +582,509 @@ class CentroDeTramitesTests(TestCase):
         r = self.client.get(reverse('panel_tramite_estado', args=[t.pk]))
 
         self.assertEqual(r.status_code, 405)
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class TicketsDelDashboardTests(TestCase):
+    """Tickets internos: el administrativo los abre y ve los suyos; el
+    administrador y el superusuario los leen, responden y cierran.
+
+    Son un canal aparte de las consultas ciudadanas.
+    """
+
+    def setUp(self):
+        self.gestora = administrativo(username='gestora')
+        self.client.force_login(self.gestora)
+
+    def test_el_dashboard_no_tiene_el_formulario_de_tickets(self):
+        """Los tickets viven en su página del menú, no en el resumen."""
+        r = self.client.get(reverse('panel'))
+
+        self.assertContains(r, reverse('panel_tickets'))
+        self.assertNotContains(r, 'Tickets internos')
+        self.assertNotContains(r, 'name="asunto"')
+
+    def test_crea_un_ticket_con_asunto_descripcion_y_dos_adjuntos(self):
+        r = self.client.post(reverse('panel_tickets'), {
+            'asunto': 'Error al publicar un trámite',
+            'descripcion': 'El botón de publicar no responde.',
+            'archivos': [
+                SimpleUploadedFile(
+                    'captura.png', b'\x89PNG contenido',
+                    content_type='image/png',
+                ),
+                SimpleUploadedFile(
+                    'detalle.pdf', b'%PDF-1.4 contenido',
+                    content_type='application/pdf',
+                ),
+            ],
+        })
+
+        ticket = Ticket.objects.get()
+        self.assertRedirects(
+            r, reverse('panel_ticket_detalle', args=[ticket.pk])
+        )
+        self.assertEqual(ticket.asunto, 'Error al publicar un trámite')
+        self.assertEqual(
+            ticket.descripcion, 'El botón de publicar no responde.'
+        )
+        self.assertEqual(ticket.creado_por, self.gestora)
+        self.assertEqual(ticket.adjuntos.count(), 2)
+        self.assertEqual(
+            {a.nombre for a in ticket.adjuntos.all()},
+            {'captura.png', 'detalle.pdf'},
+        )
+
+    def test_sin_adjuntos_tambien_se_guarda(self):
+        r = self.client.post(reverse('panel_tickets'), {
+            'asunto': 'Solo texto',
+            'descripcion': 'No hace falta adjuntar nada.',
+        })
+
+        ticket = Ticket.objects.get()
+        self.assertRedirects(
+            r, reverse('panel_ticket_detalle', args=[ticket.pk])
+        )
+        self.assertEqual(ticket.adjuntos.count(), 0)
+
+    def test_sin_asunto_no_se_crea(self):
+        r = self.client.post(reverse('panel_tickets'), {
+            'asunto': '', 'descripcion': 'Falta el asunto.',
+        })
+
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(Ticket.objects.exists())
+
+    def test_cada_administrativo_ve_solo_sus_tickets(self):
+        otro = administrativo(username='otro')
+        Ticket.objects.create(
+            asunto='Ticket ajeno', descripcion='...', creado_por=otro,
+        )
+        Ticket.objects.create(
+            asunto='Ticket propio', descripcion='...', creado_por=self.gestora,
+        )
+
+        r = self.client.get(reverse('panel_tickets'))
+
+        self.assertContains(r, 'Ticket propio')
+        self.assertNotContains(r, 'Ticket ajeno')
+
+    def test_el_administrador_ve_los_tickets_pero_no_los_crea(self):
+        """El administrador lee y gestiona; abrir tickets es del administrativo."""
+        otro = administrativo(username='otro')
+        Ticket.objects.create(
+            asunto='Ticket del administrativo', descripcion='...',
+            creado_por=otro,
+        )
+        self.client.force_login(administrador(username='jefazo'))
+
+        r = self.client.get(reverse('panel_tickets'))
+        self.assertContains(r, 'Ticket del administrativo')
+        # No tiene el formulario de alta.
+        self.assertNotContains(r, 'name="asunto"')
+
+        self.client.post(reverse('panel_tickets'), {
+            'asunto': 'No corresponde', 'descripcion': '...',
+        })
+        self.assertEqual(Ticket.objects.count(), 1)
+
+    def test_el_superusuario_ve_los_tickets_de_todos(self):
+        otro = administrativo(username='otro')
+        Ticket.objects.create(
+            asunto='Ticket de otro', descripcion='...', creado_por=otro,
+        )
+        self.client.force_login(superusuario())
+
+        r = self.client.get(reverse('panel_tickets'))
+
+        self.assertContains(r, 'Ticket de otro')
+
+    def test_elimina_su_propio_ticket(self):
+        ticket = Ticket.objects.create(
+            asunto='Para borrar', descripcion='...', creado_por=self.gestora,
+        )
+
+        r = self.client.post(
+            reverse('panel_ticket_eliminar', args=[ticket.pk])
+        )
+
+        self.assertRedirects(r, reverse('panel_tickets'))
+        self.assertFalse(Ticket.objects.filter(pk=ticket.pk).exists())
+
+    def test_no_puede_eliminar_el_ticket_de_otro(self):
+        otro = administrativo(username='otro')
+        ticket = Ticket.objects.create(
+            asunto='Ajeno', descripcion='...', creado_por=otro,
+        )
+
+        self.client.post(reverse('panel_ticket_eliminar', args=[ticket.pk]))
+
+        self.assertTrue(Ticket.objects.filter(pk=ticket.pk).exists())
+
+    def test_el_administrador_no_elimina_tickets(self):
+        ticket = Ticket.objects.create(
+            asunto='Intocable', descripcion='...', creado_por=self.gestora,
+        )
+        self.client.force_login(administrador(username='jefazo'))
+
+        self.client.post(reverse('panel_ticket_eliminar', args=[ticket.pk]))
+
+        self.assertTrue(Ticket.objects.filter(pk=ticket.pk).exists())
+
+    # --- Menú y listado ---------------------------------------------------
+
+    def test_el_menu_lateral_tiene_tickets(self):
+        for user in (self.gestora, administrador(username='jefazo'),
+                     superusuario()):
+            self.client.force_login(user)
+            r = self.client.get(reverse('panel'))
+            self.assertContains(r, reverse('panel_tickets'))
+            self.assertContains(r, '>Tickets<')
+
+    def test_el_administrativo_ve_el_listado_con_los_suyos(self):
+        otro = administrativo(username='otro')
+        Ticket.objects.create(
+            asunto='Ticket propio', descripcion='...', creado_por=self.gestora,
+        )
+        Ticket.objects.create(
+            asunto='Ticket ajeno', descripcion='...', creado_por=otro,
+        )
+
+        r = self.client.get(reverse('panel_tickets'))
+
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'Ticket propio')
+        self.assertNotContains(r, 'Ticket ajeno')
+
+    def test_el_administrador_ve_el_listado_completo(self):
+        otro = administrativo(username='otro')
+        Ticket.objects.create(
+            asunto='Ticket de la gestora', descripcion='...',
+            creado_por=self.gestora,
+        )
+        Ticket.objects.create(
+            asunto='Ticket de otro', descripcion='...', creado_por=otro,
+        )
+        self.client.force_login(administrador(username='jefazo'))
+
+        r = self.client.get(reverse('panel_tickets'))
+
+        self.assertContains(r, 'Ticket de la gestora')
+        self.assertContains(r, 'Ticket de otro')
+
+    def test_el_listado_filtra_por_estado(self):
+        Ticket.objects.create(
+            asunto='Pendiente de revisión', descripcion='...',
+            creado_por=self.gestora,
+        )
+        Ticket.objects.create(
+            asunto='Ya resuelto', descripcion='...', creado_por=self.gestora,
+            estado=Ticket.Estado.CERRADO,
+        )
+
+        r = self.client.get(reverse('panel_tickets'), {'estado': 'cerrado'})
+
+        self.assertContains(r, 'Ya resuelto')
+        self.assertNotContains(r, 'Pendiente de revisión')
+
+    # --- Lectura, respuesta y cierre --------------------------------------
+
+    def test_el_administrativo_lee_su_ticket(self):
+        ticket = Ticket.objects.create(
+            asunto='Mi ticket', descripcion='Detalle del ticket.',
+            creado_por=self.gestora,
+        )
+
+        r = self.client.get(
+            reverse('panel_ticket_detalle', args=[ticket.pk])
+        )
+
+        self.assertContains(r, 'Detalle del ticket.')
+
+    def test_el_administrativo_no_abre_tickets_ajenos(self):
+        otro = administrativo(username='otro')
+        ticket = Ticket.objects.create(
+            asunto='Ajeno', descripcion='...', creado_por=otro,
+        )
+
+        r = self.client.get(
+            reverse('panel_ticket_detalle', args=[ticket.pk])
+        )
+
+        self.assertEqual(r.status_code, 404)
+
+    def test_el_administrador_responde_un_ticket(self):
+        ticket = Ticket.objects.create(
+            asunto='Necesita respuesta', descripcion='...',
+            creado_por=self.gestora,
+        )
+        self.client.force_login(administrador(username='jefazo'))
+
+        r = self.client.post(
+            reverse('panel_ticket_detalle', args=[ticket.pk]),
+            {'accion': 'responder', 'respuesta': 'Ya lo revisamos y quedó resuelto.'},
+        )
+
+        self.assertRedirects(
+            r, reverse('panel_ticket_detalle', args=[ticket.pk])
+        )
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.estado, Ticket.Estado.RESPONDIDO)
+        self.assertIn('quedó resuelto', ticket.respuesta)
+        self.assertIsNotNone(ticket.fecha_respuesta)
+        self.assertEqual(ticket.respondido_por.username, 'jefazo')
+
+    def test_el_administrador_cierra_y_reabre_un_ticket(self):
+        ticket = Ticket.objects.create(
+            asunto='Para cerrar', descripcion='...', creado_por=self.gestora,
+        )
+        self.client.force_login(administrador(username='jefazo'))
+        url = reverse('panel_ticket_detalle', args=[ticket.pk])
+
+        self.client.post(url, {'accion': 'cerrar'})
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.estado, Ticket.Estado.CERRADO)
+
+        self.client.post(url, {'accion': 'reabrir'})
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.estado, Ticket.Estado.ABIERTO)
+
+    def test_el_administrativo_no_responde_ni_cierra(self):
+        ticket = Ticket.objects.create(
+            asunto='Solo lectura', descripcion='...', creado_por=self.gestora,
+        )
+        url = reverse('panel_ticket_detalle', args=[ticket.pk])
+
+        self.client.post(url, {
+            'accion': 'responder', 'respuesta': 'Me respondo solo.',
+        })
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.estado, Ticket.Estado.ABIERTO)
+        self.assertEqual(ticket.respuesta, '')
+
+        self.client.post(url, {'accion': 'cerrar'})
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.estado, Ticket.Estado.ABIERTO)
+
+    def test_el_administrativo_ve_la_respuesta_del_admin(self):
+        ticket = Ticket.objects.create(
+            asunto='Respondido', descripcion='...', creado_por=self.gestora,
+            estado=Ticket.Estado.RESPONDIDO,
+            respuesta='Respuesta del administrador.',
+        )
+
+        r = self.client.get(
+            reverse('panel_ticket_detalle', args=[ticket.pk])
+        )
+
+        self.assertContains(r, 'Respuesta del administrador.')
+
+
+class FormularioPorEtapasTests(TestCase):
+    """SPEC 2026-11: formulario por etapas, municipios múltiples,
+    exigencias de modalidad y botón «Nuevo trámite» en el panel."""
+
+    def setUp(self):
+        self.admin = administrador()
+        self.client.force_login(self.admin)
+
+    def test_el_form_se_muestra_por_etapas(self):
+        """Un mismo URL, cinco secciones y navegación de ida y vuelta."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r, 'data-pasos-tramite')
+        for nombre in ('datos', 'requisitos', 'enlaces', 'direcciones',
+                       'archivos'):
+            self.assertContains(r, 'data-paso="%s"' % nombre)
+            self.assertContains(r, 'data-ir="%s"' % nombre)
+        self.assertContains(r, 'data-atras')
+        self.assertContains(r, 'data-siguiente')
+        self.assertContains(r, 'data-enviar')
+        # La baja de URL no cambia: la creación sigue en /panel/tramites/nuevo/
+        self.assertEqual(r.resolver_match.func.__name__, 'panel_tramite_nuevo')
+
+    def test_las_etapas_condicionales_dependen_de_la_modalidad(self):
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r,
+            'data-solo-modalidad="virtual,mixta"')
+        self.assertContains(r,
+            'data-solo-modalidad="presencial,mixta"')
+
+    def test_la_fila_de_requisitos_se_denomina_requisitos_1(self):
+        """El requisito ya no se llama «Descripción»: aparece «Requisito 1»."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r, 'Requisitos <span data-numero>1</span>')
+        self.assertContains(r, 'Contenido del requisito')
+        self.assertNotContains(r, '<label for="id_requisitos-0-descripcion">Descripción</label>')
+
+    def test_se_pueden_elegir_varios_municipios(self):
+        """Municipios múltiples: todos quedan relacionados al trámite."""
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Trámite en dos municipios',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'presencial',
+            'municipios': [municipio('Candelaria').pk, municipio('Azara').pk],
+            'organismo': organismo().pk,
+            'descripcion': 'Se puede hacer en ambos',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Trámite en dos municipios')
+        self.assertEqual(
+            {m.nombre for m in nuevo.municipios.all()},
+            {'Candelaria', 'Azara'},
+        )
+        # El municipio principal (FK) queda dentro de los elegidos: la
+        # ficha pública sigue mostrando un municipio real.
+        self.assertIn(nuevo.municipio, nuevo.municipios.all())
+
+    def test_al_editarse_la_seleccion_de_municipios_se_actualiza(self):
+        t = tramite()
+        azara = municipio('Azara')
+
+        self.client.post(reverse('panel_tramite_editar', args=[t.pk]), {
+            'titulo': t.titulo, 'tema': t.tema.pk,
+            'modalidad': t.modalidad, 'municipios': [t.municipio.pk,
+                                                     azara.pk],
+            'organismo': t.organismo.pk, 'descripcion': t.descripcion,
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+        })
+
+        t.refresh_from_db()
+        azara.refresh_from_db()
+        self.assertEqual(t.municipios.count(), 2)
+        self.assertIn(azara, t.municipios.all())
+
+    def test_con_modalidad_virtual_se_exigen_enlaces(self):
+        total_antes = Tramite.objects.count()
+
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Turnos virtuales',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'virtual',
+            'municipios': [municipio().pk],
+            'organismo': organismo().pk,
+            'descripcion': 'Se pide en línea',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+        })
+
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'al menos un enlace oficial')
+        self.assertEqual(Tramite.objects.count(), total_antes)
+
+    def test_con_modalidad_presencial_se_exigen_direcciones(self):
+        total_antes = Tramite.objects.count()
+
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Renovación presencial',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'presencial',
+            'municipios': [municipio().pk],
+            'organismo': organismo().pk,
+            'descripcion': 'Se pide en una oficina',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'direcciones-TOTAL_FORMS': '0', 'direcciones-INITIAL_FORMS': '0',
+            'direcciones-MIN_NUM_FORMS': '0',
+            'direcciones-MAX_NUM_FORMS': '1000',
+        })
+
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'al menos una dirección de atención')
+        self.assertEqual(Tramite.objects.count(), total_antes)
+
+    def test_un_enlace_incompleto_corta_el_guardado(self):
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'DNI virtual',
+            'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
+            'modalidad': 'virtual',
+            'municipios': [municipio().pk],
+            'organismo': organismo().pk,
+            'descripcion': 'Se pide online',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '1', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+            'enlaces-0-nombre': 'Pedir turno',   # sin URL
+        })
+
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(Tramite.objects.filter(titulo='DNI virtual').exists())
+
+    def test_sin_archivos_se_puede_crear_normalmente(self):
+        r = self.client.post(reverse('panel_tramite_nuevo'), {
+            'titulo': 'Reclamo por luz',
+            'tema': Tema.objects.get_or_create(nombre='Impuestos')[0].pk,
+            'modalidad': 'presencial',
+            'municipios': [municipio().pk],
+            'organismo': organismo().pk,
+            'descripcion': 'Se hace presencialmente',
+            'destacado': '', 'activo': 'on',
+            'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
+            'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
+            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+            'direcciones-TOTAL_FORMS': '1', 'direcciones-INITIAL_FORMS': '0',
+            'direcciones-MIN_NUM_FORMS': '0',
+            'direcciones-MAX_NUM_FORMS': '1000',
+            'direcciones-0-lugar': 'Oficina de la comuna',
+            'direcciones-0-municipio': municipio().pk,
+            'direcciones-0-direccion': 'Av. Mitre 100',
+        })
+
+        self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Reclamo por luz')
+        self.assertEqual(nuevo.archivos.count(), 0)
+        self.assertEqual(nuevo.direcciones.count(), 1)
+
+    def test_cada_elemento_agregado_tiene_su_boton_de_eliminar(self):
+        """SPEC 4: cada fila de requisitos, enlaces, direcciones y archivos
+        tiene su propio botón «✕ Eliminar»."""
+        r = self.client.get(reverse('panel_tramite_nuevo'))
+
+        self.assertContains(r, 'data-quitar-fila')
+        self.assertContains(r, '✕ Eliminar')
+        # Una por sección: el botón viaja en la fila, no uno general.
+        for seccion in ('requisitos', 'enlaces', 'direcciones', 'archivos'):
+            self.assertContains(r, 'data-filas="%s"' % seccion)
+
+    def test_el_boton_nuevo_tramite_esta_en_el_panel(self):
+        r = self.client.get(reverse('panel'))
+
+        self.assertContains(r, 'Nuevo trámite')
+        self.assertContains(r, reverse('panel_tramite_nuevo'))
+
+    def test_los_municipios_de_la_lista_completa_estan_disponibles(self):
+        """La SPEC enumera los municipios: la migración los cargó a la base."""
+        from munitramites.models import Municipio as ModeloMunicipio
+
+        nombres = set(ModeloMunicipio.objects.values_list('nombre', flat=True))
+
+        for nombre in (
+            'Posadas', 'Oberá', 'Eldorado', 'Puerto Iguazú', 'Apóstoles',
+            'Candelaria', 'San Vicente', 'Comandante Andresito', 'Azara',
+            'Leandro N. Alem', '25 de Mayo', 'Jardín América', 'Garupá',
+        ):
+            self.assertIn(nombre, nombres)
+
+        self.assertEqual(len(nombres), 69)
 
 
 class CentroDeConsultasTests(TestCase):
@@ -917,6 +1436,162 @@ class DashboardTests(TestCase):
 
         self.assertContains(r, 'Cambio de domicilio')
         self.assertContains(r, 'No me llego el turno')
+
+
+class DashboardDatosTests(TestCase):
+    """Indicadores, filtros, ranking y actividad calculados con datos reales."""
+
+    def setUp(self):
+        self.client.force_login(administrador())
+
+    def test_los_indicadores_salen_de_la_base(self):
+        tramite('Trámite publicado')
+        tramite('Trámite retirado', activo=False)
+        Consulta.objects.create(asunto='Pendiente', contenido='Hola')
+        respondida = Consulta.objects.create(
+            asunto='Respondida', contenido='Hola',
+            estado=Consulta.Estado.RESPONDIDO,
+        )
+        respondida.estado = Consulta.Estado.RESPONDIDO
+        respondida.save(update_fields=['estado'])
+        ciudadano()
+
+        r = self.client.get(reverse('panel'))
+
+        self.assertEqual(r.context['tramites_total'], 2)
+        self.assertEqual(r.context['tramites_activos'], 1)
+        self.assertEqual(r.context['tramites_inactivos'], 1)
+        self.assertEqual(r.context['consultas_total'], 2)
+        self.assertEqual(r.context['consultas_pendientes'], 1)
+        self.assertEqual(r.context['usuarios'], 1)
+
+    def test_el_filtro_de_periodo_deja_afuera_lo_viejo(self):
+        vieja = Consulta.objects.create(asunto='Vieja', contenido='Hola')
+        Consulta.objects.filter(pk=vieja.pk).update(
+            fecha=timezone.now() - timedelta(days=90)
+        )
+        Consulta.objects.create(asunto='Nueva', contenido='Hola')
+
+        r = self.client.get(reverse('panel'), {'periodo': '30d'})
+        self.assertEqual(r.context['consultas_total'], 1)
+
+        r = self.client.get(reverse('panel'), {'periodo': 'todo'})
+        self.assertEqual(r.context['consultas_total'], 2)
+
+        r = self.client.get(reverse('panel'), {
+            'desde': (timezone.localdate() - timedelta(days=100)).isoformat(),
+            'hasta': timezone.localdate().isoformat(),
+        })
+        self.assertEqual(r.context['consultas_total'], 2)
+        self.assertTrue(r.context['filtros']['personalizado'])
+
+    def test_los_filtros_de_estado_municipio_y_modalidad(self):
+        posadas = municipio('Posadas')
+        obera = municipio('Oberá')
+        presencial = tramite(
+            'Presencial en Posadas', municipio=posadas, modalidad='presencial',
+        )
+        virtual = tramite(
+            'Virtual en Oberá', municipio=obera, modalidad='virtual',
+        )
+        Consulta.objects.create(
+            asunto='De Posadas', contenido='Hola', tramite=presencial,
+        )
+        Consulta.objects.create(
+            asunto='De Oberá', contenido='Hola', tramite=virtual,
+            estado=Consulta.Estado.RESPONDIDO,
+        )
+
+        r = self.client.get(reverse('panel'), {'estado': 'respondido'})
+        self.assertEqual(r.context['consultas_grafico_total'], 1)
+
+        r = self.client.get(reverse('panel'), {'municipio': obera.pk})
+        self.assertEqual(r.context['consultas_total'], 1)
+        self.assertEqual(r.context['tramites_total'], 1)
+
+        r = self.client.get(reverse('panel'), {'modalidad': 'virtual'})
+        self.assertEqual(r.context['tramites_total'], 1)
+        self.assertEqual(r.context['consultas_total'], 1)
+
+    def test_el_ranking_y_los_municipios_cuentan_las_consultas(self):
+        t = tramite('Trámite más consultado')
+        otro = tramite('Otro trámite')
+        for asunto in ('Uno', 'Dos', 'Tres'):
+            Consulta.objects.create(
+                asunto=asunto, contenido='Hola', tramite=t,
+            )
+        Consulta.objects.create(
+            asunto='Cuatro', contenido='Hola', tramite=otro,
+        )
+
+        r = self.client.get(reverse('panel', ), {'periodo': 'todo'})
+
+        self.assertEqual(r.context['ranking'][0]['pk'], t.pk)
+        self.assertEqual(r.context['ranking'][0]['n'], 3)
+        self.assertEqual(r.context['por_municipio'][0]['n'], 4)
+
+    def test_la_actividad_incluye_la_respuesta_de_una_consulta(self):
+        consulta = Consulta.objects.create(
+            asunto='Necesito una respuesta', contenido='Hola',
+        )
+
+        self.client.post(
+            reverse('panel_consulta', args=[consulta.pk]),
+            {'respuesta': 'Te respondemos por acá.'},
+        )
+
+        consulta.refresh_from_db()
+        self.assertIsNotNone(consulta.fecha_respuesta)
+        self.assertEqual(consulta.respondido_por.username, 'admin')
+
+        r = self.client.get(reverse('panel'))
+        self.assertContains(r, 'Consulta respondida')
+        self.assertEqual(r.context['respuestas_medidas'], 1)
+        self.assertTrue(r.context['promedio_respuesta'])
+
+    def test_los_estados_vacios_no_inventan_datos(self):
+        r = self.client.get(reverse('panel'))
+
+        self.assertContains(r, 'No hay consultas registradas en este período.')
+        self.assertContains(r, 'Sin datos')
+        self.assertContains(r, 'No hay movimientos registrados en este período.')
+        self.assertEqual(r.context['promedio_respuesta'], '')
+
+    def test_el_administrativo_ve_solo_sus_tickets_y_no_las_cuentas(self):
+        admin = administrador(username='jefe')
+        gestor = administrativo(username='gestor')
+        Ticket.objects.create(
+            asunto='Del administrador', descripcion='Hola', creado_por=admin,
+        )
+        Ticket.objects.create(
+            asunto='Del gestor', descripcion='Hola', creado_por=gestor,
+        )
+        self.client.force_login(gestor)
+
+        r = self.client.get(reverse('panel'))
+
+        self.assertEqual(r.context['tickets_total'], 1)
+        self.assertEqual(r.context['tickets_pendientes'], 1)
+        self.assertNotContains(r, reverse('panel_usuarios'))
+
+    def test_el_endpoint_devuelve_solo_el_contenido(self):
+        Consulta.objects.create(asunto='Una consulta', contenido='Hola')
+
+        r = self.client.get(
+            reverse('panel_dashboard_datos'), {'periodo': 'todo'}
+        )
+
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'pn-dashboard-contenido')
+        self.assertContains(r, 'Consultas por período')
+        self.assertNotContains(r, 'pn-menu')
+
+    def test_el_endpoint_respeta_los_permisos(self):
+        self.client.force_login(ciudadano())
+
+        r = self.client.get(reverse('panel_dashboard_datos'))
+
+        self.assertEqual(r.status_code, 302)
 
 
 class DisenoTests(TestCase):

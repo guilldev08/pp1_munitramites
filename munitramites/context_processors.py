@@ -6,7 +6,7 @@ Solo agregá acá cosas que necesiten TODAS las paginas.
 """
 
 from .forms import RegistroForm
-from .models import gestiona_cuentas
+from .models import gestiona_cuentas, usa_tickets
 
 
 def formularios_modales(request):
@@ -24,13 +24,15 @@ def formularios_modales(request):
 
 
 def rol_usuario(request):
-    """¿La sesión gestiona cuentas? Lo usan la pestaña y las tarjetas
-    «Usuarios» del panel.
+    """¿La sesión gestiona cuentas y/o usa tickets?
 
-    Solo se calcula para logueados, y `gestiona_cuentas` corta sin pegar
-    una consulta cuando la cuenta es corriente, así las páginas comunes
-    no pagan nada por esto.
+    Lo usan la pestaña y las tarjetas del panel. Solo se calcula para
+    logueados, y los helpers cortan sin pegar consultas cuando la cuenta
+    es corriente, así las páginas comunes no pagan nada por esto.
     """
     if not request.user.is_authenticated:
         return {}
-    return {'gestiona_cuentas': gestiona_cuentas(request.user)}
+    return {
+        'gestiona_cuentas': gestiona_cuentas(request.user),
+        'usa_tickets': usa_tickets(request.user),
+    }

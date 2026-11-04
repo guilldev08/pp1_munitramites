@@ -222,16 +222,20 @@ class AdministradorTests(TestCase):
             'tema': Tema.objects.get_or_create(nombre='Documentación')[0].pk,
             'modalidad': 'virtual',
             'descripcion': 'Se pide en linea.',
-            'municipio': municipio().pk,
+            'municipios': [municipio().pk],
             'organismo': organismo().pk,
             'destacado': 'on', 'activo': 'on',
             'requisitos-TOTAL_FORMS': '0', 'requisitos-INITIAL_FORMS': '0',
             'requisitos-MIN_NUM_FORMS': '0', 'requisitos-MAX_NUM_FORMS': '1000',
-            'enlaces-TOTAL_FORMS': '0', 'enlaces-INITIAL_FORMS': '0',
+            'enlaces-TOTAL_FORMS': '1', 'enlaces-INITIAL_FORMS': '0',
             'enlaces-MIN_NUM_FORMS': '0', 'enlaces-MAX_NUM_FORMS': '1000',
+            'enlaces-0-nombre': 'Iniciar trámite',
+            'enlaces-0-url': 'https://ejemplo.gob.ar',
         })
 
         self.assertEqual(r.status_code, 302)
+        nuevo = Tramite.objects.get(titulo='Certificado de residencia')
+        self.assertEqual(nuevo.enlaces.count(), 1)
         self.assertTrue(
             Tramite.objects.filter(titulo='Certificado de residencia').exists()
         )

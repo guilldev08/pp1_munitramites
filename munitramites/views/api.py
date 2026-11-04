@@ -14,6 +14,7 @@ def api_tramites(request):
             'tema': str(t.tema),
             'modalidad': t.modalidad,
             'municipio': t.municipio.nombre,
+            'municipios': [m.nombre for m in t.municipios.all()],
             'organismo': t.organismo.nombre,
             'direcciones': [
                 {
@@ -26,6 +27,6 @@ def api_tramites(request):
         }
         for t in Tramite.objects.filter(activo=True)
         .select_related('municipio', 'organismo', 'tema')
-        .prefetch_related('direcciones__municipio')
+        .prefetch_related('municipios', 'direcciones__municipio')
     ]
     return JsonResponse({'count': len(datos), 'tramites': datos})

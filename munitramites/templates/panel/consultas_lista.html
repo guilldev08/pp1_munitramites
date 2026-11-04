@@ -66,16 +66,21 @@
             </td>
             <td>
               <div style="display:flex; gap:6px; flex-wrap:wrap">
-                <a class="uv-btn uv-btn--outline uv-btn--chico"
-                   href="{% url 'consulta_editar' c.pk %}?origen=panel">Editar</a>
-                <form method="post" action="{% url 'consulta_eliminar' c.pk %}"
-                      onsubmit="return confirm('¿Eliminar la consulta #{{ c.pk }}? Esta acción no se puede deshacer.')">
-                  {% csrf_token %}
-                  <input type="hidden" name="origen" value="panel">
-                  <button class="uv-btn uv-btn--peligro uv-btn--chico" type="submit">
-                    Eliminar
-                  </button>
-                </form>
+                {% if user.is_superuser or c.usuario_id == user.id %}
+                  <a class="uv-btn uv-btn--outline uv-btn--chico"
+                     href="{% url 'consulta_editar' c.pk %}?origen=panel">Editar</a>
+                  <form method="post" action="{% url 'consulta_eliminar' c.pk %}"
+                        onsubmit="return confirm('¿Eliminar la consulta #{{ c.pk }}? Esta acción no se puede deshacer.')">
+                    {% csrf_token %}
+                    <input type="hidden" name="origen" value="panel">
+                    <button class="uv-btn uv-btn--peligro uv-btn--chico" type="submit">
+                      Eliminar
+                    </button>
+                  </form>
+                {% else %}
+                  <a class="uv-btn uv-btn--outline uv-btn--chico"
+                     href="{% url 'panel_consulta' c.pk %}">Responder</a>
+                {% endif %}
               </div>
             </td>
           </tr>

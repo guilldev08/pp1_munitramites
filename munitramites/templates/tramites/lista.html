@@ -26,9 +26,14 @@
             {% else %}Sin resultados.{% endif %}
           </p>
         </div>
-        <a class="uv-btn uv-btn--outline" href="{% url 'tramites' %}" data-abrir="modal-chat">
-          ¿No lo encontrás? Preguntá
-        </a>
+        <div class="tr-acciones">
+          {% if user.is_staff or user.is_superuser %}
+            <a class="uv-btn uv-btn--verde" href="{% url 'panel_tramite_nuevo' %}">+ Nuevo trámite</a>
+          {% endif %}
+          <a class="uv-btn uv-btn--outline" href="{% url 'tramites' %}" data-abrir="modal-chat">
+            ¿No lo encontrás? Preguntá
+          </a>
+        </div>
       </div>
 
       {# --- Barra del asistente: preguntar sin salir del listado ------------- #}

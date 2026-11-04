@@ -1,0 +1,135 @@
+{% extends "panel/base_panel.html" %}
+{% load hora estaticos paginacion %}
+
+{% block panel_titulo %}Tickets internos{% endblock %}
+{% block panel_bajada %}
+  Canal aparte de las consultas ciudadanas: el rol administrativo abre
+  tickets con asunto, descripción y adjuntos; el administrador los
+  responde y cierra.
+{% endblock %}
+
+{% block panel_contenido %}
+{% if form_ticket %}
+  <div class="panel" style="margin-bottom:18px">
+    <h3 class="mt-0">Nuevo ticket</h3>
+    <form class="formulario" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for campo in form_ticket %}
+        <div class="campo">
+          <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+          {{ campo }}
+          {% if campo.help_text %}<span class="ayuda">{{ campo.help_text }}</span>{% endif %}
+          {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+        </div>
+      {% endfor %}
+      <button class="uv-btn" type="submit">Guardar ticket</button>
+    </form>
+  </div>
+{% endif %}
+
+<nav class="subfiltros" aria-label="Filtrar por estado">
+  <a href="?" {% if not estado %}class="activo"{% endif %}>Todos</a>
+  <a href="?estado=abierto" {% if estado == 'abierto' %}class="activo"{% endif %}>Abiertos</a>
+  <a href="?estado=respondido" {% if estado == 'respondido' %}class="activo"{% endif %}>Respondidos</a>
+  <a href="?estado=cerrado" {% if estado == 'cerrado' %}class="activo"{% endif %}>Cerrados</a>
+</nav>
+
+{% if pagina.object_list %}
+  <div class="tabla-wrap">
+    <table class="uv-tabla tabla">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Asunto</th>
+          {% if puede_gestionar %}<th>Abierto por</th>{% endif %}
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in pagina %}
+          <tr>
+            <td><a href="{% url 'panel_ticket_detalle' t.pk %}">#{{ t.pk }}</a></td>
+            <td>
+              <strong><a href="{% url 'panel_ticket_detalle' t.pk %}">{{ t.asunto }}</a></strong>
+              <div class="texto-suave texto-chico">{{ t.descripcion|truncatewords:16 }}</div>
+              {% if t.respuesta %}
+                <div class="uv-alerta uv-alerta--ok" style="margin-top:8px; margin-bottom:0; font-size:.85rem">
+                  <strong>Respuesta:</strong> {{ t.respuesta|truncatewords:20 }}
+                </div>
+              {% endif %}
+              {% if t.adjuntos.all %}
+                <div class="texto-suave texto-chico">
+                  {{ t.adjuntos.count }} adjunto{{ t.adjuntos.count|pluralize }}
+                </div>
+              {% endif %}
+            </td>
+            {% if puede_gestionar %}
+              <td>
+                {% if t.creado_por %}
+                  <strong>{{ t.creado_por.username }}</strong>
+                  <div class="texto-suave texto-chico">{{ t.creado_por.email|default:"sin correo" }}</div>
+                {% else %}—{% endif %}
+              </td>
+            {% endif %}
+            <td>
+              {% if t.estado == 'abierto' %}<span class="uv-badge uv-badge--rojo">{{ t.get_estado_display }}</span>
+              {% elif t.estado == 'respondido' %}<span class="uv-badge uv-badge--verde">{{ t.get_estado_display }}</span>
+              {% else %}<span class="uv-badge uv-badge--azul">{{ t.get_estado_display }}</span>{% endif %}
+            </td>
+            <td class="texto-chico">
+              {{ t.fecha|hora_local|date:"d/m/Y H:i" }}
+              {% if t.fecha_respuesta %}
+                <div class="texto-suave">
+                  Respondido {{ t.fecha_respuesta|hora_local|date:"d/m/Y H:i" }}
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div style="display:flex; gap:6px; flex-wrap:wrap">
+                <a class="uv-btn uv-btn--outline uv-btn--chico"
+                   href="{% url 'panel_ticket_detalle' t.pk %}">Ver</a>
+                {% if user.is_superuser or t.creado_por_id == user.id %}
+                  <form method="post" action="{% url 'panel_ticket_eliminar' t.pk %}"
+                        onsubmit="return confirm('¿Eliminar el ticket #{{ t.pk }}? Esta acción no se puede deshacer.')">
+                    {% csrf_token %}
+                    <button class="uv-btn uv-btn--peligro uv-btn--chico" type="submit">
+                      Eliminar
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagina.paginator.num_pages > 1 %}
+    <nav class="paginacion">
+      {% if pagina.has_previous %}
+        <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.previous_page_number }}">← Anterior</a>
+      {% else %}<span class="inactivo">← Anterior</span>{% endif %}
+
+      {% for n in pagina|paginas_ventana %}
+        {% if n == '…' %}<span class="puntos" aria-hidden="true">…</span>
+        {% elif n == pagina.number %}<span class="actual">{{ n }}</span>
+        {% else %}<a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ n }}">{{ n }}</a>{% endif %}
+      {% endfor %}
+
+      {% if pagina.has_next %}
+        <a href="?{% if estado %}estado={{ estado }}&amp;{% endif %}pagina={{ pagina.next_page_number }}">Siguiente →</a>
+      {% else %}<span class="inactivo">Siguiente →</span>{% endif %}
+    </nav>
+  {% endif %}
+
+{% else %}
+  <div class="vacio">
+    <div class="vacio__icono"><img class="ic" src="{% estatico 'img/iconos/inbox.svg' %}" alt=""></div>
+    <h3>No hay tickets{% if estado %} con ese estado{% endif %}</h3>
+    <p>{% if form_ticket %}Cargá el primero con el formulario de arriba.{% else %}Cuando el rol administrativo abra un ticket, aparece acá.{% endif %}</p>
+  </div>
+{% endif %}
+{% endblock %}

@@ -83,18 +83,20 @@
           </div>
         {% endif %}
 
-        <a class="uv-btn uv-btn--secundario boton--ancho" style="margin-bottom:10px"
-           href="{% url 'consulta_editar' consulta.pk %}">
-          Editar consulta
-        </a>
+        {% if user.is_superuser or consulta.usuario_id == user.id %}
+          <a class="uv-btn uv-btn--secundario boton--ancho" style="margin-bottom:10px"
+             href="{% url 'consulta_editar' consulta.pk %}">
+            Editar consulta
+          </a>
 
-        <form method="post" action="{% url 'consulta_eliminar' consulta.pk %}"
-              onsubmit="return confirm('¿Eliminar la consulta #{{ consulta.pk }}? Esta acción no se puede deshacer.')">
-          {% csrf_token %}
-          <button class="uv-btn uv-btn--peligro uv-btn--ancho" type="submit">
-            Eliminar consulta
-          </button>
-        </form>
+          <form method="post" action="{% url 'consulta_eliminar' consulta.pk %}"
+                onsubmit="return confirm('¿Eliminar la consulta #{{ consulta.pk }}? Esta acción no se puede deshacer.')">
+            {% csrf_token %}
+            <button class="uv-btn uv-btn--peligro uv-btn--ancho" type="submit">
+              Eliminar consulta
+            </button>
+          </form>
+        {% endif %}
       </aside>
     </div>
   </div>

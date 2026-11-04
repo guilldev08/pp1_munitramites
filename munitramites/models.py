@@ -100,6 +100,16 @@ class Tramite(models.Model):
     municipio = models.ForeignKey(
         Municipio, on_delete=models.PROTECT, related_name='tramites'
     )
+    # Municipios (1 a N) donde se hace el trámite. El panel los carga con
+    # una lista de casilleros y `municipio` queda siempre apuntando al
+    # primero elegido: así la ficha pública, los filtros viejos y el
+    # /admin/ siguen mostrando el municipio principal sin cambios, pero
+    # se puede declarar que un mismo trámite atienden varios municipios.
+    # La carga inicial copia el municipio viejo de cada trámite (ver
+    # migración 0013).
+    municipios = models.ManyToManyField(
+        Municipio, related_name='tramites_municipios',
+    )
     organismo = models.ForeignKey(
         Organismo, on_delete=models.PROTECT, related_name='tramites'
     )
@@ -459,7 +469,17 @@ class Consulta(models.Model):
         max_length=20, choices=Estado.choices, default=Estado.PENDIENTE
     )
     respuesta = models.TextField(blank=True, default='')
+    respondido_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='consultas_respondidas',
+        verbose_name='Respondida por',
+        help_text='Cuenta del staff que envió la primera respuesta.',
+    )
     fecha = models.DateTimeField(auto_now_add=True)
+    fecha_respuesta = models.DateTimeField(
+        null=True, blank=True, verbose_name='Fecha de respuesta',
+        help_text='Se completa cuando el staff responde la consulta.',
+    )
     fecha_edicion = models.DateTimeField(
         null=True, blank=True, verbose_name='Última edición',
         help_text='Se completa cuando el autor o el staff editan la consulta.',
@@ -472,3 +492,98 @@ class Consulta(models.Model):
 
     def __str__(self):
         return f'[{self.get_tipo_display()}] {self.asunto}'
+
+
+class Ticket(models.Model):
+    """Ticket interno que carga el rol administrativo desde el panel.
+
+    Es un canal APARTE de las consultas ciudadanas: las consultas las
+    envía el ciudadano desde el sitio y el staff las responde; los
+    tickets son una bitácora interna (asunto, descripción y adjuntos).
+    El administrativo los crea y ve los suyos; el administrador y el
+    superusuario los leen, responden y cierran.
+    """
+
+    class Estado(models.TextChoices):
+        ABIERTO = 'abierto', 'Abierto'
+        RESPONDIDO = 'respondido', 'Respondido'
+        CERRADO = 'cerrado', 'Cerrado'
+
+    asunto = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    creado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='tickets',
+    )
+    estado = models.CharField(
+        max_length=20, choices=Estado.choices, default=Estado.ABIERTO
+    )
+    respuesta = models.TextField(blank=True, default='')
+    respondido_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='tickets_respondidos',
+    )
+    fecha = models.DateTimeField(auto_now_add=True)
+    fecha_respuesta = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Ticket interno'
+        verbose_name_plural = 'Tickets internos'
+        ordering = ['-fecha']
+
+    def __str__(self):
+        return f'#{self.pk} {self.asunto}'
+
+
+class AdjuntoTicket(models.Model):
+    """Archivo adjunto de un ticket interno (se sube desde el panel)."""
+
+    ticket = models.ForeignKey(
+        Ticket, on_delete=models.CASCADE, related_name='adjuntos'
+    )
+    archivo = models.FileField(
+        upload_to='tickets/%Y/%m/', max_length=200,
+        help_text='PDF, Word, imagen o cualquier archivo que ayude.',
+    )
+    nombre = models.CharField(
+        max_length=200, blank=True, default='',
+        help_text='Nombre original del archivo, para mostrarlo en la lista.',
+    )
+    subido = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Adjunto del ticket'
+        verbose_name_plural = 'Adjuntos del ticket'
+        ordering = ['id']
+
+    def __str__(self):
+        return self.nombre or self.archivo.name
+
+
+def usa_tickets(user):
+    """¿Esta cuenta crea tickets internos en el panel?
+
+    Solo el rol administrativo (el máximo de los roles reales) y el
+    superusuario, que está fuera de los roles y se usa para desarrollo.
+    """
+    if user is None or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    if not user.is_staff:
+        return False
+    perfil = getattr(user, 'perfil', None)
+    return perfil is not None and perfil.rol == Perfil.Rol.ADMINISTRATIVO
+
+
+def puede_gestionar_tickets(user):
+    """¿Esta cuenta lee, responde y cierra tickets de cualquiera?
+
+    El rol administrador y el superusuario. El administrativo solo ve y
+    carga los suyos.
+    """
+    if user is None or not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return gestiona_cuentas(user)

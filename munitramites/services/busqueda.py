@@ -134,6 +134,10 @@ def _campos(tramite):
         for d in tramite.direcciones.all()
     )
     organismo = f'{tramite.organismo.nombre} {tramite.organismo.ocupacion}'
+    otros_municipios = ' '.join(
+        m.nombre for m in tramite.municipios.all()
+        if m.pk != tramite.municipio_id
+    )
     campos = (
         (tramite.titulo, 6.0),
         (requisitos, 2.0),
@@ -142,6 +146,7 @@ def _campos(tramite):
         (direcciones, 1.0),
         (str(tramite.tema), 0.8),
         (tramite.municipio.nombre, 0.6),
+        (otros_municipios, 0.6),
         (tramite.get_modalidad_display(), 0.4),
     )
     return [

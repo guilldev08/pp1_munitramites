@@ -59,7 +59,16 @@
 {% if pagina.object_list %}
   <div class="rejilla">
     {% for t in pagina %}
-      <a class="tarjeta" href="{% url 'tramite_detalle' t.pk %}">
+      {# La tarjeta ya no es un <a> entero: un enlace invisible cubre todo el         #}
+      {# bloque (un click lleva a la ficha) y, para administradores, el botón         #}
+      {# "Editar" va encima y apunta directo al panel, sin pasar por la ficha.        #}
+      <div class="tarjeta{% if user.is_staff or user.is_superuser %} tarjeta--con-editar{% endif %}">
+        <a class="tarjeta__clic" href="{% url 'tramite_detalle' t.pk %}"
+           aria-label="Ver el trámite {{ t.titulo }}"></a>
+        {% if user.is_staff or user.is_superuser %}
+          <a class="tarjeta__editar" href="{% url 'panel_tramite_editar' t.pk %}"
+             title="Editar este trámite en el panel">Editar</a>
+        {% endif %}
         <div class="etiquetas">
           <span class="etiqueta uv-badge uv-badge--azul etiqueta--tema">{{ t.tema }}</span>
           <span class="etiqueta uv-badge etiqueta--{{ t.modalidad }}">{{ t.get_modalidad_display }}</span>
@@ -71,7 +80,7 @@
           <span><img class="ic" src="{% estatico 'img/iconos/landmark.svg' %}" alt=""> {{ t.organismo.nombre }}</span>
           <span><img class="ic" src="{% estatico 'img/iconos/map-pin.svg' %}" alt=""> {{ t.municipio.nombre }}{% if t.direcciones.all %} · {{ t.direcciones.all|length }} sede{{ t.direcciones.all|length|pluralize }}{% endif %} · {{ t.requisitos.count }} requisito{{ t.requisitos.count|pluralize }}</span>
         </div>
-      </a>
+      </div>
     {% endfor %}
   </div>
 

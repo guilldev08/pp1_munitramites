@@ -849,6 +849,17 @@
           sacarFila(fila, contenedor);
         });
       }
+      // Botón «✕ Eliminar» de la fila: marca la casilla DELETE del formset
+      // (así la baja viaja al backend) y saca la fila de la vista.
+      var quitar = fila.querySelector('[data-quitar-fila]');
+      if (quitar && !quitar.hasAttribute('data-preparado')) {
+        quitar.setAttribute('data-preparado', '');
+        quitar.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          if (box) box.checked = true;
+          sacarFila(fila, contenedor);
+        });
+      }
       sacarFila(fila, contenedor);
     });
 
@@ -888,6 +899,13 @@
           'beforeend',
           plantilla.innerHTML.replace(/__prefix__/g, String(n))
         );
+        // La fila recién agregada por el usuario queda marcada: el
+        // asistente por etapas la exige completa aunque todavía esté
+        // vacía (SPEC 2026-11: «no permitir avanzar si algún requisito
+        // agregado está vacío»).
+        var filas = filasDe(contenedor);
+        var nueva = filas[filas.length - 1];
+        if (nueva) nueva.classList.add('inline-fila--nueva');
         management.value = n + 1;
         prepararFilas(contenedor);
       });
@@ -895,8 +913,395 @@
   }
 
   /* --------------------------------------------------------------------
-     Marcar / desmarcar todas las filas del listado del panel.
+     Formulario de trámite por ETAPAS (SPEC 2026-11).
+
+     Todo vive en una sola página: <section data-paso="…">. Reglas:
+     - Enlaces oficiales solo con modalidad Virtual/Mixta y direcciones
+       con Presencial/Mixta (data-solo-modalidad); el JS salta esas
+       etapas si no aplican y NUNCA borra sus datos si se cambia.
+     - «Siguiente» valida la etapa: los required vacíos y toda fila con
+       algo cargado va completa; las filas que el usuario agregó con
+       «+ Agregar …» se exigen completas aunque estén vacías.
+     - La barra de etapas (data-ir) deja saltar solo a etapas ya listas
+       o a la primera que quede pendiente.
+     - El envío (data-enviar) solo pasa si todas las etapas visibles
+       validan; el backend revalida todo igual.
+     - Sin JavaScript el atributo data-js-tramite no está: las secciones
+       se ven todas juntas y el form manda de una.
      -------------------------------------------------------------------- */
+  function terminaCon(texto, sufijo) {
+    return texto.length >= sufijo.length &&
+      texto.slice(texto.length - sufijo.length) === sufijo;
+  }
+
+  function campoVacio(el) {
+    if (el.type === 'file') return el.files.length === 0;
+    return el.value == null || el.value.trim() === '';
+  }
+
+  function esCampoInterno(el) {
+    // id y DELETE son administrativas del formset: no son datos de la fila.
+    var nombre = el.name || '';
+    return terminaCon(nombre, '-id') || terminaCon(nombre, '-DELETE');
+  }
+
+  function camposDeFila(fila) {
+    var campos = [];
+    fila.querySelectorAll('input, select, textarea').forEach(function (el) {
+      if (!esCampoInterno(el) && el.type !== 'hidden') campos.push(el);
+    });
+    return campos;
+  }
+
+  function filaTieneDatos(fila) {
+    return camposDeFila(fila).some(function (el) {
+      if (el.type === 'checkbox') return false;
+      if (el.type === 'file') return el.files.length > 0;
+      if (el.tagName === 'SELECT') {
+        // Un select arranca con un valor por defecto (ej.: el «Tipo» de
+        // un archivo en «documento»): no cuenta como dato hasta que el
+        // usuario elige otra opción.
+        var elegida = el.options[el.selectedIndex];
+        return !campoVacio(el) && !(elegida && elegida.defaultSelected);
+      }
+      return !campoVacio(el);
+    });
+  }
+
+  function primerCampoMaloDeFila(fila) {
+    var malo = null;
+    camposDeFila(fila).forEach(function (el) {
+      if (malo || el.type === 'checkbox') return;
+      if (el.closest('.campo--opcional')) return; // ej.: descripción del archivo
+      if (campoVacio(el)) {
+        malo = el;
+      } else if (typeof el.checkValidity === 'function' && !el.checkValidity()) {
+        malo = el;
+      }
+    });
+    return malo;
+  }
+
+  function filasConDatos(seccion) {
+    var filas = [];
+    seccion.querySelectorAll('.inline-fila').forEach(function (fila) {
+      if (fila.classList.contains('inline-fila--borrar')) return;
+      if (fila.classList.contains('inline-fila--oculta')) return;
+      // Las filas clonadas con «+ Agregar …» cuentan aunque estén
+      // vacías: si el usuario las agregó, las tiene que completar.
+      if (filaTieneDatos(fila) ||
+          fila.classList.contains('inline-fila--nueva')) {
+        filas.push(fila);
+      }
+    });
+    return filas;
+  }
+
+  function prepararPasosTramite() {
+    var raiz = $('[data-pasos-tramite]');
+    if (!raiz) return;
+    raiz.setAttribute('data-js-tramite', '1');
+
+    var secciones = Array.prototype.slice.call(
+      raiz.querySelectorAll('[data-paso]')
+    );
+    var modalidad = raiz.querySelector('[name="modalidad"]');
+    var salidaEstado = raiz.querySelector('[data-estado-pasos]');
+    var mensajeError = raiz.querySelector('[data-errores-paso]');
+    var resumen = raiz.querySelector('[data-resumen]');
+    var botonAtras = raiz.querySelector('[data-atras]');
+    var botonSiguiente = raiz.querySelector('[data-siguiente]');
+    var botonEnviar = raiz.querySelector('[data-enviar]');
+    var posicion = 0;
+
+    function aplicaLaModalidad(seccion) {
+      var cond = seccion.getAttribute('data-solo-modalidad');
+      if (!cond) return true;
+      var valor = modalidad ? modalidad.value : '';
+      return cond.split(',').indexOf(valor) !== -1;
+    }
+
+    function aplicaCondicional() {
+      secciones.forEach(function (seccion) {
+        seccion.classList.toggle('paso--aplica', aplicaLaModalidad(seccion));
+      });
+    }
+
+    function visibles() {
+      return secciones.filter(function (seccion) {
+        return seccion.classList.contains('paso--aplica');
+      });
+    }
+
+    /* Valida una etapa. `reportar` en false solo mira (para pintar la
+       barra de pasos); en true enfoca el primer campo con error y
+       muestra el mensaje debajo del formulario. */
+    function validarSeccion(seccion, reportar) {
+      var foco = null;
+      var textos = [];
+      var nombreEtapa = seccion.getAttribute('data-nombre-estado') || 'esta etapa';
+
+      // 1) Campos obligatorios de los datos del trámite.
+      seccion.querySelectorAll('input, select, textarea').forEach(function (el) {
+        if (esCampoInterno(el) || el.type === 'hidden') return;
+        if (el.type === 'checkbox' || !el.required) return;
+        if (campoVacio(el) || (el.willValidate && !el.checkValidity())) {
+          if (!foco) foco = el;
+          textos.push('Completá «' + (el.getAttribute('data-titulo') ||
+            (el.closest('.campo') && el.closest('.campo').querySelector('label')
+             ? el.closest('.campo').querySelector('label').textContent
+             : 'el campo')) + '».');
+        }
+      });
+
+      // 2) Al menos un municipio marcado.
+      var grilla = seccion.querySelector('.municipios-grilla');
+      if (grilla && !grilla.querySelector('input[type="checkbox"]:checked')) {
+        var primera = grilla.querySelector('input[type="checkbox"]');
+        if (!foco) foco = primera;
+        textos.push('Elegí al menos un municipio.');
+      }
+
+      // 3) Filas: si una fila tiene algo cargado, va completa.
+      filasConDatos(seccion).forEach(function (fila) {
+        var malo = primerCampoMaloDeFila(fila);
+        if (malo) {
+          if (!foco) foco = malo;
+          textos.push('Completá la fila «' + filaTitulo(fila) + '».');
+        }
+      });
+
+      // 4) Mínimo por etapa según la modalidad (1 enlace, 1 dirección).
+      var minimo = parseInt(seccion.getAttribute('data-minimo') || '0', 10);
+      if (minimo > 0) {
+        var completas = 0;
+        seccion.querySelectorAll('.inline-fila').forEach(function (fila) {
+          if (fila.classList.contains('inline-fila--borrar') ||
+              fila.classList.contains('inline-fila--oculta')) return;
+          if (filaTieneDatos(fila) && !primerCampoMaloDeFila(fila)) completas += 1;
+        });
+        if (completas < minimo) {
+          textos.push(seccion.getAttribute('data-msj-minimo'));
+        }
+      }
+
+      if (reportar) {
+        if (foco) {
+          try { foco.reportValidity(); } catch (e) { foco.focus(); }
+        }
+        if (mensajeError) {
+          mensajeError.hidden = !textos.length;
+          if (textos.length) {
+            mensajeError.textContent = 'Falta completar «' + nombreEtapa +
+              '»: ' + textos.join(' ');
+          }
+        }
+      }
+      return textos.length === 0;
+    }
+
+    function filaTitulo(fila) {
+      var parrafo = fila.querySelector('.inline-fila__titulo');
+      if (!parrafo) return 'fila';
+      var texto = parrafo.textContent.replace(/\s+/g, ' ').trim();
+      return texto || 'fila';
+    }
+
+    function pintarEtapa() {
+      aplicaCondicional();
+      var lista = visibles();
+      secciones.forEach(function (seccion) {
+        seccion.classList.toggle('paso--visible', false);
+      });
+      var actual = lista[Math.min(posicion, lista.length - 1)] || secciones[0];
+      posicion = Math.max(0, lista.indexOf(actual));
+      actual.classList.add('paso--visible');
+
+      // Barra: lista (verde), actual (señalada) y salto libre solo hasta
+      // la primera etapa sin terminar.
+      var primeraPendiente = null;
+      lista.forEach(function (seccion, i) {
+        var item = raiz.querySelector('[data-item="' + seccion.getAttribute('data-paso') + '"]');
+        if (!item) return;
+        var lista_ = validarSeccion(seccion, false);
+        item.classList.toggle('pasos__item--listo', lista_);
+        item.classList.toggle('pasos__item--actual', seccion === actual);
+        if (!lista_ && primeraPendiente === null) primeraPendiente = seccion;
+      });
+      if (salidaEstado) {
+        salidaEstado.textContent = 'Etapa ' + (posicion + 1) + ' de ' + lista.length;
+      }
+      if (botonAtras) botonAtras.hidden = posicion === 0;
+      var esUltima = posicion === lista.length - 1;
+      if (botonSiguiente) botonSiguiente.hidden = esUltima;
+      if (botonEnviar) botonEnviar.hidden = !esUltima;
+      if (esUltima && resumen) {
+        resumen.hidden = false;
+        resumen.textContent = resumenDelFormulario(lista);
+      } else if (resumen) {
+        resumen.hidden = true;
+      }
+      if (!esUltima && mensajeError) mensajeError.hidden = true;
+      return primeraPendiente;
+    }
+
+    function contador(seccion) {
+      var clave = seccion.getAttribute('data-paso');
+      if (clave === 'datos') {
+        var n = 0;
+        seccion.querySelectorAll('.municipios-grilla input[type="checkbox"]').forEach(function (box) {
+          if (box.checked) n += 1;
+        });
+        return plural(n, 'municipio', 'municipios');
+      }
+      return plural(filasConDatos(seccion).length,
+        clave === 'direcciones' ? 'dirección' : clave.slice(0, -1),
+        clave === 'direcciones' ? 'direcciones' : clave);
+    }
+
+    function plural(n, singular, pluralNombre) {
+      return n + ' ' + (n === 1 ? singular : pluralNombre);
+    }
+
+    function resumenDelFormulario(lista) {
+      var campo = raiz.querySelector('[name="titulo"]');
+      var titulo = campo && campo.value.trim() ? campo.value.trim() : 'sin título';
+      var partes = lista.map(function (seccion) {
+        return contador(seccion);
+      });
+      return 'Vas a guardar «' + titulo + '»: ' + partes.join(' · ')
+        + '. Cambiá lo que falte con «← Etapa anterior» y volvé acá.';
+    }
+
+    function irA(seccion) {
+      var lista = visibles();
+      posicion = Math.max(0, lista.indexOf(seccion));
+      try {
+        raiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) { /* el scroll suave es un extra, no un requisito */ }
+      pintarEtapa();
+    }
+
+    function avanzar() {
+      var lista = visibles();
+      if (validarSeccion(lista[posicion], true)) {
+        posicion += 1;
+        pintarEtapa();
+      }
+    }
+
+    function retroceder() {
+      posicion -= 1;
+      if (posicion < 0) posicion = 0;
+      pintarEtapa();
+    }
+
+    /* Salto directo desde la barra: solo a etapas listas o a la primera
+       pendiente; si hay algo sin completar antes, para ahí y lo muestra. */
+    function saltarA(destino) {
+      var lista = visibles();
+      var objetivo = lista.indexOf(destino);
+      for (var i = 0; i < objetivo; i++) {
+        if (!validarSeccion(lista[i], true)) {
+          posicion = i;
+          pintarEtapa();
+          return;
+        }
+      }
+      irA(destino);
+    }
+
+    secciones.forEach(function (seccion) {
+      seccion.setAttribute('data-nombre-estado', {
+        datos: 'Datos del trámite',
+        requisitos: 'Requisitos',
+        enlaces: 'Enlaces oficiales',
+        direcciones: 'Direcciones',
+        archivos: 'Archivos',
+      }[seccion.getAttribute('data-paso')] || 'el trámite');
+      if (seccion.getAttribute('data-minimo')) return;
+      if (seccion.getAttribute('data-paso') === 'enlaces') {
+        seccion.setAttribute('data-minimo', '1');
+        seccion.setAttribute('data-msj-minimo',
+          'Elegiste esta modalidad: cargá al menos un enlace oficial.');
+      }
+      if (seccion.getAttribute('data-paso') === 'direcciones') {
+        seccion.setAttribute('data-minimo', '1');
+        seccion.setAttribute('data-msj-minimo',
+          'Elegiste esta modalidad: cargá al menos una dirección de atención.');
+      }
+    });
+
+    if (botonSiguiente) {
+      botonSiguiente.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        avanzar();
+      });
+    }
+    if (botonAtras) {
+      botonAtras.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        retroceder();
+      });
+    }
+    raiz.querySelectorAll('[data-item]').forEach(function (item) {
+      item.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var destino = raiz.querySelector(
+          '[data-paso="' + item.getAttribute('data-item') + '"]'
+        );
+        if (destino && destino.classList.contains('paso--aplica')) {
+          saltarA(destino);
+        }
+      });
+    });
+    if (modalidad) {
+      modalidad.addEventListener('change', function () {
+        /* Cambiar la modalidad solo reordena qué etapas aplican: los
+           datos de una etapa escondida siguen ahí (SPEC 5.4). pintarEtapa
+           deja al usuario en la etapa más cercana que siga viva. */
+        aplicaCondicional();
+        pintarEtapa();
+      });
+    }
+
+    /* Enter o el botón enviar: en las etapas intermedias Enter SOLO
+       avanza (nunca manda el formulario); en la última se revalidan
+       todas las etapas y, si algo falla, se salta a la primera con
+       problemas. Igual el backend revalida TODO al recibir el POST. */
+    raiz.addEventListener('submit', function (ev) {
+      var lista = visibles();
+      var enUltima = posicion === lista.length - 1;
+      if (!enUltima) {
+        ev.preventDefault();
+        avanzar();
+        return;
+      }
+      var todoOk = lista.every(function (seccion) {
+        return validarSeccion(seccion, false);
+      });
+      if (!todoOk) {
+        ev.preventDefault();
+        for (var i = 0; i < lista.length; i += 1) {
+          if (!validarSeccion(lista[i], false)) {
+            posicion = i;
+            break;
+          }
+        }
+        pintarEtapa();
+        validarSeccion(lista[posicion], true);
+      }
+    });
+
+    /* La modalidad puede cambiar sin tocar datos de una etapa escondida:
+       cada vez que la selección vuelve a inclirla, sigue ahí. */
+    aplicaCondicional();
+    pintarEtapa();
+  }
+
+  /* --------------------------------------------------------------------
+      Marcar / desmarcar todas las filas del listado del panel.
+      -------------------------------------------------------------------- */
   function prepararMarcaTotal() {
     var maestro = $('[data-marcar-todo]');
     if (!maestro) return;
@@ -910,6 +1315,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     prepararClaves();
     prepararInlines();
+    prepararPasosTramite();
     prepararMarcaTotal();
     var abierto = $('.modal--abierto');
     if (abierto) document.body.style.overflow = 'hidden';

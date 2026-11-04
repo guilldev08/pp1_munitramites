@@ -45,6 +45,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.db.models import Count
+from django.utils import timezone
 from django.utils.html import format_html
 
 from .models import (
@@ -297,7 +298,8 @@ class TramiteAdmin(BaseAdmin):
     list_select_related = ['tema', 'municipio', 'organismo']
     list_editable = ['destacado', 'activo']
     ordering = ['-destacado', 'titulo']
-    autocomplete_fields = ['municipio', 'organismo']
+    autocomplete_fields = ['organismo']
+    filter_horizontal = ['municipios']
     radio_fields = {'modalidad': admin.HORIZONTAL}
     # Acciones masivas: publicar / dar de baja sin entrar a cada ficha.
     # Ojo: el borrado real (delete_selected) solo lo ve el superusuario.
@@ -308,7 +310,10 @@ class TramiteAdmin(BaseAdmin):
             'fields': ('titulo', 'tema', 'modalidad', 'descripcion'),
         }),
         ('Organización', {
-            'fields': ('municipio', 'organismo', 'destacado', 'activo'),
+            # `municipios` es la relación nueva (SPEC 2026-11): los
+            # municipios donde se hace el trámite; `municipio` queda
+            # sincronizado con el primero elegido desde el panel.
+            'fields': ('municipios', 'municipio', 'organismo', 'destacado', 'activo'),
         }),
         ('Enlaces antiguos (solo se usan si el tramite no tiene botones arriba)', {
             'fields': ('enlace_turnos', 'enlace_oficial'),
@@ -364,7 +369,9 @@ class ConsultaAdmin(BaseAdmin):
             'fields': ('tipo', 'asunto', 'contenido', 'tramite', 'usuario', 'fecha'),
         }),
         ('Respuesta', {
-            'fields': ('estado', 'respuesta'),
+            'fields': (
+                'estado', 'respuesta', 'respondido_por', 'fecha_respuesta',
+            ),
         }),
     )
 
@@ -374,15 +381,19 @@ class ConsultaAdmin(BaseAdmin):
         `usuario` solo se vuelve de solo lectura cuando ya está cargado; así,
         si un admin crea una consulta a mano, puede decir de quién es.
         """
-        campos = ['fecha']
+        campos = ['fecha', 'respondido_por', 'fecha_respuesta']
         if obj is not None and obj.usuario_id:
             campos.insert(0, 'usuario')
         return campos
 
     def save_model(self, request, obj, form, change):
-        # Si se responde por primera vez, pasa a "respondido"
+        # Si se responde por primera vez, pasa a "respondido" y se guarda
+        # la fecha de respuesta que usa el tablero del panel.
         if obj.respuesta and obj.estado == Consulta.Estado.PENDIENTE:
             obj.estado = Consulta.Estado.RESPONDIDO
+        if obj.respuesta and not obj.fecha_respuesta:
+            obj.fecha_respuesta = timezone.now()
+            obj.respondido_por = request.user
         super().save_model(request, obj, form, change)
 
     @admin.action(description='Marcar como respondidas (las que ya tienen respuesta)')

@@ -26,6 +26,8 @@
            style="--c: var(--m-verde)" href="{% url 'panel_tramites' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/folders.svg' %}')" aria-hidden="true"></span></span>Centro de Trámites</a>
         <a class="pn-menu__item{% if 'panel_consulta' in request.resolver_match.url_name %} activo{% endif %}"
            style="--c: var(--m-rojo)" href="{% url 'panel_consultas' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/message-circle.svg' %}')" aria-hidden="true"></span></span>Centro de Consultas</a>
+        <a class="pn-menu__item{% if 'panel_ticket' in request.resolver_match.url_name %} activo{% endif %}"
+           style="--c: var(--m-azul)" href="{% url 'panel_tickets' %}"><span class="pn-menu__icono"><span class="ic ic--tenido" style="--ico: url('{% estatico 'img/iconos/inbox.svg' %}')" aria-hidden="true"></span></span>Tickets</a>
         {# Usuarios es para el rol administrador (y el superusuario) #}
         {% if gestiona_cuentas %}
         <a class="pn-menu__item{% if 'panel_usuario' in request.resolver_match.url_name %} activo{% endif %}"

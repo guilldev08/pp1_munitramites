@@ -1,0 +1,100 @@
+{% extends "panel/base_panel.html" %}
+{% load hora %}
+
+{% block panel_titulo %}{{ ticket.asunto }}{% endblock %}
+{% block panel_bajada %}
+  Ticket #{{ ticket.pk }} ·
+  abierto por {{ ticket.creado_por.username|default:"—" }} ·
+  {{ ticket.fecha|hora_local|date:"d/m/Y H:i" }}
+{% endblock %}
+{% block panel_acciones %}
+  <a class="uv-btn uv-btn--outline" href="{% url 'panel_tickets' %}">← Volver a tickets</a>
+{% endblock %}
+
+{% block panel_contenido %}
+<div class="dos-columnas">
+  <div class="panel">
+    <h3 class="mt-0">Ticket</h3>
+
+    <p class="texto-suave texto-chico">
+      Estado:
+      {% if ticket.estado == 'abierto' %}<span class="uv-badge uv-badge--rojo">{{ ticket.get_estado_display }}</span>
+      {% elif ticket.estado == 'respondido' %}<span class="uv-badge uv-badge--verde">{{ ticket.get_estado_display }}</span>
+      {% else %}<span class="uv-badge uv-badge--azul">{{ ticket.get_estado_display }}</span>{% endif %}
+      {% if ticket.fecha_respuesta %}
+        · respondido el {{ ticket.fecha_respuesta|hora_local|date:"d/m/Y H:i" }}
+        {% if ticket.respondido_por %}por {{ ticket.respondido_por.username }}{% endif %}
+      {% endif %}
+    </p>
+
+    <p class="texto-con">{{ ticket.descripcion|linebreaksbr }}</p>
+
+    {% if ticket.adjuntos.all %}
+      <h3>Adjuntos</h3>
+      <ul class="pn-ticket__adjuntos">
+        {% for a in ticket.adjuntos.all %}
+          <li><a href="{{ a.archivo.url }}" target="_blank" rel="noopener">{{ a.nombre|default:a.archivo.name }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if ticket.respuesta %}
+      <h3>Respuesta</h3>
+      <div class="uv-alerta uv-alerta--ok">{{ ticket.respuesta|linebreaksbr }}</div>
+    {% endif %}
+  </div>
+
+  <aside>
+    {% if puede_gestionar %}
+      <form class="formulario" method="post">
+        <h3 class="mt-0">
+          {% if ticket.respuesta %}Actualizar respuesta{% else %}Responder ticket{% endif %}
+        </h3>
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="responder">
+        {% for campo in form %}
+          <div class="campo">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            {{ campo }}
+            {% if campo.help_text %}<span class="ayuda">{{ campo.help_text|safe }}</span>{% endif %}
+            {% for e in campo.errors %}<ul class="errores"><li>{{ e }}</li></ul>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="uv-btn uv-btn--ancho" type="submit">
+          {% if ticket.respuesta %}Actualizar respuesta{% else %}Enviar respuesta{% endif %}
+        </button>
+      </form>
+
+      {% if ticket.estado == 'cerrado' %}
+        <form method="post" style="margin-top:10px">
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="reabrir">
+          <button class="uv-btn uv-btn--outline uv-btn--ancho" type="submit">Reabrir ticket</button>
+        </form>
+      {% else %}
+        <form method="post" style="margin-top:10px">
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="cerrar">
+          <button class="uv-btn uv-btn--secundario uv-btn--ancho" type="submit">Cerrar ticket</button>
+        </form>
+      {% endif %}
+    {% else %}
+      <div class="panel">
+        <h3 class="mt-0">Estado</h3>
+        <p class="texto-suave texto-chico mb-0">
+          El administrador lee el ticket, responde y lo cierra. La
+          respuesta aparece acá y en el listado.
+        </p>
+      </div>
+    {% endif %}
+
+    {% if user.is_superuser or ticket.creado_por_id == user.id %}
+      <form method="post" action="{% url 'panel_ticket_eliminar' ticket.pk %}"
+            onsubmit="return confirm('¿Eliminar el ticket #{{ ticket.pk }}? Esta acción no se puede deshacer.')">
+        {% csrf_token %}
+        <button class="uv-btn uv-btn--peligro uv-btn--ancho" type="submit">Eliminar ticket</button>
+      </form>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

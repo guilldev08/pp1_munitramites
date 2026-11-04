@@ -33,7 +33,20 @@ def consultas(request):
 
 @login_required
 def consulta_nueva(request):
-    """Alta de consulta. Solo POST a la base si el form valida."""
+    """Alta de consulta. Solo POST a la base si el form valida.
+
+    El staff no envía consultas: su canal es responder las que llegan
+    (Centro de Consultas del panel) y, si necesita registrar algo, los
+    tickets internos del dashboard.
+    """
+    if request.user.is_staff and not request.user.is_superuser:
+        messages.info(
+            request,
+            'Las consultas las envían los ciudadanos. Como gestor, '
+            'respondelas desde el panel.'
+        )
+        return redirect('panel')
+
     if request.method == 'POST':
         form = ConsultaForm(request.POST)
         if form.is_valid():
@@ -74,7 +87,12 @@ def consulta_detalle(request, pk):
         consulta.respuesta = request.POST.get('respuesta', '').strip()
         if consulta.respuesta:
             consulta.estado = Consulta.Estado.RESPONDIDO
-            consulta.save(update_fields=['respuesta', 'estado'])
+            if not consulta.fecha_respuesta:
+                consulta.fecha_respuesta = timezone.now()
+                consulta.respondido_por = request.user
+            consulta.save(update_fields=[
+                'respuesta', 'estado', 'fecha_respuesta', 'respondido_por',
+            ])
             messages.success(request, 'Respuesta enviada al ciudadano.')
         return redirect('consulta_detalle', pk=consulta.pk)
 
@@ -86,16 +104,18 @@ def consulta_detalle(request, pk):
 
 @login_required
 def consulta_editar(request, pk):
-    """Edición de una consulta. Puede el dueño o el staff.
+    """Edición de una consulta: solo el dueño o el superusuario.
 
-    Solo se tocan los campos del formulario (tipo, trámite, asunto y
-    contenido); el estado y la respuesta se manejan desde el detalle.
-    Al guardar se registra la hora de la última edición.
+    El staff (administrativo/administrador) ya no puede editar el texto
+    de una consulta ajena: solo la responde desde el panel. Al guardar
+    se registra la hora de la última edición.
     """
     consulta = get_object_or_404(Consulta, pk=pk)
     es_duenio = consulta.usuario_id == request.user.pk
-    if not (es_duenio or request.user.is_staff):
-        messages.error(request, 'No podés editar esa consulta.')
+    if not (es_duenio or request.user.is_superuser):
+        messages.error(request, 'No podés editar la consulta de otra persona.')
+        if request.user.is_staff:
+            return redirect('panel_consulta', pk=consulta.pk)
         return redirect('consultas')
 
     # Si se editó desde el panel, se vuelve al panel en vez de a la vista
@@ -125,15 +145,17 @@ def consulta_editar(request, pk):
 @login_required
 @require_POST
 def consulta_eliminar(request, pk):
-    """Borra una consulta. Puede el dueño o el staff; siempre por POST.
+    """Borra una consulta: solo el dueño o el superusuario; siempre por POST.
 
     GET no borra nada: así un enlace o un redirect no elimina datos por
     accidente. Si la consulta no es del usuario, se trata como inexistente.
     """
     consulta = get_object_or_404(Consulta, pk=pk)
     es_duenio = consulta.usuario_id == request.user.pk
-    if not (es_duenio or request.user.is_staff):
-        messages.error(request, 'No podés borrar esa consulta.')
+    if not (es_duenio or request.user.is_superuser):
+        messages.error(request, 'No podés borrar la consulta de otra persona.')
+        if request.user.is_staff:
+            return redirect('panel_consulta', pk=consulta.pk)
         return redirect('consultas')
 
     numero = consulta.pk

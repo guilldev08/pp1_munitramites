@@ -18,7 +18,10 @@ from munitramites.models import (
     ArchivoTramite, Direccion, Enlace, Requisito, Tema,
 )
 
-from .base import TestCase, administrador, ciudadano, municipio, organismo, tramite
+from .base import (
+    TestCase, administrador, administrativo, ciudadano, municipio, organismo,
+    superusuario, tramite,
+)
 
 
 class LandingTests(TestCase):
@@ -226,6 +229,48 @@ class ListadoTests(TestCase):
         tramite()
         r = self.client.get(reverse('tramites'), {'pagina': '99'})
         self.assertEqual(r.status_code, 200)
+
+
+class BotonNuevoTramiteTests(TestCase):
+    """El acceso directo «+ Nuevo trámite» de /tramites/ es para los roles
+    de gestión (administrativo para arriba): el ciudadano no lo ve."""
+
+    def test_sin_sesion_no_aparece(self):
+        r = self.client.get(reverse('tramites'))
+
+        self.assertEqual(r.status_code, 200)
+        self.assertNotContains(r, reverse('panel_tramite_nuevo'))
+
+    def test_el_ciudadano_no_lo_ve(self):
+        self.client.force_login(ciudadano())
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertNotContains(r, reverse('panel_tramite_nuevo'))
+
+    def test_el_administrativo_lo_ve_y_va_al_formulario(self):
+        self.client.force_login(administrativo())
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertContains(r, 'Nuevo trámite')
+        self.assertContains(r, reverse('panel_tramite_nuevo'))
+
+    def test_el_administrador_lo_ve(self):
+        self.client.force_login(administrador())
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertContains(r, 'Nuevo trámite')
+        self.assertContains(r, reverse('panel_tramite_nuevo'))
+
+    def test_el_superusuario_lo_ve(self):
+        self.client.force_login(superusuario())
+
+        r = self.client.get(reverse('tramites'))
+
+        self.assertContains(r, 'Nuevo trámite')
+        self.assertContains(r, reverse('panel_tramite_nuevo'))
 
 
 class FichaTests(TestCase):

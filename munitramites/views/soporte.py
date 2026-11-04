@@ -18,7 +18,20 @@ PREFIJO_SOPORTE = 'Soporte: '
 
 @login_required
 def soporte(request):
-    """Pagina de soporte: formulario + historial de pedidos del usuario."""
+    """Pagina de soporte: formulario + historial de pedidos del usuario.
+
+    El staff no usa este canal: sus temas internos van como tickets en el
+    panel, y las consultas ciudadanas las responde desde el Centro de
+    Consultas.
+    """
+    if request.user.is_staff and not request.user.is_superuser:
+        messages.info(
+            request,
+            'El soporte es para los ciudadanos. Como gestor, registrá tus '
+            'temas en los tickets internos del panel.'
+        )
+        return redirect('panel')
+
     if request.method == 'POST':
         form = SoporteForm(request.POST)
         if form.is_valid():

@@ -36,11 +36,14 @@ def _construir():
     tramites = (
         Tramite.objects.filter(activo=True)
         .select_related('municipio', 'organismo', 'tema')
-        .prefetch_related('requisitos', 'direcciones__municipio')
+        .prefetch_related('municipios', 'requisitos', 'direcciones__municipio')
     )
 
     fragmentos = []
     for t in tramites:
+        municipios = ', '.join(m.nombre for m in t.municipios.all()) or (
+            t.municipio.nombre
+        )
         direcciones = '; '.join(
             f'{d.lugar} ({d.municipio.nombre}): {d.direccion}'
             for d in t.direcciones.all()
@@ -57,7 +60,7 @@ def _construir():
                 f'{t.titulo}. {t.descripcion} '
                 f'Tema: {t.tema}. '
                 f'Modalidad: {t.get_modalidad_display()}. '
-                f'Municipio: {t.municipio.nombre}. '
+                f'Municipios: {municipios}. '
                 f'Organismo responsable: {t.organismo.nombre}. '
                 f'Direcciones de atención: {direcciones}. '
                 f'Requisitos: '
@@ -95,7 +98,7 @@ def invalidar(*_args, **_kwargs):
 
 def conectar_senales():
     """Se engancha a los cambios de datos (se llama desde apps.ready())."""
-    from django.db.models.signals import post_delete, post_save
+    from django.db.models.signals import post_delete, post_save, m2m_changed
 
     for modelo in (Tramite, Requisito, Direccion, Municipio, Organismo):
         post_save.connect(
@@ -104,3 +107,10 @@ def conectar_senales():
         post_delete.connect(
             invalidar, sender=modelo, dispatch_uid=f'indice_del_{modelo.__name__}'
         )
+    # La relación de municipios se escribe DESPUÉS de Tramite.save() (es
+    # m2m): sin este enganche el índice quedaría con los municipios viejos.
+    m2m_changed.connect(
+        invalidar,
+        sender=Tramite.municipios.through,
+        dispatch_uid='indice_m2m_tramite_municipios',
+    )

@@ -176,11 +176,13 @@ class TramiteFiltroForm(forms.Form):
         if datos['tema']:
             queryset = queryset.filter(tema_id=datos['tema'])
         if datos['municipio']:
-            # El municipio principal del trámite o cualquiera de sus sedes:
-            # así un trámite compartido aparece al filtrar por Oberá aunque
-            # su municipio principal sea Posadas.
+            # El municipio principal del trámite, cualquiera de los otros
+            # municipios marcados o cualquiera de sus sedes: así un trámite
+            # compartido aparece al filtrar por Oberá aunque su municipio
+            # principal sea Posadas.
             queryset = queryset.filter(
                 Q(municipio_id=datos['municipio'])
+                | Q(municipios__id=datos['municipio'])
                 | Q(direcciones__municipio_id=datos['municipio'])
             ).distinct()
         if datos['modalidad']:
@@ -222,26 +224,69 @@ class TramitePanelForm(forms.ModelForm):
     `EnlaceFormSet` y `DireccionFormSet`), que se validan y se guardan
     juntos con el trámite. No hay campos fijos para «turnos» ni «sitio
     oficial»: cada botón se carga con el nombre que se le quiera dar y su
-    URL. `municipio` es el municipio principal; las sedes adicionales van
-    en Direcciones.
+    URL.
+
+    Los municipios se eligen de a uno o varios (casilleros, SPEC 2026-11):
+    el primero de la lista (orden alfabético) queda como municipio
+    principal (`Tramite.municipio`) y todos van a la relación
+    `Tramite.municipios`. Con la lista completa de municipios cargada
+    (ver migración 0015) no hace falta el campo «municipio nuevo», pero
+    se conserva por si la lista quedara corta.
     """
+
+    municipios = forms.ModelMultipleChoiceField(
+        label='Municipios principales',
+        queryset=Municipio.objects.order_by('nombre'),
+        required=True,
+        widget=forms.CheckboxSelectMultiple,
+        error_messages={'required': 'Elegí al menos un municipio.'},
+        help_text='Marcá uno o varios municipios: el primero de la lista '
+                  '(orden alfabético) queda como municipio principal de '
+                  'la ficha.',
+    )
 
     class Meta:
         model = Tramite
         fields = [
-            'titulo', 'tema', 'modalidad', 'municipio', 'organismo',
+            'titulo', 'tema', 'modalidad', 'municipios', 'organismo',
             'descripcion', 'destacado', 'activo',
         ]
-        labels = {'municipio': 'Municipio principal'}
+        # Orden de pantalla según la SPEC: título, tema, modalidad,
+        # municipios, organismo, descripción y las dos casillas de cierre.
+        field_order = [
+            'titulo', 'tema', 'modalidad', 'municipios', 'organismo',
+            'descripcion', 'activo', 'destacado',
+        ]
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'placeholder': 'Ej.: Renovación del DNI',
+                'required': 'required',
             }),
+            'tema': forms.Select(attrs={'required': 'required'}),
+            'modalidad': forms.Select(attrs={'required': 'required'}),
+            'organismo': forms.Select(attrs={'required': 'required'}),
             'descripcion': forms.Textarea(attrs={
                 'rows': 5,
+                'required': 'required',
                 'placeholder': 'Qué se hace, dónde, cuándo y a quién acudir…',
             }),
         }
+
+    def save(self, commit=True):
+        """Guarda el trámite dejando como principal al primer municipio.
+
+        `municipios` es una relación (M2M) y `municipio` sigue siendo la
+        FK «principal»: se sincronizan acá para que la ficha pública y el
+        resto del sitio sigan mostrando un municipio sin cambios.
+        """
+        tramite = super().save(commit=False)
+        elegidos = list(self.cleaned_data.get('municipios') or [])
+        if elegidos:
+            tramite.municipio = elegidos[0]
+        if commit:
+            tramite.save()
+            self.save_m2m()
+        return tramite
 
 
 # Inlines del Centro de Trámites: el usuario NO escribe el «orden». Lo
@@ -251,12 +296,12 @@ class TramitePanelForm(forms.ModelForm):
 # cargando hay un botón «+ Agregar» que clona una fila nueva, y la fila
 # marcada «Eliminar» sale de la lista (app.js, prepararInlines()).
 class RequisitoInlineForm(forms.ModelForm):
-    """Fila de requisito: la descripción se numera sola por su posición."""
+    """Fila de requisito: el encabezado se numera solo («Requisito 1»…)."""
 
     class Meta:
         model = Requisito
         fields = ['descripcion']
-        labels = {'descripcion': 'Descripción'}
+        labels = {'descripcion': 'Contenido del requisito'}
         widgets = {
             'descripcion': forms.TextInput(attrs={
                 'placeholder': 'Ej.: DNI vigente y formulario completo',
@@ -374,6 +419,78 @@ class RespuestaConsultaForm(forms.Form):
             'minlength': 5,
         }),
         help_text='Mínimo 5 caracteres. El ciudadano la ve en «Mis consultas».',
+    )
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    """Input de archivos que acepta varios a la vez (tickets internos)."""
+
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    """FileField que devuelve una lista cuando llegan varios archivos.
+
+    El campo estándar valida un solo archivo; los tickets internos
+    aceptan varios adjuntos en el mismo input, así que se limpia cada
+    uno por separado y se devuelve la lista.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('widget', MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        limpiar_uno = super().clean
+        if isinstance(data, (list, tuple)):
+            return [limpiar_uno(d, initial) for d in data if d]
+        return limpiar_uno(data, initial)
+
+
+class TicketForm(forms.Form):
+    """Ticket interno del panel (solo rol administrativo).
+
+    Asunto, descripción y adjuntos opcionales. No es una consulta: el
+    ciudadano no lo ve ni se responde; es una bitácora interna.
+    """
+
+    asunto = forms.CharField(
+        label='Asunto',
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Ej.: Error al publicar un trámite',
+            'maxlength': 200,
+            'required': 'required',
+        }),
+    )
+    descripcion = forms.CharField(
+        label='Descripción',
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'placeholder': 'Contá qué pasó, dónde y qué esperabas que pase…',
+            'required': 'required',
+        }),
+    )
+    archivos = MultipleFileField(
+        label='Adjuntos',
+        required=False,
+        help_text='Opcional: podés adjuntar varios archivos a la vez.',
+    )
+
+
+class RespuestaTicketForm(forms.Form):
+    """Respuesta que el administrador le da a un ticket interno."""
+
+    respuesta = forms.CharField(
+        label='Respuesta',
+        min_length=5,
+        widget=forms.Textarea(attrs={
+            'rows': 5,
+            'placeholder': 'Escribí la respuesta para quien abrió el ticket…',
+            'minlength': 5,
+            'required': 'required',
+        }),
+        help_text='Mínimo 5 caracteres. El administrativo la ve en su ticket.',
     )
 
 

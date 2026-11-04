@@ -27,7 +27,8 @@ from .consultas import (
 from .cuenta import LoginDeSitio, perfil, registro
 from .pagina import inicio
 from .panel import (
-    panel, panel_consulta, panel_consultas, panel_temas,
+    panel, panel_consulta, panel_consultas, panel_dashboard_datos,
+    panel_temas, panel_ticket_detalle, panel_ticket_eliminar, panel_tickets,
     panel_tramite_editar, panel_tramite_estado, panel_tramite_nuevo,
     panel_tramites, panel_tramites_accion, panel_usuario_editar,
     panel_usuario_eliminar, panel_usuario_nuevo, panel_usuarios,
@@ -50,7 +51,11 @@ __all__ = [
     'panel',
     'panel_consulta',
     'panel_consultas',
+    'panel_dashboard_datos',
     'panel_temas',
+    'panel_ticket_detalle',
+    'panel_ticket_eliminar',
+    'panel_tickets',
     'panel_tramite_editar',
     'panel_tramite_estado',
     'panel_tramite_nuevo',
